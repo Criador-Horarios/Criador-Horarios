@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "strings"
     "regexp"
     "encoding/json"
     "github.com/PuerkitoBio/goquery"
@@ -26,28 +27,34 @@ func NewUC(url string) *UnidadeCurricular {
     uc.Turnos = make(map[string][]*Turno)
 
     //Iterar em cada linha da tabela
-    r, _ := regexp.Compile("[0-9]+([A-Z]*)[0-9]+")
+    regTurnos, _ := regexp.Compile("\\d+([A-Z]*)\\d+")
     doc.Find("tbody").Find("tr").Each(func (lin int, tr *goquery.Selection) {
+        var nomeTurno string
+        var tipoTurno string
+        var turno *Turno
         //Iterar em cada coluna da tabela
         tr.Find("td").Each(func(col int, td *goquery.Selection) {
             switch col {
                 //Nome
                 case 0:
-                    nome_turno := td.Text()
-                    tipo_turno := (r.FindStringSubmatch(nome_turno))[1]
-                    turno := &Turno{Nome: nome_turno, Tipo: tipo_turno}
-                    if _, in := uc.Turnos[tipo_turno]; in {
-                        if !inArray(uc.Turnos[tipo_turno], turno) {
-                            uc.Turnos[tipo_turno] = append(uc.Turnos[tipo_turno], turno)
+                    nomeTurno = td.Text()
+                    tipoTurno = (regTurnos.FindStringSubmatch(nomeTurno))[1]
+                    turno = &Turno{Nome: nomeTurno, Tipo: tipoTurno}
+                    if _, in := uc.Turnos[tipoTurno]; in {
+                        if !inArray(uc.Turnos[tipoTurno], turno) {
+                            uc.Turnos[tipoTurno] = append(uc.Turnos[tipoTurno], turno)
                         }
                     } else {
-                        uc.Turnos[tipo_turno] = []*Turno{turno}
+                        uc.Turnos[tipoTurno] = []*Turno{turno}
                     }
-                //Data/Aulas
+                //Data
                 case 2:
 
                 //Turmas
                 case 4:
+                    if len(turno.Turmas) == 0 {
+                        turno.Turmas = strings.Fields(td.Text())
+                    }
             }
         })
     })

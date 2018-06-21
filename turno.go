@@ -3,11 +3,9 @@ package main
 type Turno struct {
     Nome string
     Tipo string
-    Aulas []*Aula
+    Turmas []string
 }
 
 func (t1 *Turno) Equals(t2 *Turno) bool {
     return t1.Nome == t2.Nome
 }
-
-func (t *Turno) addAula(
