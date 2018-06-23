@@ -13,9 +13,11 @@ type UnidadeCurricular struct {
 }
 
 func NovaUC(url string) *UnidadeCurricular {
-    uc := &UnidadeCurricular{url: url}
+    regUrl, _ := regexp.Compile(".*-semestre")
+    absUrl := regUrl.FindString(url)
+    uc := &UnidadeCurricular{url: absUrl}
 
-    doc, _ := goquery.NewDocument(url + "/turnos")
+    doc, _ := goquery.NewDocument(absUrl + "/turnos")
     uc.nome = doc.Find(".site-header").Find("a").Text()
     uc.turnos = make(map[string][]*Turno)
 
