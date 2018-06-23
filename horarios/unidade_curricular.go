@@ -1,4 +1,4 @@
-package main
+package horarios
 
 import (
     "fmt"
@@ -10,11 +10,6 @@ import (
 type UnidadeCurricular struct {
     nome, url string
     turnos map[string][]*Turno
-}
-
-func main() {
-    uc := NovaUC("https://fenix.tecnico.ulisboa.pt/disciplinas/PO651795/2017-2018/1-semestre")
-    fmt.Println(uc)
 }
 
 func NovaUC(url string) *UnidadeCurricular {
@@ -37,10 +32,7 @@ func NovaUC(url string) *UnidadeCurricular {
             case 0:
                 nomeTurno = td.Text()
                 tipoTurno = (regTurnos.FindStringSubmatch(nomeTurno))[1]
-                turno = findInTurnos(uc.turnos, nomeTurno, tipoTurno)
-                if turno == nil {
-                    turno = NovoTurno(uc, nomeTurno, tipoTurno)
-                }
+                turno = findTurnoUC(uc, nomeTurno, tipoTurno)
                 uc.AddTurno(turno)
             //Data
             case 2:
@@ -89,16 +81,19 @@ func inSlice(turnos []*Turno, turno *Turno) bool {
     return false
 }
 
-func findInTurnos(turnos map[string][]*Turno, nome string, tipo string) *Turno {
-    //Encontrar tipo no map
-    if _, in := turnos[tipo]; in {
-        val := turnos[tipo]
-        //Encontrar nome na slice
+// Devolve o endereco turno da uc com o mesmo nome e tipo. Se nao
+// encontrar, cria um novo turno e devolve o seu endereco.
+func findTurnoUC(uc *UnidadeCurricular, nome string, tipo string) *Turno {
+    // Encontrar tipo no map
+    if _, in := uc.turnos[tipo]; in {
+        val := uc.turnos[tipo]
+        // Encontrar nome na slice
         for i := 0; i < len(val); i++ {
             if val[i].getNome() == nome {
                 return val[i]
             }
         }
     }
-    return nil
+    // Devolve um turno novo se nao encontrar
+    return NovoTurno(uc, nome, tipo)
 }

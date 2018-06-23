@@ -1,4 +1,4 @@
-package main
+package horarios
 
 import (
     "fmt"
@@ -12,8 +12,13 @@ var diasPt = [...]string{"Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"}
 var diasEn = [...]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
 
 // HH:MM
+const TEMPOINICIO = 8
+const MININTERVALO = 30
+const HORA = 60
+
 type Hora struct {
     hora, minuto int
+    repr int
 }
 
 type Data struct {
@@ -48,18 +53,20 @@ func NovaHora(s string) *Hora {
     h := &Hora{}
     h.hora, _ = strconv.Atoi(s[0:2])
     h.minuto, _ = strconv.Atoi(s[3:5])
+    h.repr = horaInt(h)
     return h
 }
 
 func (d *Data) String() string {
-    return fmt.Sprintf("%s, %v - %v", d.diaStr, d.inicio, d.fim)
+    return fmt.Sprintf("%s, %v-%v", d.diaStr, d.inicio, d.fim)
 }
 
 func (h *Hora) String() string {
     return fmt.Sprintf("%02d:%02d", h.hora, h.minuto)
 }
 
-// Devolve uma hora como um inteiro (8:00 = 0, 8:30 = 1, 9:00 = 2, etc.)
+// Devolve uma hora como um inteiro (8:00 = 0, 8:30 = 1, 9:00 = 2, etc.,
+// para TEMPOINICIO = 8 e MININTERVALO = 30)
 func horaInt(h *Hora) int {
-    return (h.hora - 8)*2 + (h.minuto/30)
+    return (h.hora - TEMPOINICIO)*(HORA/MININTERVALO) + (h.minuto/MININTERVALO)
 }
