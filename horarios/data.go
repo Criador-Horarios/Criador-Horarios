@@ -27,6 +27,7 @@ type Data struct {
     inicio, fim *Hora
 }
 
+// Inicializa a data, devolve o seu endereco.
 func NovaData(dataStr string) *Data {
     data := &Data{}
     data.dia = DiaStrParaInt(dataStr[0:3])
@@ -36,6 +37,7 @@ func NovaData(dataStr string) *Data {
     return data
 }
 
+// Devolve a representacao em int de um dia em string.
 func DiaStrParaInt(s string) int {
     for i := 0; i < DIASSEMANA ; i++ {
         if diasPt[i] == s || diasEn[i] == s {
@@ -45,10 +47,12 @@ func DiaStrParaInt(s string) int {
     return DIASSEMANA
 }
 
+// Devolve um dia como inteiro respetivo a string.
 func DiaParaStr(d int) string {
     return diasPt[d]
 }
 
+// Inicializa a hora com os dados obtidos da pagina da UC.
 func NovaHora(s string) *Hora {
     h := &Hora{}
     h.hora, _ = strconv.Atoi(s[0:2])
@@ -57,10 +61,12 @@ func NovaHora(s string) *Hora {
     return h
 }
 
+// Representacao em string de uma data.
 func (d *Data) String() string {
     return fmt.Sprintf("%s, %v-%v", d.diaStr, d.inicio, d.fim)
 }
 
+// Representacao em string de uma hora.
 func (h *Hora) String() string {
     return fmt.Sprintf("%02d:%02d", h.hora, h.minuto)
 }

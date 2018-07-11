@@ -12,6 +12,9 @@ type UnidadeCurricular struct {
     turnos map[string][]*Turno
 }
 
+// Inicializa a UC, devolvendo o seu endereco. Utiliza o goquery
+// para dar scrape a pagina da unidade curricular passada pelo url
+// para obter a informacao necessaria sobre a UC.
 func NovaUC(url string) *UnidadeCurricular {
     regUrl, _ := regexp.Compile(".*-semestre")
     absUrl := regUrl.FindString(url)
@@ -52,6 +55,8 @@ func NovaUC(url string) *UnidadeCurricular {
     return uc
 }
 
+// Acrescenta o turno aos turnos da uc, se o tipo de turno ainda nao 
+// existir, cria uma nova slice e atribui-lhe t como o seu primeiro valor..
 func (uc *UnidadeCurricular) AddTurno(t *Turno) {
     if _, in := uc.turnos[t.tipo]; in {
         if !inSlice(uc.turnos[t.tipo], t) {
@@ -63,6 +68,7 @@ func (uc *UnidadeCurricular) AddTurno(t *Turno) {
     }
 }
 
+// Representacao em string de uma UC.
 func (uc *UnidadeCurricular) String() string {
     str := fmt.Sprintf("%s: %s\n", uc.nome, uc.url)
     for key, value := range uc.turnos {
@@ -74,6 +80,7 @@ func (uc *UnidadeCurricular) String() string {
     return str
 }
 
+// Devolve se o turno esta dentro da slice turnos ou nao.
 func inSlice(turnos []*Turno, turno *Turno) bool {
     for i := 0; i < len(turnos); i++ {
         if turnos[i].Equals(turno) {

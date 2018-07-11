@@ -12,6 +12,7 @@ type Turno struct {
     aulas []*Aula
 }
 
+// Inicializa o turno com os dados argumentos, devolve o seu endereco.
 func NovoTurno(uc *UnidadeCurricular, nome string, tipo string) *Turno {
     t := &Turno{uc: uc, nome: nome, tipo: tipo}
     t.turmas = make([]string, 0)
@@ -19,18 +20,22 @@ func NovoTurno(uc *UnidadeCurricular, nome string, tipo string) *Turno {
     return t
 }
 
+// Devolve se t1 e igual a t2, utiliza o nome como criterio de comparacao.
 func (t1 *Turno) Equals(t2 *Turno) bool {
     return t1.nome == t2.nome
 }
 
-func (t *Turno) getNome() string {
+// Devolve o nome do turno.
+func (t *Turno) GetNome() string {
     return t.nome
 }
 
+// Acrescenta a aula ao turno t.
 func (t *Turno) AddAula(aula *Aula) {
     t.aulas = append(t.aulas, aula)
 }
 
+// Representacao em string de um turno.
 func (t *Turno) String() string {
     return fmt.Sprintf("%s: %v %v", t.nome, t.turmas, t.aulas)
 }
