@@ -7,9 +7,10 @@ import (
 
 // Dias da semana
 const DIASSEMANA = 7
+const DIASUTEIS = 5
 
-var diasPt = [...]string{"Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"}
-var diasEn = [...]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+var DiasPt = [...]string{"Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"}
+var DiasEn = [...]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
 
 // HH:MM
 const TEMPOINICIO = 8
@@ -40,7 +41,7 @@ func NovaData(dataStr string) *Data {
 // Devolve a representacao em int de um dia em string.
 func DiaStrParaInt(s string) int {
     for i := 0; i < DIASSEMANA ; i++ {
-        if diasPt[i] == s || diasEn[i] == s {
+        if DiasPt[i] == s || DiasEn[i] == s {
             return i
         }
     }
@@ -49,7 +50,7 @@ func DiaStrParaInt(s string) int {
 
 // Devolve um dia como inteiro respetivo a string.
 func DiaParaStr(d int) string {
-    return diasPt[d]
+    return DiasPt[d]
 }
 
 // Inicializa a hora com os dados obtidos da pagina da UC.

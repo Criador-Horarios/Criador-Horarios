@@ -37,7 +37,7 @@ func NovaUC(url string) *UnidadeCurricular {
             case 0:
                 nomeTurno = td.Text()
                 tipoTurno = (regTurnos.FindStringSubmatch(nomeTurno))[1]
-                turno = findTurnoUC(uc, nomeTurno, tipoTurno)
+                turno = findOrCreateTurnoUC(uc, nomeTurno, tipoTurno)
                 uc.AddTurno(turno)
             //Data
             case 2:
@@ -80,6 +80,10 @@ func (uc *UnidadeCurricular) String() string {
     return str
 }
 
+/* Pretendo ver se ha maneira de implementar um tipo de
+"genericos" ou templates  nestas duas funcoes, uma vez que o codigo so funciona
+para tipos muito especificos quando sao coisas relativamente simples*/
+
 // Devolve se o turno esta dentro da slice turnos ou nao.
 func inSlice(turnos []*Turno, turno *Turno) bool {
     for i := 0; i < len(turnos); i++ {
@@ -90,15 +94,15 @@ func inSlice(turnos []*Turno, turno *Turno) bool {
     return false
 }
 
-// Devolve o endereco turno da uc com o mesmo nome e tipo. Se nao
+// Devolve o endereco do turno da uc com o mesmo nome e tipo. Se nao
 // encontrar, cria um novo turno e devolve o seu endereco.
-func findTurnoUC(uc *UnidadeCurricular, nome string, tipo string) *Turno {
+func findOrCreateTurnoUC(uc *UnidadeCurricular, nome string, tipo string) *Turno {
     // Encontrar tipo no map
     if _, in := uc.turnos[tipo]; in {
         val := uc.turnos[tipo]
         // Encontrar nome na slice
         for i := 0; i < len(val); i++ {
-            if val[i].getNome() == nome {
+            if val[i].GetNome() == nome {
                 return val[i]
             }
         }
