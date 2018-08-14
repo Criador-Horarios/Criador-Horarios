@@ -66,8 +66,8 @@ func NovaHora(s string) *Hora {
 // Devolve True se d1 sobrepoe d2. False caso contrario.
 func (d1 *Data) Sobrepoe(d2 *Data) bool {
     return (d1.dia == d2.dia ||
-           (d1.fim.val > d2.inicio.val) ||
-           (d1.inicio.val < d2.fim.val))
+           (d1.fim.val >= d2.inicio.val) ||
+           (d1.inicio.val <= d2.fim.val))
 }
 
 // Representacao em string de uma data.
