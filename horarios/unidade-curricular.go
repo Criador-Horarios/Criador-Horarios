@@ -71,10 +71,10 @@ func (uc *UnidadeCurricular) AddTurno(t *Turno) {
 // Representacao em string de uma UC.
 func (uc *UnidadeCurricular) String() string {
     str := fmt.Sprintf("%s: %s\n", uc.nome, uc.url)
-    for key, value := range uc.turnos {
-        str += fmt.Sprintf("%s:\n", key)
-        for i := 0; i < len(value); i++ {
-            str += fmt.Sprintf("%v\n", value[i])
+    for tipoTurno, turnos := range uc.turnos {
+        str += fmt.Sprintf("%s:\n", tipoTurno)
+        for _, turno := range turnos {
+            str += fmt.Sprintf("%v\n", turno)
         }
     }
     return str

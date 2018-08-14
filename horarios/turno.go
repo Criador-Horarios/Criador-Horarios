@@ -35,6 +35,11 @@ func (t *Turno) AddAula(aula *Aula) {
     t.aulas = append(t.aulas, aula)
 }
 
+// Devolve as aulas do turno.
+func (t *Turno) GetAulas() []*Aula {
+    return t.aulas
+}
+
 // Representacao em string de um turno.
 func (t *Turno) String() string {
     return fmt.Sprintf("%s: %v %v", t.nome, t.turmas, t.aulas)

@@ -7,7 +7,7 @@ import (
 
 // Dias da semana
 const DIASSEMANA = 7
-const DIASUTEIS = 5
+const DIASUTEIS = 6
 
 var DiasPt = [...]string{"Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"}
 var DiasEn = [...]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
@@ -19,13 +19,14 @@ const HORA = 60
 
 type Hora struct {
     hora, minuto int
-    repr int
+    val int
 }
 
 type Data struct {
     diaStr string
     dia int
-    inicio, fim *Hora
+    inicio *Hora
+    fim *Hora
 }
 
 // Inicializa a data, devolve o seu endereco.
@@ -58,8 +59,15 @@ func NovaHora(s string) *Hora {
     h := &Hora{}
     h.hora, _ = strconv.Atoi(s[0:2])
     h.minuto, _ = strconv.Atoi(s[3:5])
-    h.repr = horaInt(h)
+    h.val = horaInt(h)
     return h
+}
+
+// Devolve True se d1 sobrepoe d2. False caso contrario.
+func (d1 *Data) Sobrepoe(d2 *Data) bool {
+    return (d1.dia == d2.dia ||
+           (d1.fim.val > d2.inicio.val) ||
+           (d1.inicio.val < d2.fim.val))
 }
 
 // Representacao em string de uma data.
