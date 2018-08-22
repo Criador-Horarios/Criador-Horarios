@@ -59,7 +59,7 @@ func NovaUC(url string) *UnidadeCurricular {
 // existir, cria uma nova slice e atribui-lhe t como o seu primeiro valor..
 func (uc *UnidadeCurricular) AddTurno(t *Turno) {
     if _, in := uc.turnos[t.tipo]; in {
-        if !inSlice(uc.turnos[t.tipo], t) {
+        if !turnoRepetido(uc.turnos[t.tipo], t) {
             uc.turnos[t.tipo] = append(uc.turnos[t.tipo], t)
         }
     } else {
@@ -80,22 +80,18 @@ func (uc *UnidadeCurricular) String() string {
     return str
 }
 
-/* Pretendo ver se ha maneira de implementar um tipo de
-"genericos" ou templates  nestas duas funcoes, uma vez que o codigo so funciona
-para tipos muito especificos quando sao coisas relativamente simples*/
-
-// Devolve se o turno esta dentro da slice turnos ou nao.
-func inSlice(turnos []*Turno, turno *Turno) bool {
-    for i := 0; i < len(turnos); i++ {
-        if turnos[i].Equals(turno) {
+// Devolve se ha um turno semelhante dentro da slice turnos ou nao.
+func turnoRepetido(turnos []*Turno, turno *Turno) bool {
+    for _, t := range turnos {
+        if t.Equals(turno) {
             return true
         }
     }
     return false
 }
 
-// Devolve o endereco do turno da uc com o mesmo nome e tipo. Se nao
-// encontrar, cria um novo turno e devolve o seu endereco.
+// Devolve o endereco do turno da uc com o mesmo nome e tipo.
+// Se nao encontrar, cria um novo turno e devolve o seu endereco.
 func findOrCreateTurnoUC(uc *UnidadeCurricular, nome string, tipo string) *Turno {
     // Encontrar tipo no map
     if _, in := uc.turnos[tipo]; in {
