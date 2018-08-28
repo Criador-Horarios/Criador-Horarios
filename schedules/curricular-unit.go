@@ -43,8 +43,7 @@ func NewCU(url string) *CurricularUnit {
 				cu.AddShift(shift)
 			// Date
 			case 2:
-				date := NewDate(td.Text())
-				shift.AddLesson(NewLesson(shift, date))
+				shift.AddLesson(NewLesson(shift, td.Text()))
 			// Classes
 			case 4:
 				if len(shift.Classes) == 0 {
