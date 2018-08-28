@@ -26,14 +26,14 @@ const HOUR = 60
 // Date represents a date. A Date has a weekday and a period of hours.
 type Date struct {
 	dayStr string
-	DayInt int
-	Start  *Hour
-	End    *Hour
+	DayInt int   `json:"day"`
+	Start  *Hour `json:"start"`
+	End    *Hour `json:"end"`
 }
 
 // Hour represents an hour (HH:MM).
 type Hour struct {
-	HourStr      string
+	HourStr      string `json:"time"`
 	hour, minute int
 }
 

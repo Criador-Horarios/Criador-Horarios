@@ -10,9 +10,9 @@ import (
 
 // CurricularUnit represents a Curricular Unit(CU).
 type CurricularUnit struct {
-	Name   string
+	Name   string `json:"name"`
 	url    string
-	Shifts map[string][]*Shift
+	Shifts map[string][]*Shift `json:"shifts"`
 }
 
 // NewCU initializes a CU, returning its address. Utilizes goquery

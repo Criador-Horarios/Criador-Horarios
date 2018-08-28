@@ -7,7 +7,7 @@ import (
 // Lesson represents a lesson.
 type Lesson struct {
 	shift *Shift
-	Date  *Date
+	Date  *Date `json:"date"`
 }
 
 // NewLesson initializes a Lesson and returns its address.

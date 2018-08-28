@@ -7,10 +7,10 @@ import (
 // Shift represents a shift.
 type Shift struct {
 	cu      *CurricularUnit
-	Name    string
-	Type    string
-	Classes []string
-	Lessons []*Lesson
+	Name    string    `json:"name"`
+	Type    string    `json:"type"`
+	Classes []string  `json:"classes"`
+	Lessons []*Lesson `json:"lessons"`
 }
 
 // NewShift initializes a Shift and returns its adress.
