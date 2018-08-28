@@ -26,23 +26,24 @@ const HOUR = 60
 // Date represents a date. A Date has a weekday and a period of hours.
 type Date struct {
 	dayStr string
-	dayInt int
-	start  *Hour
-	end    *Hour
+	DayInt int
+	Start  *Hour
+	End    *Hour
 }
 
 // Hour represents an hour (HH:MM).
 type Hour struct {
+	HourStr      string
 	hour, minute int
 }
 
 // NewDate initializes a date with a string similar to "Seg, 11:00 — 12:30" and returns its address.
 func NewDate(dateStr string) *Date {
 	date := &Date{}
-	date.dayInt = DayStrToInt(dateStr[0:3])
-	date.dayStr = DayIntToStr(date.dayInt)
-	date.start = NewHour(dateStr[5:10])
-	date.end = NewHour(dateStr[15:20])
+	date.DayInt = DayStrToInt(dateStr[0:3])
+	date.dayStr = DayIntToStr(date.DayInt)
+	date.Start = NewHour(dateStr[5:10])
+	date.End = NewHour(dateStr[15:20])
 	return date
 }
 
@@ -64,6 +65,7 @@ func DayIntToStr(d int) string {
 // NewHour initializes an Hour from a "HH:MM" string and returns its address.
 func NewHour(s string) *Hour {
 	h := &Hour{}
+	h.HourStr = s
 	h.hour, _ = strconv.Atoi(s[0:2])
 	h.minute, _ = strconv.Atoi(s[3:5])
 	return h
@@ -71,7 +73,7 @@ func NewHour(s string) *Hour {
 
 // String representation of a Date.
 func (d *Date) String() string {
-	return fmt.Sprintf("%s, %v - %v", d.dayStr, d.start, d.end)
+	return fmt.Sprintf("%s, %v - %v", d.dayStr, d.Start, d.End)
 }
 
 // String representation of an Hour.
