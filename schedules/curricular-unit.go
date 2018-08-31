@@ -18,11 +18,15 @@ type CurricularUnit struct {
 // NewCU initializes a CU, returning its address. Utilizes goquery
 // to scrape the CU page's relevant information.
 func NewCU(url string) *CurricularUnit {
-	regURL, _ := regexp.Compile(".*-semestre")
+	regURL, compileErr := regexp.Compile(".*-semestre")
 	absURL := regURL.FindString(url)
-	cu := &CurricularUnit{url: absURL}
+	doc, docErr := goquery.NewDocument(absURL + "/turnos")
+	if compileErr != nil || docErr != nil || absURL == "" {
+		fmt.Println("Invalid link or unexpected error.")
+		return nil
+	}
 
-	doc, _ := goquery.NewDocument(absURL + "/turnos")
+	cu := &CurricularUnit{url: absURL}
 	cu.Name = doc.Find(".site-header").Find("a").Text()
 	cu.Shifts = make(map[string][]*Shift)
 
