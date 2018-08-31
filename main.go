@@ -24,15 +24,6 @@ func getCU(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newCU)
 }
 
-func schedulesHandler(w http.ResponseWriter, r *http.Request) {
-	cus := make([]*schedules.CurricularUnit, 0)
-	url := "https://fenix.tecnico.ulisboa.pt/disciplinas/FP4517957/2018-2019/1-semestre/pagina-inicial"
-	fp := schedules.NewCU(url)
-	cus = append(cus, fp)
-	fmt.Fprintf(w, "<h1>Simulador de Criador de Horarios</h1>")
-	fmt.Fprintf(w, "<p>%v</p>", fp)
-}
-
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", indexHandler)
