@@ -31,7 +31,6 @@ func NewCU(url string) *CurricularUnit {
 	cu.Shifts = make(map[string][]*Shift)
 
 	// Iterate over each line of the table
-	regShifts, _ := regexp.Compile("\\d+([A-Z]*)\\d+")
 	doc.Find("tbody").Find("tr").Each(func(lin int, tr *goquery.Selection) {
 		var shiftName string
 		var shiftType string
@@ -42,7 +41,7 @@ func NewCU(url string) *CurricularUnit {
 			// Name
 			case 0:
 				shiftName = td.Text()
-				shiftType = (regShifts.FindStringSubmatch(shiftName))[1]
+				shiftType = GetShiftType(shiftName)
 				shift = findOrCreateShiftCU(cu, shiftName, shiftType)
 				cu.AddShift(shift)
 			// Date
@@ -58,6 +57,21 @@ func NewCU(url string) *CurricularUnit {
 	})
 
 	return cu
+}
+
+// GetShiftType returns the type of shift according to its name.
+func GetShiftType(shiftName string) string {
+	c := shiftName[len(shiftName)-3]
+	switch c {
+	case 'T':
+		return "Teorico"
+	case 'L':
+		return "Laboratorial"
+	case 'B':
+		return "Problemas"
+
+	}
+	return ""
 }
 
 // AddShift adds a shift to the CU if it is not registered yet.
