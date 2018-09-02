@@ -6,7 +6,7 @@
     <title>Criador de Horários</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <!-- <script src="main.js"></script> -->
+    <script src="main.js"></script>
 </head>
 <body>
     <div class="topbar">
@@ -15,21 +15,23 @@
 
     <div class="sidebar">
         <h2>Menu:</h2>
-        <form>
+        <div id="url-form">
             <input id="url-text" type="text" placeholder="URL da Unidade Curricular">
-            <input id="url-submit" type="submit">
-        </form>
-        <ul>
-        </ul> 
-        <p>Turmas:</p>
-        <select>
-            <option value="complete">Completo</option>
-        </select>
-        <p>Unidades Curriculares:</p>
-        <a href=#>MD</a>
-        <a href=#>FP</a>
-        <a href=#>IAC</a>
-    </div>
+            <input id="url-button" type="submit">
+        </div>
+        <div id="classes-form">
+            <p>Turmas:</p>
+            <select>
+                <option value="complete">Completo</option>
+            </select>
+        </div>
+        <div id="cus-form">
+            <p>Unidades Curriculares:</p>
+            <a href=#>MD</a>
+            <a href=#>FP</a>
+            <a href=#>IAC</a>
+        </div>
+   </div>
 
     <div class="content">
         <p>Aqui vão ficar as duas tabelas para os horários</p>
