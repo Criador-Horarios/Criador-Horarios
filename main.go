@@ -17,6 +17,8 @@ func getCU(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	url := "https://fenix.tecnico.ulisboa.pt/disciplinas/" + strings.Replace(id, "_", "/", -1)
 	newCU := schedules.NewCU(url)
+
+	w.Header().Set("Content-Type", "text/json; charset=utf-8")
 	json.NewEncoder(w).Encode(newCU)
 }
 
