@@ -1,0 +1,22 @@
+
+> horarios@0.1.0 start /home/daniel/Documents/GitHub/Criador-Horarios/horarios
+> react-scripts start
+
+[HPM] Proxy created: /  -> https://fenix.tecnico.ulisboa.pt/api/fenix/v1
+[34mℹ[39m [90m｢wds｣[39m: Project is running at http://172.28.167.174/
+[34mℹ[39m [90m｢wds｣[39m: webpack output is served from 
+[34mℹ[39m [90m｢wds｣[39m: Content not from webpack is served from /home/daniel/Documents/GitHub/Criador-Horarios/horarios/public
+[34mℹ[39m [90m｢wds｣[39m: 404s will fallback to /
+Starting the development server...
+
+Files successfully emitted, waiting for typecheck results...
+Compiled successfully!
+
+You can now view horarios in the browser.
+
+  Local:            http://localhost:3000
+  On Your Network:  http://172.28.167.174:3000
+
+Note that the development build is not optimized.
+To create a production build, use npm run build.
+
