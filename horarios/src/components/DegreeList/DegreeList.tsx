@@ -6,14 +6,12 @@ class DegreeList extends React.PureComponent<{
   onSelectedDegree: Function
 }, any> {
   allDegrees: Degree[] = []
-  searchedDegree: string = "";
   state = {
     degrees: []
   }
 
   constructor(props: any) {
     super(props);
-
     this.onSearchedDegree = this.onSearchedDegree.bind(this);
     this.onSelectedDegree = this.onSelectedDegree.bind(this);
   }
