@@ -47,6 +47,33 @@ body {
   }
 }
 
+.main {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 8fr;
+
+  .topbar {
+    padding: 4px;
+    display: flex;
+    flex-direction: row;
+    grid-column: 1;
+    grid-row: 1;
+    align-items: center;
+    justify-content: space-evenly;
+
+    .autocomplete {
+      min-width: 25%;
+    }
+  }
+
+  .schedules {
+    height: 100%;
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
 .clickable {
   cursor: pointer;
 }
@@ -55,12 +82,17 @@ body {
   color: red;
 }
 
-/* FIXME: remove this
-Remove color from current day of week */
+// Remove color from current day of week
 .fc-day-today {
   background-color:inherit !important;
 }
 
+// Allow break spaces in event's title
 .fc-event-title {
     white-space: break-spaces;
+}
+
+// Reset
+ul {
+  margin: 0;
 }

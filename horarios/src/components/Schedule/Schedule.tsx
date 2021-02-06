@@ -1,6 +1,6 @@
 import React from 'react';
 import API from '../../utils/api';
-import { Course, CourseUpdates, CourseUpdateType, Shift, Update } from '../../utils/domain';
+import { CourseUpdates, CourseUpdateType, Shift, Update, Lesson } from '../../utils/domain';
 import styles from './Schedule.module.scss';
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -10,73 +10,60 @@ class Schedule extends React.PureComponent <{
 }, any>{
   calendarComponentRef:React.RefObject<any> = React.createRef();
   state = {
-    shifts: [] as Shift[],
-    events: []
+    events: [] as Lesson[]
   }
-  hasGoneToStart = false
+  shifts: Shift[] = []
 
   async componentDidUpdate(prevProps: any): Promise<void> {
-    if (prevProps.selectedCourses === this.props.selectedCourses || !this.props.selectedCourses.lastUpdate) return
+    if (prevProps.selectedCourses === this.props.selectedCourses || !this.props.selectedCourses.lastUpdate) {
+      return
+    }
 
-    let shifts: Shift[] = this.state.shifts;
-    let update: Update = this.props.selectedCourses.lastUpdate 
+    this.setState({
+      events: await this.updateShifts(this.props.selectedCourses.lastUpdate)
+    })    
+  }
+
+  async updateShifts(update: Update): Promise<Lesson[]> {
+    // Verify if cleared
+    if (update.course === undefined || update.type === CourseUpdateType.Clear) {
+      return []
+    }
+
+    let events: Lesson[] = []
     // If a new course added, add to the list and fetch its schedule
     if (update.type === CourseUpdateType.Add) {
       try {
-        await Promise.all([update.course].map(async (course: Course) => {
-          let currShifts = await API.getCourseSchedules(course.id);
-          shifts = shifts.concat(currShifts)
-        }));
+        let currShifts: Shift[] = await API.getCourseSchedules(update.course)
+        // When double clicking a course very fast, it stays and lets a duplicate remain -> verify if removed and return current
+        if (!this.props.selectedCourses.courses.includes(update.course) || 
+          (this.props.selectedCourses.lastUpdate?.course === update.course && 
+            this.props.selectedCourses.lastUpdate?.type === CourseUpdateType.Remove) ) return this.state.events
+
+        this.shifts = this.shifts.concat(currShifts)
+        // Get events from current shifts
+        events = this.state.events.concat(currShifts.map((s: Shift) => s.lessons).flat())
       } catch (err) {
         console.log(err)
       }
-    // If a course is removed, remove its shifts
     } else {
+      // If a course is removed, remove its shifts and the events
       let courseAcronym = update.course.acronym
-      shifts = shifts.filter( (s: Shift) => {
-        return !s.name.startsWith(courseAcronym)
+      this.shifts = this.shifts.filter( (s: Shift) => {
+        return !s.name.includes(courseAcronym)
+      })
+
+      events = this.state.events.filter( (e: Lesson) => {
+        return !e.title.includes(courseAcronym)
       })
     }
-
-    // FIXME: verify if shifts correspond to select courses, as it bugs out and keeps unselected ones
-
-    if (shifts.length === 0) {
-      this.setState({ shifts })
-    } else {
-      // Check if in the right day for the shifts
-      if (!this.hasGoneToStart) {
-        let firstSunday = this.getFirstSunday(shifts[0].start)
-        let calendarApi = this.calendarComponentRef.current.getApi()
-        calendarApi.gotoDate(firstSunday)
-        this.hasGoneToStart = true
-      }
-
-      // Get events from current shifts
-      // FIXME: Maybe convert when getting the shifts?
-      let events = shifts.map( (s: Shift) => s.toEvent())
-
-      this.setState({ 
-        shifts,
-        events
-      })
-    }
+    
+    return events
   }
 
   render() {
     return (
       <div className={styles.Schedule}>
-        <ul>
-          {this.props.selectedCourses?.courses.map((d: Course) => {
-            // FIXME: Check if selected to add class selected
-            return <li className={"clickable"} key={d.id} onClick={() => console.log(d)}>{d.name}</li> 
-          })}
-        </ul>
-        <ul>
-          {this.state.shifts?.map((s: Shift) => {
-            // FIXME: Check if selected to add class selected
-            return <li className={"clickable"} key={s.name} onClick={() => console.log(s)}>{s.displayName()}</li> 
-          })}
-        </ul>
         <div className={styles.ScheduleGrid}>
           <FullCalendar
             plugins={[ timeGridPlugin ]}
@@ -91,8 +78,8 @@ class Schedule extends React.PureComponent <{
               day: undefined,
               weekday: 'long'
             }}
-            slotMinTime={"07:00:00"}
-            slotMaxTime={"21:00:00"}
+            slotMinTime={"08:00:00"}
+            slotMaxTime={"20:00:00"}
             slotLabelFormat={{
               hour: '2-digit',
               minute: '2-digit',
