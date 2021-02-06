@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { Degree } from '../../utils/interfaces';
+import API from '../../utils/api';
+import { Degree } from '../../utils/domain';
 import styles from './DegreeList.module.scss';
 
 class DegreeList extends React.PureComponent<{
@@ -17,14 +18,8 @@ class DegreeList extends React.PureComponent<{
   }
 
   async componentDidMount() {
-    await this.getDegrees()
-  }
-
-  async getDegrees(): Promise<void> {
     try {
-      const degrees = await fetch('/api/fenix/v1/degrees').then(r => r.json())
-      this.allDegrees = degrees.map((d: any) => new Degree(d))
-      this.allDegrees.sort((a: Degree, b: Degree) => a.displayName().localeCompare(b.displayName()))
+      this.allDegrees = await API.getDegrees();
       this.setState({
         degrees: [...this.allDegrees]
       })
@@ -44,9 +39,16 @@ class DegreeList extends React.PureComponent<{
     })
   }
 
-  onSelectedDegree(event: any): void {
-    const selectedDegree = event.target.id;
-    this.props.onSelectedDegree(selectedDegree);
+  onSelectedDegree(d: Degree, element: HTMLElement): void {
+    console.log(d);
+    // FIXME: Get better way of checking if selected
+    if (element.classList.contains("selected")) {
+      element.classList.remove("selected")
+      this.props.onSelectedDegree(undefined);
+    } else { 
+      element.classList.add("selected")
+      this.props.onSelectedDegree(d.id);
+    }
   }
 
   render(): ReactNode {
@@ -55,7 +57,7 @@ class DegreeList extends React.PureComponent<{
       <input type="text" onChange={this.onSearchedDegree}></input>
       <ul>
         {this.state.degrees?.map((d: Degree) => {
-          return <li className={"clickable"} id={d.id} key={d.id} onClick={this.onSelectedDegree}>{d.displayName()}</li> 
+          return <li className={"clickable"} key={d.id} onClick={(e) => this.onSelectedDegree(d, e.target as HTMLElement)}>{d.displayName()}</li> 
         })}
       </ul>
       </div>

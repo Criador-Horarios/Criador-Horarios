@@ -2,8 +2,34 @@ import React, { ReactNode } from 'react';
 import logo from './logo.svg';
 import './App.scss';
 import DegreeList from './components/DegreeList/DegreeList';
+import CourseList from './components/CourseList/CourseList';
+import Schedule from './components/Schedule/Schedule';
+import { Course, CourseUpdates } from './utils/domain';
 
 class App extends React.PureComponent {
+
+  state = {
+    selectedDegree: "",
+    selectedCourses: new CourseUpdates
+  }
+
+  constructor(props: any) {
+    super(props);
+    this.onSelectedDegree = this.onSelectedDegree.bind(this);
+    this.onSelectedCourse = this.onSelectedCourse.bind(this);
+  }
+
+  onSelectedDegree(degree: string): void {
+    this.setState({
+      selectedDegree: degree
+    })
+  }
+
+  onSelectedCourse(courses: CourseUpdates): void {
+    this.setState({
+      selectedCourses: {...courses}
+    })
+  }
   
   render(): ReactNode {
     return (
@@ -22,7 +48,9 @@ class App extends React.PureComponent {
             Learn React
           </a>
         </header>
-        <DegreeList onSelectedDegree={console.log}/>
+        <DegreeList onSelectedDegree={this.onSelectedDegree}/>
+        <CourseList selectedDegree={this.state.selectedDegree} onSelectedCourses={this.onSelectedCourse}/>
+        <Schedule selectedCourses={this.state.selectedCourses}/>
       </div>
     );
   }

@@ -1,5 +1,14 @@
+body {
+  /* Don't allow selection of text */
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: -moz-none;
+  -o-user-select: none;
+  user-select: none;
+}
+
 .App {
-  text-align: center;
+  // text-align: center;
 
   .App-logo {
     height: 40vmin;
@@ -40,4 +49,18 @@
 
 .clickable {
   cursor: pointer;
+}
+
+.selected {
+  color: red;
+}
+
+/* FIXME: remove this
+Remove color from current day of week */
+.fc-day-today {
+  background-color:inherit !important;
+}
+
+.fc-event-title {
+    white-space: break-spaces;
 }
