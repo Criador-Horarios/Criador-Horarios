@@ -21,21 +21,29 @@ export class Course {
     academicTerm: string
     semester: number
     credits: string
-    abbrev: string = ""
+    abbrev: string
 
     constructor(obj: any) {
         this.id = obj.id
-        this.acronym = obj.acronym
+        this.acronym = obj.acronym.replace(/\d/g, '')
         this.name = obj.name
         this.academicTerm = obj.academicTerm
         this.semester = +this.academicTerm[0]
         this.credits = obj.credits
         // TODO: Improve this abbreviation
-        this.abbrev = this.acronym.replace(/\d/g, '')
+        this.abbrev = this.name.split(/[- //]+/).map(d => d[0]).filter(d => {
+            if (!d) return false
+            return d === d.toUpperCase()
+        }).join("")
+        console.log(this.abbrev)
+    }
+
+    searchableName(): string {
+        return this.abbrev + this.name + this.acronym
     }
 
     displayName() : string {
-        return this.abbrev + ' - ' + this.name
+        return this.name + ' - ' + this.acronym
     }
 }
 

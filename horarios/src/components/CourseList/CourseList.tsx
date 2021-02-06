@@ -66,7 +66,7 @@ class CourseList extends React.PureComponent<{
     const searchedCourse = event.target.value.toLowerCase();
 
     const courses = this.allCourses
-      .filter((d: Course) => d.displayName().toLowerCase().includes(searchedCourse))
+      .filter((d: Course) => d.searchableName().toLowerCase().includes(searchedCourse))
     
     this.setState({
       courses
@@ -92,7 +92,7 @@ class CourseList extends React.PureComponent<{
         <ul>
           {this.state.courses?.map((c: Course) => {
             // FIXME: Check if selected to add class selected
-            return <li className={"clickable"} key={c.id} onClick={(e) => this.onSelectedCourse(c, e.target as HTMLElement)}>{c.name}</li> 
+            return <li className={"clickable"} key={c.id} onClick={(e) => this.onSelectedCourse(c, e.target as HTMLElement)}>{c.displayName()}</li> 
           })}
         </ul>
       </div>
