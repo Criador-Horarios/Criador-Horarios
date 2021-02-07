@@ -1,5 +1,11 @@
 import hexRgb from 'hex-rgb'
 import rgbHex from 'rgb-hex'
+import Comparables from './comparables'
+
+export interface Comparable {
+    equals(obj: Comparable): boolean
+    hashString(): string
+}
 
 export class Degree {
     id: string
@@ -16,9 +22,13 @@ export class Degree {
     displayName() : string {
         return this.acronym + ' - ' + this.name
     }
+
+    static compare(a: Degree, b: Degree) {
+        return a.displayName().localeCompare(b.displayName())
+    }
 }
 
-export class Course {
+export class Course implements Comparable {
     id: string
     acronym: string
     name: string
@@ -41,12 +51,22 @@ export class Course {
             return d === d.toUpperCase()
         }).join("")
 
+        // FIXME: Select from chosen colors, this ones suck
         const randomColor = () => Math.floor(Math.random()*256)
         this.color = '#' + rgbHex(randomColor(), randomColor(), randomColor())
     }
 
     equals(other: Course) {
-        return this.searchableName() === other.searchableName()
+        return this.name === other.name && this.semester === other.semester
+    }
+
+    hashString(): string {
+        return this.name + this.semester
+    }
+
+    static compare(a: Course, b: Course) {
+       const sem = a.semester < b.semester ? -1 : a.semester === b.semester ? 0 : 1
+       return sem || a.name.localeCompare(b.name)
     }
 
     searchableName(): string {
@@ -73,13 +93,7 @@ export class CourseUpdates {
     }
 
     toggleCourse(course: Course): CourseUpdateType {
-        let idx = -1
-        for (let i = 0; i < this.courses.length; i++) {
-            if (this.courses[i].equals(course)) {
-                idx = i
-                break
-            }
-        }
+        const idx = Comparables.indexOf(this.courses, course)
 
         let type
         if (idx !== -1) {
@@ -112,59 +126,90 @@ const shadeColor = (color: string, amount: number) => {
     return '#' + rgbHex(newColor.red, newColor.green, newColor.blue)
 }
 
-export class Shift {
+export class Shift implements Comparable {
     name: string
     type: string
+    acronym: string
+    shiftId: string
+    courseName: string
     lessons: Lesson[]
     color: string
     
-    constructor(obj: any, color: string) {
+    constructor(obj: any, course: Course) {
         this.name = obj.name
-        const re = /(L|PB|T)[\d]{2}/
-        this.type = this.name.match(re)![1]
+        const re = /^([A-Za-z]+)\d*(L|PB|T)([\d]{2})$/
+        const match = this.name.match(re)!
+        console.log(match)
+        this.acronym = match[1]
+        this.type = match[2]
+        this.shiftId = match[2] + match[3]
+        this.courseName = course.name
 
-        if (this.type == 'T') {
-            this.color = shadeColor(color, 2)
-        } else if (this.type == 'PB') {
-            this.color = shadeColor(color, 1)
+        if (this.type === 'T') {
+            this.color = shadeColor(course.color, 2)
+        } else if (this.type === 'PB') {
+            this.color = shadeColor(course.color, 1)
         } else {
-            this.color = color
+            this.color = course.color
         }
 
-        const lessons: any = {}
-        obj.lessons.forEach((l: any) => {
-            const newEvent = new Lesson({
+        const lessons = obj.lessons.map((l: any) => {
+            return new Lesson({
                 shiftName: this.name,
                 color: this.color,
                 start: l.start.split(' ')[1],
                 end: l.end.split(' ')[1],
                 dayOfWeek:  new Date(l.start).getDay(),
                 room: l.room.name,
-                campus: l.room.topLevelSpace.name
+                campus: l.room.topLevelSpace.name,
+                acronym: this.acronym,
+                shiftId: this.shiftId,
+                id: this.name
            })
-           // Sets work based on object id
-           lessons[newEvent.toString()] = newEvent
         });
-        this.lessons = Object.values(lessons) as Lesson[]
+        this.lessons = Comparables.toUnique(lessons) as Lesson[]
+    }
+
+    static isSameCourseAndType(s1: Shift, s2: Shift): Boolean {
+        return s1.courseName === s2.courseName && s1.type === s2.type && s1.name !== s2.name
+    }
+
+    equals(other: Shift) {
+        return this.name === other.name
+    }
+
+    hashString() {
+        return this.name
     }
 }
 
-export class Lesson {
+export class Lesson implements Comparable {
     title: string
+    type: string
     startTime: string
     endTime: string
     daysOfWeek: number[]
     color: string
+    shiftId: string
+    id: string
 
     constructor(obj: any) {
-        this.title = `${obj.shiftName}\n${obj.room} @ ${obj.campus}`
         this.daysOfWeek = [obj.dayOfWeek]
         this.startTime = obj.start
         this.endTime = obj.end
         this.color = obj.color
+        this.shiftId = obj.shiftId
+        this.type = obj.type
+        this.id = obj.shiftName
+
+        this.title = `${obj.acronym} - ${obj.shiftId}\n${obj.room} @ ${obj.campus}`
     }
 
-    toString(): string {
+    hashString(): string {
         return this.title + this.startTime + this.endTime
+    }
+
+    equals(other: Lesson) {
+        return this.id === other.id
     }
 }

@@ -4,15 +4,18 @@ import { CourseUpdates, CourseUpdateType, Shift, Update, Lesson } from '../../ut
 import styles from './Schedule.module.scss';
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import Comparables from '../../utils/comparables';
 
 class Schedule extends React.PureComponent <{
-  selectedCourses: CourseUpdates
+  selectedCourses: CourseUpdates,
+  onSelectedShift: Function
 }, any>{
   calendarComponentRef:React.RefObject<any> = React.createRef();
   state = {
     events: [] as Lesson[]
   }
   shifts: Shift[] = []
+  selectedShifts: Shift[] = []
 
   async componentDidUpdate(prevProps: any): Promise<void> {
     if (prevProps.selectedCourses === this.props.selectedCourses || !this.props.selectedCourses.lastUpdate) {
@@ -36,7 +39,7 @@ class Schedule extends React.PureComponent <{
       try {
         let currShifts: Shift[] = await API.getCourseSchedules(update.course)
         // When double clicking a course very fast, it stays and lets a duplicate remain -> verify if removed and return current
-        if (!this.props.selectedCourses.courses.includes(update.course) || 
+        if (!Comparables.includes(this.props.selectedCourses.courses, update.course) || 
           (this.props.selectedCourses.lastUpdate?.course === update.course && 
             this.props.selectedCourses.lastUpdate?.type === CourseUpdateType.Remove) ) return this.state.events
 
@@ -61,48 +64,72 @@ class Schedule extends React.PureComponent <{
     return events
   }
 
+  onSelectedShift(shiftName: string): void {
+    let shiftsFound = this.shifts.filter( (s) => {
+      return s.name === shiftName
+    })
+    if (shiftsFound.length === 1) {
+      let chosenShift = shiftsFound[0]
+
+      // Verify if of the same type and course to replace, but not the same
+      let replacingIndex = Comparables.indexOfFunc(this.selectedShifts, chosenShift, Shift.isSameCourseAndType)
+
+      // Verify if shift is already selected and unselect
+      let index = Comparables.indexOf(this.selectedShifts, chosenShift)
+      if (index === -1) {
+        this.selectedShifts.push(chosenShift)
+        if (replacingIndex !== -1) {
+          this.selectedShifts.splice(replacingIndex, 1)  
+        }
+      } else {
+        this.selectedShifts.splice(index, 1)
+      }
+
+      this.props.onSelectedShift(this.selectedShifts)
+    }
+  }
+
   render() {
     return (
       <div className={styles.Schedule}>
-        <div className={styles.ScheduleGrid}>
-          <FullCalendar
-            plugins={[ timeGridPlugin ]}
-            initialView="timeGridWeek"
-            allDaySlot={false}
-            weekends={false}
-            headerToolbar={false}
-            nowIndicator={false}
-            dayHeaderFormat={{
-              month: undefined,
-              year: undefined,
-              day: undefined,
-              weekday: 'long'
-            }}
-            slotMinTime={"08:00:00"}
-            slotMaxTime={"20:00:00"}
-            slotLabelFormat={{
-              hour: '2-digit',
-              minute: '2-digit',
-              omitZeroMinute: false,
-              meridiem: undefined,
-              hour12: false
-            }}
-            slotEventOverlap={false}
-            eventTimeFormat={{
-              hour: '2-digit',
-              minute: '2-digit',
-              omitZeroMinute: false,
-              meridiem: undefined,
-              hour12: false
-            }}
-            expandRows={false}
-            height={"auto"}
-            contentHeight={"auto"}
-            events={this.state.events}
-            ref={this.calendarComponentRef}
-            // TODO: Add listen to clicks on shifts to add to own schedule
-          />
-        </div>
+        <FullCalendar
+          plugins={[ timeGridPlugin ]}
+          initialView="timeGridWeek"
+          allDaySlot={false}
+          weekends={false}
+          headerToolbar={false}
+          nowIndicator={false}
+          dayHeaderFormat={{
+            month: undefined,
+            year: undefined,
+            day: undefined,
+            weekday: 'long'
+          }}
+          slotMinTime={"08:00:00"}
+          slotMaxTime={"20:00:00"}
+          slotLabelFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            omitZeroMinute: false,
+            meridiem: undefined,
+            hour12: false
+          }}
+          slotEventOverlap={false}
+          eventTimeFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            omitZeroMinute: false,
+            meridiem: undefined,
+            hour12: false
+          }}
+          expandRows={false}
+          height={"auto"}
+          contentHeight={"auto"}
+          events={this.state.events}
+          eventClick={(info) => this.onSelectedShift(info.event.id)}
+          ref={this.calendarComponentRef}
+          locale="pt"
+        />
       </div>
     );
   }

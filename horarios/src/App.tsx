@@ -2,27 +2,38 @@ import React, { ReactNode } from 'react';
 import API from './utils/api';
 import './App.scss';
 import Schedule from './components/Schedule/Schedule';
-import { Course, CourseUpdates, CourseUpdateType, Degree, Update } from './utils/domain';
-import { makeStyles } from '@material-ui/core/styles';
+import { Course, CourseUpdates, CourseUpdateType, Degree, Shift } from './utils/domain';
 import Chip from '@material-ui/core/Chip';
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
-import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
+import Tooltip from '@material-ui/core/Tooltip'
+import Toolbar from '@material-ui/core/Toolbar'
+import Alert from '@material-ui/lab/Alert'
+import AppBar from '@material-ui/core/AppBar'
 import TextField from '@material-ui/core/TextField';
+import Icon from '@material-ui/core/Icon'
+import ChosenSchedule from './components/ChosenSchedule/ChosenSchedule';
+import Comparables from './utils/comparables';
 
 class App extends React.PureComponent {
 
+  // TODO: Allow english or other languages
+  // TODO: Add filters for L, T and PB  
   state = {
-    selectedDegree: '',
-    selectedCourses: new CourseUpdates,
-    courses: [] as Course[]
+    selectedCourses: new CourseUpdates(),
+    courses: [] as Course[],
+    selectedShifts: [] as Shift[]
   }
+  selectedDegree: Degree | null = null
   storedState: string = ''
   degrees: Degree[] = []
+  initialSchedule: React.RefObject<any> = React.createRef();
 
   constructor(props: any) {
     super(props)
     this.onSelectedDegree = this.onSelectedDegree.bind(this)
     this.onSelectedCourse = this.onSelectedCourse.bind(this)
+    this.onSelectedShift = this.onSelectedShift.bind(this)
     this.getShortLink = this.getShortLink.bind(this)
   }
 
@@ -32,51 +43,60 @@ class App extends React.PureComponent {
   }
 
   async onSelectedDegree(degree: Degree | null): Promise<void> {
+    this.selectedDegree = degree
     if (degree !== null) {
-      const courses = await API.getCourses(degree.id) 
+      const degreeCourses = await API.getCourses(degree.id) 
+      const selected = this.state.selectedCourses.courses
+      const courses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
+      courses.sort(Course.compare)
       this.setState({
         courses
       })
     } else {
       this.setState({
-        courses: []
+        courses: this.state.selectedCourses.courses
       })
     }
   }
 
   getCoursesDifference(prevCourses: Course[], courses: Course[]): Course | undefined {
-    let unique1 = prevCourses.filter((c: Course) => !courses.some((other: Course) => c.equals(other)))
-    let unique2 = courses.filter((c: Course) => !prevCourses.some((other: Course) => c.equals(other)))
+    let unique1 = prevCourses.filter((c: Course) => !Comparables.includes(courses, c))
+    let unique2 = courses.filter((c: Course) => !Comparables.includes(prevCourses, c))
 
+    // Remove
     if (unique1.length === 1) { 
-      // Remove
       return unique1[0]
     }
+    // Add
     if (unique2.length === 1) { 
-      // Add
       return unique2[0]
     }
   }
 
   onSelectedCourse(selectedCourses: Course[]): void {
-    // If cleared, set state to no courses
+    // When all courses are cleared, set state to no courses
     if (selectedCourses.length === 0) {
-      let currCourses = new CourseUpdates()
-      currCourses.courses = []
-      currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
-      this.setState({
-        selectedCourses: {...currCourses}
+      this.setState(() => {
+        const currCourses = new CourseUpdates()
+        currCourses.courses = []
+        currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
+        if (this.selectedDegree !== null) {
+          return { selectedCourses: { ...currCourses } }
+        } else {
+          return { selectedCourses: { ...currCourses }, courses: []}
+        }
       })
-      return  
+      return
     }
-    // FIXME: When a degree is unselected and selected again, the course is seen as new!
+
     let changedCourse = this.getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
-    if (changedCourse === undefined) {
+    if (!changedCourse) {
       return
     }
     let currCourses = this.state.selectedCourses
     // FIXME: what?
     Object.setPrototypeOf(currCourses, CourseUpdates.prototype)
+
     currCourses.toggleCourse(changedCourse)
     this.setState({
       selectedCourses: {...currCourses}
@@ -91,9 +111,14 @@ class App extends React.PureComponent {
     // }
   }
 
+  onSelectedShift(shifts: Shift[]): void {
+    this.setState({
+      selectedShifts: [...shifts]
+    })
+  }
+
   async getShortLink(): Promise<void> {
     const shortLink = await API.getShortUrl(this.storedState)
-    console.log(shortLink)
 
     const el = document.createElement('textarea')
     el.value = shortLink
@@ -113,7 +138,7 @@ class App extends React.PureComponent {
     })
 
     const maxTags = 4
-    const maxSelectedCourses = 15
+    const maxSelectedCourses = -1
 
     return (
       <div className="App">
@@ -121,43 +146,62 @@ class App extends React.PureComponent {
         </header>
         <div className={"main"}>
           <div className={"topbar"}>
-            <Autocomplete
-              className="autocomplete"
-              selectOnFocus
-              clearOnBlur
-              handleHomeEndKeys
-              onChange={(_, value) => this.onSelectedDegree(value)}
-              options={this.degrees}
-              getOptionLabel={(option) => option.displayName()}
-              renderInput={(params) => <TextField {...params} label="Escolha um Curso" variant="outlined" />}
-            />
-            <Autocomplete
-              className="autocomplete"
-              multiple
-              selectOnFocus
-              clearOnBlur
-              disableCloseOnSelect
-              handleHomeEndKeys
-              limitTags={maxTags}
-              onChange={(_, courses: Course[]) => this.onSelectedCourse(courses)}
-              filterOptions={courseFilterOptions}
-              options={this.state.courses}
-              getOptionDisabled={(options) => (this.state.selectedCourses.courses.length === maxSelectedCourses ? true : false)}
-              disabled={this.state.courses.length === 0}
-              getOptionLabel={(option) => option.displayName()}
-              renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
-              renderTags={(tagValue, getTagProps) => {
-                return tagValue.map((option, index) => (
-                  <Chip {...getTagProps({ index })} label={option.acronym} />
-                ));
-              }}
-            />
-            <Button variant="contained" onClick={this.getShortLink}>
-              Link
-            </Button>
+            <AppBar
+              color={"transparent"}
+              position={"static"}
+            >
+              <Toolbar>
+                <Autocomplete
+                  size="small"
+                  className="autocomplete course-selector"
+                  selectOnFocus
+                  clearOnBlur
+                  handleHomeEndKeys={false}
+                  onChange={(_, value) => this.onSelectedDegree(value)}
+                  noOptionsText="Sem opções"
+                  options={this.degrees}
+                  getOptionLabel={(option) => option.displayName()}
+                  renderInput={(params) => <TextField {...params} label="Escolha um curso" variant="outlined" />}
+                />
+                <Autocomplete
+                  className="autocomplete"
+                  size="small"
+                  multiple
+                  selectOnFocus
+                  clearOnBlur
+                  disableCloseOnSelect
+                  handleHomeEndKeys={false}
+                  limitTags={maxTags}
+                  onChange={(_, courses: Course[]) => this.onSelectedCourse(courses)}
+                  filterOptions={courseFilterOptions}
+                  options={this.state.courses}
+                  noOptionsText="Sem opções, escolha um curso primeiro"
+                  getOptionDisabled={(_) => this.state.courses.length === maxSelectedCourses ? true : false}
+                  getOptionLabel={(option) => option.displayName()}
+                  renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
+                  renderTags={(tagValue, getTagProps) => {
+                    return tagValue.map((option, index) => (
+                      <Chip {...getTagProps({ index })} label={option.acronym} />
+                    ));
+                  }}
+                />
+                <Tooltip title="Obter link de partilha">
+                  <IconButton onClick={this.getShortLink} color="primary" component="span" disabled={true}>
+                    <Icon>link</Icon>
+                  </IconButton>
+                </Tooltip>
+              </Toolbar>
+            </AppBar>
+          </div>
+          <div className="alerts">
+            <Alert id='success-copy-link' severity="success">O link foi copiado para o seu clipboard.</Alert>
+            <Alert id='error-copy-link' severity="error">Não conseguimos gerar um link.</Alert>
           </div>
           <div className={"schedules"}>
-            <Schedule selectedCourses={this.state.selectedCourses}/>
+            <Schedule ref={this.initialSchedule} selectedCourses={this.state.selectedCourses} onSelectedShift={this.onSelectedShift}/>
+            <ChosenSchedule selectedShifts={this.state.selectedShifts} onRemovedShift={(shiftName: string) => {
+              if (this.initialSchedule) this.initialSchedule.current.onSelectedShift(shiftName)
+            }}/>
           </div>
         </div>
       </div>

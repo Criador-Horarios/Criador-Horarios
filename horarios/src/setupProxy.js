@@ -6,10 +6,9 @@ module.exports = function(app) {
         createProxyMiddleware({
             target: 'https://fenix.tecnico.ulisboa.pt/',
             changeOrigin: true,
-            // FIXME
-            // pathRewrite: {
-            //     '^/api': '/api/fenix/v1'
-            // }
+            pathRewrite: {
+                '^/api': '/api/fenix/v1'
+            }
         })
     )
     app.use(
@@ -17,6 +16,9 @@ module.exports = function(app) {
         createProxyMiddleware({
             target: 'https://tinyurl.com/',
             changeOrigin: true,
+            pathRewrite: {
+                '^/tinyurl': ''
+            }
         })
     )
 }
