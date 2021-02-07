@@ -4,7 +4,7 @@ export default class API {
     private static ACADEMIC_TERM: string = "2020/2021";
 
     private static async getRequest(url: string): Promise<any> {
-        return await fetch(url).then(r => {
+        return await fetch("/horarios" + url).then(r => {
             const contentType = r.headers.get("content-type");
             if (contentType?.includes("application/json") && r.status === 200) {
                 return r.json()

@@ -11,7 +11,7 @@ export default class Comparables {
         return -1 
     }
 
-    static indexOfFunc(arr: Domain.Comparable[], obj: Domain.Comparable, compareFunc: Function) {
+    static indexOfBy(arr: Domain.Comparable[], obj: Domain.Comparable, compareFunc: Function) {
         const length = arr.length
         for (let i = 0; i < length; i++) {
             if (compareFunc(arr[i], obj)) {
