@@ -49,29 +49,40 @@ body {
 
 .main {
   height: 100%;
-  display: grid;
+  // display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr 8fr;
 
   .topbar {
-    padding: 4px;
-    display: flex;
-    flex-direction: row;
-    grid-column: 1;
-    grid-row: 1;
-    align-items: center;
-    justify-content: space-evenly;
+    // padding: 4px;
+    // display: flex;
+    // flex-direction: row;
+    // grid-column: 1;
+    // grid-row: 1;
+    // align-items: center;
+    // justify-content: space-evenly;
 
     .autocomplete {
-      min-width: 25%;
+      width: 100%;
+      margin: 10px;
+    }
+
+    .course-selector {
+      width: 50% !important;
     }
   }
 
   .schedules {
-    height: 100%;
+    // height: 100%;
     grid-column: 1;
     grid-row: 2;
+    display: flex;
+    flex-direction: row;
   }
+}
+
+.alerts {
+  display:none;
 }
 
 .clickable {
@@ -90,6 +101,10 @@ body {
 // Allow break spaces in event's title
 .fc-event-title {
     white-space: break-spaces;
+}
+
+.fc-timegrid-event-harness {
+  cursor: pointer;
 }
 
 // Reset
