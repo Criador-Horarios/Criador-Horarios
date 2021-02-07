@@ -20,6 +20,7 @@
     "http-proxy-middleware": "^1.0.6",
     "morgan": "^1.10.0",
     "node-sass": "^4.14.1",
+    "randomcolor": "^0.6.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.2",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@types/material-ui": "^0.21.8",
+    "@types/randomcolor": "^0.5.5",
     "@types/react-router-dom": "^5.1.7"
   }
 }

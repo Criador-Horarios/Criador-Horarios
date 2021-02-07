@@ -1,6 +1,10 @@
 import hexRgb from 'hex-rgb'
 import rgbHex from 'rgb-hex'
 import Comparables from './comparables'
+import RandomColor from 'randomcolor'
+
+// const colors = ["#4791db", "#e33371", "#e57373", "#ffb74d", "#64b5f6", "#81c784"]
+// let colorsIndex = 0, colorsLen = colors.length
 
 export interface Comparable {
     equals(obj: Comparable): boolean
@@ -51,9 +55,10 @@ export class Course implements Comparable {
             return d === d.toUpperCase()
         }).join("")
 
-        // FIXME: Select from chosen colors, this ones suck
-        const randomColor = () => Math.floor(Math.random()*256)
-        this.color = '#' + rgbHex(randomColor(), randomColor(), randomColor())
+        const chosenColor = hexRgb(RandomColor({
+            luminosity: 'dark'
+         }))
+        this.color = '#' + rgbHex(chosenColor.red, chosenColor.green, chosenColor.blue)
     }
 
     equals(other: Course) {
@@ -127,6 +132,9 @@ const shadeColor = (color: string, amount: number) => {
     return '#' + rgbHex(newColor.red, newColor.green, newColor.blue)
 }
 
+export const campiList = ["Alameda", "Taguspark"]
+export const shiftTypes = ['L', 'PB', 'T', 'S']
+
 export class Shift implements Comparable {
     name: string
     type: string
@@ -135,15 +143,19 @@ export class Shift implements Comparable {
     courseName: string
     lessons: Lesson[]
     color: string
+    campus: string
     
     constructor(obj: any, course: Course) {
         this.name = obj.name
-        const re = /^([A-Za-z]+)\d*(L|PB|T|S)([\d]{2})$/
+        // 'P3D2646L02' crashes this :(
+        // const re = /^([A-Za-z]+)\d*(L|PB|T|S)([\d]{2})$/
+        const re = /^([A-Za-z\d]*[A-Za-z])\d+(L|PB|T|S)([\d]{2})$/
         const match = this.name.match(re)!
         this.acronym = match[1]
         this.type = match[2]
         this.shiftId = match[2] + match[3]
         this.courseName = course.name
+        this.campus = obj.rooms[0]?.topLevelSpace.name
 
         if (this.type === 'T') {
             this.color = shadeColor(course.color, 2)

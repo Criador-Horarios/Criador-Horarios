@@ -3,17 +3,20 @@ import API from './utils/api';
 import Cookies from 'universal-cookie'
 
 import {
+  campiList,
   Course,
   CourseUpdates,
   CourseUpdateType,
   Degree,
   Shift,
+  shiftTypes,
   Lesson
 } from './utils/domain';
 import Comparables from './utils/comparables';
 import Schedule from './components/Schedule/Schedule';
 import './App.scss';
 
+import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
 import IconButton from '@material-ui/core/IconButton'
@@ -25,13 +28,27 @@ import TextField from '@material-ui/core/TextField';
 import Icon from '@material-ui/core/Icon'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import FilterList from '@material-ui/icons/FilterList'
+import BottomNavigation from '@material-ui/core/BottomNavigation';
+import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 
 class App extends React.PureComponent {
   state = {
     availableCourses: [] as Course[],
     selectedCourses: new CourseUpdates(),
     availableShifts: [] as Shift[],
+    shownShifts: [] as Shift[],
     selectedShifts: [] as Shift[],
+    selectedCampus: campiList as String[],
+    selectedShiftType: shiftTypes as String[]
   }
   degrees: Degree[] = []
   selectedDegree: Degree | null = null
@@ -44,12 +61,13 @@ class App extends React.PureComponent {
     this.onSelectedShift = this.onSelectedShift.bind(this)
     this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
     this.getShortLink = this.getShortLink.bind(this)
+    this.changeCampus = this.changeCampus.bind(this)
   }
 
   async componentDidMount() {
     this.degrees = await API.getDegrees()
-    const state = window.location.pathname
-    await this.buildState(state.slice(1))
+    const queryParam = /\?s=(.*)$/
+    await this.buildState(window.location.href.match(queryParam)?.[1])
     this.forceUpdate()
   }
 
@@ -92,7 +110,7 @@ class App extends React.PureComponent {
       this.setState(() => {
         const currCourses = new CourseUpdates()
         currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
-        const update: any = { selectedCourses: { ...currCourses}, availableShifts: [] }
+        const update: any = { selectedCourses: { ...currCourses}, availableShifts: [], shownShifts: [] }
         if (this.selectedDegree === null) {
           update.availableCourses = []
         }
@@ -120,14 +138,22 @@ class App extends React.PureComponent {
     } else {
       availableShifts = []
     }
+
+    let shownShifts = this.filterShifts({
+      selectedCampus: this.state.selectedCampus,
+      selectedShiftType: this.state.selectedShiftType,
+      availableShifts: availableShifts
+    })
+
     this.setState({
       selectedCourses: { ...currCourses },
-      availableShifts
+      availableShifts,
+      shownShifts
     })
   }
 
   getAllLessons(): Lesson[] {
-    return this.state.availableShifts.map((shift: Shift) => shift.lessons).flat()
+    return this.state.shownShifts.map((shift: Shift) => shift.lessons).flat()
   }
 
   getSelectedLessons(): Lesson[] {
@@ -164,7 +190,41 @@ class App extends React.PureComponent {
     this.setState({
       selectedShifts: []
     })
-    this.cookies.set('shifts', [])
+    this.cookies.remove('shifts')
+  }
+
+  changeCampus(campi: String[]): void {
+    let shownShifts = this.filterShifts({
+      selectedCampus: campi,
+      selectedShiftType: this.state.selectedShiftType,
+      availableShifts: this.state.availableShifts
+    })
+
+    this.setState({
+      selectedCampus: campi,
+      shownShifts
+    })
+  }
+
+  changeShiftType(types: String[]): void {
+    let shownShifts = this.filterShifts({
+      selectedCampus: this.state.selectedCampus,
+      selectedShiftType: types,
+      availableShifts: this.state.availableShifts
+    })
+
+    this.setState({
+      selectedShiftType: types,
+      shownShifts
+    })
+  }
+
+  filterShifts(state: {selectedCampus: String[], selectedShiftType: String[], availableShifts: Shift[]}): Shift[] {
+    return state.availableShifts.filter( (s) => {
+      let campi = state.selectedCampus.includes(s.campus)
+      let type = state.selectedShiftType.includes(s.type)
+      return campi && type
+    })
   }
 
   async getShortLink(): Promise<void> {
@@ -177,7 +237,9 @@ class App extends React.PureComponent {
 
     const state: string = this.cookies.get('shifts')
     // FIXME: get full path
-    const shortLink: string = `http://${window.location.host}/${encodeURIComponent(JSON.stringify(state, null, 0))}`
+    const shortLink: string = `${window.location.href}/?s=${encodeURIComponent(JSON.stringify(state, null, 0))}`
+      .replaceAll('//', '/')
+      .replace(':/', '://')
 
     const el = document.createElement('textarea')
     el.value = shortLink
@@ -191,23 +253,20 @@ class App extends React.PureComponent {
     alert("Copied the text: " + shortLink)
   }
 
-  async buildState(stateString: string): Promise<void> {
-    const title = document.title
-    // FIXME: Removing fixed initial part is hardcoded
-    const initialTitle = stateString.substring(0,8)
-    stateString = stateString.substring(9)
-    // if (window.history.replaceState) {
-    //   window.history.replaceState({}, title, '/')
-    // } else {
-    //   window.history.pushState({}, title, '/')
-    // }
-
+  async buildState(param: string | undefined): Promise<void> {
     try {
       // TODO: rebuild colors and domain chosen for the courses
-      let shifts: Shift[]
-      if (stateString !== '') { // build from URL
-        shifts = JSON.parse(decodeURIComponent(stateString))
+      let shifts: Shift[] = []
+      if (param) { // build from URL
+        shifts = JSON.parse(decodeURIComponent(param))
         this.cookies.set('shifts', shifts)
+        const title = document.title
+        // redirect if sucess
+        if (window.history.replaceState) {
+          window.history.replaceState({}, title, window.location.pathname)
+        } else {
+          window.history.pushState({}, title, window.location.pathname)
+        }
       } else { // build from cookies
         shifts = this.cookies.get('shifts') ?? []
       }
@@ -249,7 +308,7 @@ class App extends React.PureComponent {
                 <Autocomplete
                   color="inherit"
                   size="small"
-                  className="autocomplete course-selector"
+                  className="selector course-selector"
                   selectOnFocus
                   clearOnBlur
                   handleHomeEndKeys={false}
@@ -262,7 +321,7 @@ class App extends React.PureComponent {
                 <Autocomplete
                   color="inherit"
                   size="small"
-                  className="autocomplete"
+                  className="selector"
                   multiple
                   selectOnFocus
                   clearOnBlur
@@ -281,16 +340,71 @@ class App extends React.PureComponent {
                     ));
                   }}
                 />
-                <Tooltip title="Obter link de partilha">
-                  <IconButton color="inherit" onClick={this.getShortLink} component="span">
-                    <Icon>link</Icon>
-                  </IconButton>
-                </Tooltip>
+                <IconButton color="inherit" disabled onClick={this.clearSelectedShifts} component="span">
+                  <FilterList />
+                </IconButton>
                 <Tooltip title="Limpar horário">
                   <IconButton color="inherit" onClick={this.clearSelectedShifts} component="span">
                     <Icon>delete</Icon>
                   </IconButton>
                 </Tooltip>
+                <Tooltip title="Obter link de partilha">
+                  <IconButton color="inherit" onClick={this.getShortLink} component="span" disabled={false}>
+                    <Icon>link</Icon>
+                  </IconButton>
+                </Tooltip>
+              </Toolbar>
+              <Toolbar>
+                <FormControl fullWidth={false} className="selector">
+                  <InputLabel>Campi</InputLabel>
+                  <Select
+                    labelId="campus"
+                    id="campus-selector"
+                    multiple
+                    autoWidth={true}
+                    value={this.state.selectedCampus}
+                    onChange={(event) => this.changeCampus(event.target.value as String[])}
+                    input={<Input id="select-campus" />}
+                    renderValue={(selected) => (
+                      <div>
+                        {(selected as string[]).map((value) => (
+                          <Chip key={value} label={value[0]} />
+                        ))}
+                      </div>
+                    )}
+                  >
+                    {campiList.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        {name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth={false} className="selector">
+                  <InputLabel>Tipo</InputLabel>
+                  <Select
+                    labelId="shiftType"
+                    id="shift-type-selector"
+                    multiple
+                    autoWidth={true}
+                    value={this.state.selectedShiftType}
+                    onChange={(event) => this.changeShiftType(event.target.value as String[])}
+                    input={<Input id="select-shift-type" />}
+                    renderValue={(selected) => (
+                      <div>
+                        {(selected as string[]).map((value) => (
+                          <Chip key={value} label={value[0]} />
+                        ))}
+                      </div>
+                    )}
+                  >
+                    {shiftTypes.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        {name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Toolbar>
             </AppBar>
           </div>
@@ -306,7 +420,7 @@ class App extends React.PureComponent {
                   <Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
                     events={this.getAllLessons()}
                   />
-                  <Tooltip title="Aqui aparecem todos os turnos, carregue neles para os escolher">
+                  <Tooltip title="Aqui aparecem todos os turnos, carrega neles para os escolher">
                     <Icon color="action">help</Icon>
                   </Tooltip>
                 </CardContent>
@@ -316,12 +430,17 @@ class App extends React.PureComponent {
                   <Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
                     events={this.getSelectedLessons()}
                   />
-                  <Tooltip title="O seu horário aparece aqui, carregue nele para remover turnos">
+                  <Tooltip title="O teu horário aparece aqui, carrega nele para remover turnos">
                     <Icon color="action">help</Icon>
                   </Tooltip>
                 </CardContent>
               </Card>
             </div>
+          </div>
+          <div className="footer">
+            <Toolbar>
+              <Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/favicon.ico`} />
+            </Toolbar>
           </div>
         </div>
       </div>
