@@ -193,6 +193,9 @@ class App extends React.PureComponent {
 
   async buildState(stateString: string): Promise<void> {
     const title = document.title
+    // FIXME: Removing fixed initial part is hardcoded
+    const initialTitle = stateString.substring(0,8)
+    stateString = stateString.substring(8)
     // if (window.history.replaceState) {
     //   window.history.replaceState({}, title, '/')
     // } else {
