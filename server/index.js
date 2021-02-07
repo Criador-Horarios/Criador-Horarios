@@ -1,13 +1,14 @@
 const express = require("express")
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const path = require('path')
+const morgan = require('morgan')
 
 const app = express()
+app.use(morgan('tiny'));
+
+app.use('/horarios', express.static(path.join(__dirname, '../build')))
 app.use(express.static(path.join(__dirname, '../build')))
 
-app.get('/horarios', function (req, res) {
-  res.sendFile(path.join(__dirname, '../build', 'index.html'));
-});
 
 app.use(
   '/api',
