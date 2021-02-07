@@ -5,6 +5,10 @@ const path = require('path')
 const app = express()
 app.use(express.static(path.join(__dirname, '../build')))
 
+app.get('/horarios', function (req, res) {
+  res.sendFile(path.join(__dirname, '../build', 'index.html'));
+});
+
 app.use(
   '/api',
   createProxyMiddleware({
@@ -26,6 +30,6 @@ app.use(
   })
 )
 
-app.listen(5000, () => {
+app.listen(4000, () => {
   console.log("Server started on port 5000");
 });
