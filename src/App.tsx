@@ -2,10 +2,16 @@ import React, { ReactNode } from 'react';
 import API from './utils/api';
 import Cookies from 'universal-cookie'
 
-import { Course, CourseUpdates, CourseUpdateType, Degree, Shift } from './utils/domain';
+import {
+  Course,
+  CourseUpdates,
+  CourseUpdateType,
+  Degree,
+  Shift,
+  Lesson
+} from './utils/domain';
 import Comparables from './utils/comparables';
 import Schedule from './components/Schedule/Schedule';
-import ChosenSchedule from './components/ChosenSchedule/ChosenSchedule';
 import './App.scss';
 
 import Chip from '@material-ui/core/Chip';
@@ -21,26 +27,22 @@ import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 
 class App extends React.PureComponent {
-
-  // TODO: Allow english or other languages
-  // TODO: Add filters for L, T and PB  
-  // TODO: Add good colors
-  // TODO: Save state to cookies
   state = {
+    availableCourses: [] as Course[],
     selectedCourses: new CourseUpdates(),
-    courses: [] as Course[],
-    selectedShifts: [] as Shift[]
+    availableShifts: [] as Shift[],
+    selectedShifts: [] as Shift[],
   }
+  degrees: Degree[] = []
   selectedDegree: Degree | null = null
   cookies: Cookies = new Cookies()
-  degrees: Degree[] = []
-  initialSchedule: React.RefObject<any> = React.createRef();
 
   constructor(props: any) {
     super(props)
     this.onSelectedDegree = this.onSelectedDegree.bind(this)
     this.onSelectedCourse = this.onSelectedCourse.bind(this)
     this.onSelectedShift = this.onSelectedShift.bind(this)
+    this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
     this.getShortLink = this.getShortLink.bind(this)
   }
 
@@ -56,44 +58,45 @@ class App extends React.PureComponent {
     if (degree !== null) {
       const degreeCourses = await API.getCourses(degree.id) 
       const selected = this.state.selectedCourses.courses
-      const courses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
-      courses.sort(Course.compare)
+      const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
+      availableCourses.sort(Course.compare)
       this.setState({
-        courses
+        availableCourses
       })
     } else {
       this.setState({
-        courses: this.state.selectedCourses.courses
+        availableCourses: this.state.selectedCourses.courses
       })
     }
   }
 
   getCoursesDifference(prevCourses: Course[], courses: Course[]): Course | undefined {
-    let unique1 = prevCourses.filter((c: Course) => !Comparables.includes(courses, c))
-    let unique2 = courses.filter((c: Course) => !Comparables.includes(prevCourses, c))
+    const prevSet: any = Comparables.toUnique(prevCourses)
+    const newSet: any = Comparables.toUnique(courses)
 
-    // Remove
-    if (unique1.length === 1) { 
-      return unique1[0]
-    }
-    // Add
-    if (unique2.length === 1) { 
-      return unique2[0]
+    if (prevSet.length === newSet.length) {
+      // Nothing changed
+      return undefined
+    } else if (prevSet.length === newSet.length + 1) {
+      // Removed element, find missing in courses
+      return prevCourses.find((c: Course) => !Comparables.includes(courses, c))
+    } else if (prevSet.length === newSet.length - 1) {
+      // Added element, return first last on courses
+      return courses[courses.length - 1]
     }
   }
 
-  onSelectedCourse(selectedCourses: Course[]): void {
-    // When all courses are cleared, set state to no courses
+  //FIXME: Available courses not updating when a course from another degree is removed 
+  async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
     if (selectedCourses.length === 0) {
       this.setState(() => {
         const currCourses = new CourseUpdates()
-        currCourses.courses = []
         currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
-        if (this.selectedDegree !== null) {
-          return { selectedCourses: { ...currCourses } }
-        } else {
-          return { selectedCourses: { ...currCourses }, courses: []}
+        const update: any = { selectedCourses: { ...currCourses}, availableShifts: [] }
+        if (this.selectedDegree === null) {
+          update.availableCourses = []
         }
+        return update
       })
       return
     }
@@ -102,22 +105,66 @@ class App extends React.PureComponent {
     if (!changedCourse) {
       return
     }
-    let currCourses = this.state.selectedCourses
-    // FIXME: what?
-    Object.setPrototypeOf(currCourses, CourseUpdates.prototype)
 
-    currCourses.toggleCourse(changedCourse)
+    const currCourses = this.state.selectedCourses
+    Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
+    currCourses.toggleCourse(changedCourse!)
+
+    let availableShifts: Shift[]
+    if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Add) {
+      const schedule = await API.getCourseSchedules(this.state.selectedCourses.lastUpdate.course!)
+      availableShifts = this.state.availableShifts.concat(schedule)
+    } else if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Remove) {
+      availableShifts = this.state.availableShifts
+        .filter((shift: Shift) => shift.courseName !== this.state.selectedCourses.lastUpdate?.course?.name)
+    } else {
+      availableShifts = []
+    }
     this.setState({
-      selectedCourses: {...currCourses}
+      selectedCourses: { ...currCourses },
+      availableShifts
     })
   }
 
-  // TODO: store on cookies
-  onSelectedShift(shifts: Shift[]): void {
+  getAllLessons(): Lesson[] {
+    return this.state.availableShifts.map((shift: Shift) => shift.lessons).flat()
+  }
+
+  getSelectedLessons(): Lesson[] {
+    return this.state.selectedShifts.map((shift: Shift) => shift.lessons).flat()
+  }
+
+  onSelectedShift(shiftName: string, arr: Shift[]): void {
+    const chosenShift = arr.find((s: Shift) => s.name === shiftName)
+
+    if (chosenShift) {
+      // Verify if of the same type and course to replace, but not the same
+      const replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
+      const selectedShifts = this.state.selectedShifts
+      
+      // Verify if shift is already selected and unselect
+      let idx = Comparables.indexOf(selectedShifts, chosenShift)
+      if (idx === -1) {
+        selectedShifts.push(chosenShift)
+        if (replacingIndex !== -1) {
+          selectedShifts.splice(replacingIndex, 1)  
+        }
+      } else {
+        selectedShifts.splice(idx, 1)
+      }
+
+      this.setState({
+        selectedShifts: [...selectedShifts]
+      })
+      this.cookies.set('shifts', selectedShifts)
+    }
+  }
+
+  clearSelectedShifts(): void {
     this.setState({
-      selectedShifts: [...shifts]
+      selectedShifts: []
     })
-    this.cookies.set('shifts', shifts)
+    this.cookies.set('shifts', [])
   }
 
   async getShortLink(): Promise<void> {
@@ -129,6 +176,7 @@ class App extends React.PureComponent {
     }
 
     const state: string = this.cookies.get('shifts')
+    // FIXME: get full path
     const shortLink: string = `http://${window.location.host}/${encodeURIComponent(JSON.stringify(state, null, 0))}`
 
     const el = document.createElement('textarea')
@@ -145,14 +193,14 @@ class App extends React.PureComponent {
 
   async buildState(stateString: string): Promise<void> {
     const title = document.title
-    if (window.history.replaceState) {
-      window.history.replaceState({}, title, '/')
-    } else {
-      window.history.pushState({}, title, '/')
-    }
+    // if (window.history.replaceState) {
+    //   window.history.replaceState({}, title, '/')
+    // } else {
+    //   window.history.pushState({}, title, '/')
+    // }
 
     try {
-      // TODO: rebuild colors chosen for the courses
+      // TODO: rebuild colors and domain chosen for the courses
       let shifts: Shift[]
       if (stateString !== '') { // build from URL
         shifts = JSON.parse(decodeURIComponent(stateString))
@@ -160,14 +208,22 @@ class App extends React.PureComponent {
       } else { // build from cookies
         shifts = this.cookies.get('shifts') ?? []
       }
+
+      // Set prototypes for each object received
+      shifts.forEach((s) => {
+        Object.setPrototypeOf(s, Shift.prototype)
+        s.lessons.forEach((l) => Object.setPrototypeOf(l, Lesson.prototype))
+      })
+      
       this.setState({
         selectedShifts: [...shifts]
       })
-    } catch (_) {
+    } catch (err) {
+      console.error(err)
       // ignored, bad URL
     }
   }
-  
+
   render(): ReactNode {
     const courseFilterOptions = createFilterOptions({
       stringify: (option: Course) => option.searchableName()
@@ -211,9 +267,9 @@ class App extends React.PureComponent {
                   handleHomeEndKeys={false}
                   limitTags={maxTags}
                   onChange={(_, courses: Course[]) => this.onSelectedCourse(courses)}
-                 filterOptions={courseFilterOptions} options={this.state.courses}
+                  filterOptions={courseFilterOptions} options={this.state.availableCourses}
                   noOptionsText="Sem opções, escolha um curso primeiro"
-                  getOptionDisabled={(_) => this.state.courses.length === maxSelectedCourses ? true : false}
+                  // getOptionDisabled={(_) => this.state.courses.length === maxSelectedCourses ? true : false}
                   getOptionLabel={(option) => option.displayName()}
                   renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
                   renderTags={(tagValue, getTagProps) => {
@@ -225,6 +281,11 @@ class App extends React.PureComponent {
                 <Tooltip title="Obter link de partilha">
                   <IconButton color="inherit" onClick={this.getShortLink} component="span">
                     <Icon>link</Icon>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Limpar horário">
+                  <IconButton color="inherit" onClick={this.clearSelectedShifts} component="span">
+                    <Icon>delete</Icon>
                   </IconButton>
                 </Tooltip>
               </Toolbar>
@@ -239,18 +300,20 @@ class App extends React.PureComponent {
             <div className="schedules">
               <Card>
                 <CardContent>
-                  <Schedule ref={this.initialSchedule} selectedCourses={this.state.selectedCourses} onSelectedShift={this.onSelectedShift}/>
-                  <Tooltip title="Carregue neste horário para escolher os turnos">
+                  <Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
+                    events={this.getAllLessons()}
+                  />
+                  <Tooltip title="Aqui aparecem todos os turnos, carregue neles para os escolher">
                     <Icon color="action">help</Icon>
                   </Tooltip>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent>
-                  <ChosenSchedule selectedShifts={this.state.selectedShifts} onRemovedShift={(shiftName: string) => {
-                    if (this.initialSchedule) this.initialSchedule.current.onSelectedShift(shiftName)
-                  }}/>
-                  <Tooltip title="Carregue neste horário para remover turnos">
+                  <Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
+                    events={this.getSelectedLessons()}
+                  />
+                  <Tooltip title="O seu horário aparece aqui, carregue nele para remover turnos">
                     <Icon color="action">help</Icon>
                   </Tooltip>
                 </CardContent>

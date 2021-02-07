@@ -2,22 +2,22 @@ const { createProxyMiddleware } = require('http-proxy-middleware')
 
 module.exports = function(app) {
     app.use(
-        '/api',
+        '/horarios/api',
         createProxyMiddleware({
             target: 'https://fenix.tecnico.ulisboa.pt/',
             changeOrigin: true,
             pathRewrite: {
-                '^/api': '/api/fenix/v1'
+                '^/horarios/api': '/api/fenix/v1'
             }
         })
     )
     app.use(
-        '/tinyurl',
+        '/horarios/tinyurl',
         createProxyMiddleware({
             target: 'https://tinyurl.com/',
             changeOrigin: true,
             pathRewrite: {
-                '^/tinyurl': ''
+                '^/horarios/tinyurl': ''
             }
         })
     )

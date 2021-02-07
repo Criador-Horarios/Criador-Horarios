@@ -171,6 +171,10 @@ export class Shift implements Comparable {
         this.lessons = Comparables.toUnique(lessons) as Lesson[]
     }
 
+    static getShift(obj: any, course: any) {
+        
+    }
+
     static isSameCourseAndType(s1: Shift, s2: Shift): Boolean {
         return s1.courseName === s2.courseName && s1.type === s2.type && s1.name !== s2.name
     }
