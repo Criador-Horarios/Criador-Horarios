@@ -117,6 +117,7 @@ export type Update = {
     course: Course | undefined
 }
 
+// TODO: shades in RGB should use multiplication
 const shadeColor = (color: string, amount: number) => {
     const newColor: any = hexRgb(color)
     Object.keys(newColor).forEach((key: string) => {
@@ -137,9 +138,8 @@ export class Shift implements Comparable {
     
     constructor(obj: any, course: Course) {
         this.name = obj.name
-        const re = /^([A-Za-z]+)\d*(L|PB|T)([\d]{2})$/
+        const re = /^([A-Za-z]+)\d*(L|PB|T|S)([\d]{2})$/
         const match = this.name.match(re)!
-        console.log(match)
         this.acronym = match[1]
         this.type = match[2]
         this.shiftId = match[2] + match[3]
@@ -157,6 +157,7 @@ export class Shift implements Comparable {
             return new Lesson({
                 shiftName: this.name,
                 color: this.color,
+                originalColor: course.color,
                 start: l.start.split(' ')[1],
                 end: l.end.split(' ')[1],
                 dayOfWeek:  new Date(l.start).getDay(),
@@ -189,6 +190,7 @@ export class Lesson implements Comparable {
     startTime: string
     endTime: string
     daysOfWeek: number[]
+    originalColor: string
     color: string
     shiftId: string
     id: string
@@ -198,6 +200,7 @@ export class Lesson implements Comparable {
         this.startTime = obj.start
         this.endTime = obj.end
         this.color = obj.color
+        this.originalColor = obj.originalColor
         this.shiftId = obj.shiftId
         this.type = obj.type
         this.id = obj.shiftName
