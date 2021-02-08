@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import API from './utils/api';
-import Cookies from 'universal-cookie'
 
 import {
   campiList,
@@ -51,7 +50,6 @@ class App extends React.Component <{
   }
   degrees: Degree[] = []
   selectedDegree: Degree | null = null
-  cookies: Cookies = new Cookies()
   chosenSchedule: React.RefObject<any>
 
   constructor(props: any) {
@@ -184,7 +182,7 @@ class App extends React.Component <{
       this.setState({
         selectedShifts: [...selectedShifts]
       })
-      this.cookies.set('shifts', selectedShifts)
+      this.changeUrl(true)
     }
   }
 
@@ -192,7 +190,7 @@ class App extends React.Component <{
     this.setState({
       selectedShifts: []
     })
-    this.cookies.remove('shifts')
+    this.changeUrl(false)
   }
 
   changeCampus(campi: String[]): void {
@@ -230,15 +228,12 @@ class App extends React.Component <{
   }
 
   async getShortLink(): Promise<void> {
-    const cookie = this.cookies.get('shifts')
-    if (cookie === undefined || !Array.isArray(cookie) || cookie.length === 0) {
+    if (this.state.selectedShifts.length === 0) {
       alert('Nothing to share')
       return
     }
 
-    const state: Shift[] = this.cookies.get('shifts')
-    const shortLink = await API.getShortUrl(state)
-
+    const shortLink = await API.getShortUrl()
     const el = document.createElement('textarea')
     el.value = shortLink
     el.setAttribute('readonly', '')
@@ -251,24 +246,27 @@ class App extends React.Component <{
     alert("Copied the text: " + shortLink)
   }
 
+  changeUrl(toState: boolean): void {
+    const title: string = document.title
+    let path: string = window.location.pathname
+    if (toState) {
+      path = (path + `/?s=${btoa(JSON.stringify(this.state.selectedShifts))}`).replace('//', '/')
+    }
+    if (window.history.replaceState) {
+      window.history.replaceState({}, title, path)
+    } else {
+      window.history.pushState({}, title, path)
+    }
+  }
+
   async buildState(param: string | undefined): Promise<void> {
+    if (!param) {
+      return
+    }
+
     try {
       // TODO: rebuild colors and domain chosen for the courses
-      let shifts: Shift[] = []
-      if (param) { // build from URL
-        shifts = JSON.parse(atob(param))
-        this.cookies.set('shifts', shifts)
-        const title = document.title
-        // redirect if sucess
-        if (window.history.replaceState) {
-          window.history.replaceState({}, title, window.location.pathname)
-        } else {
-          window.history.pushState({}, title, window.location.pathname)
-        }
-      } else { // build from cookies
-        shifts = this.cookies.get('shifts') ?? []
-      }
-
+      const shifts: Shift[] = JSON.parse(atob(param))
       // Set prototypes for each object received
       shifts.forEach((s) => {
         Object.setPrototypeOf(s, Shift.prototype)
@@ -278,6 +276,7 @@ class App extends React.Component <{
       this.setState({
         selectedShifts: [...shifts]
       })
+      this.changeUrl(true)
     } catch (err) {
       console.error(err)
       // ignored, bad URL
@@ -352,7 +351,9 @@ class App extends React.Component <{
                   renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
                   renderTags={(tagValue, getTagProps) => {
                     return tagValue.map((option, index) => (
-                      <Chip {...getTagProps({ index })} size="small" color='primary' style={{backgroundColor: option.color}} label={option.acronym} />
+                      <Tooltip title={option.name}>
+                        <Chip {...getTagProps({ index })} size="small" color='primary' style={{backgroundColor: option.color}} label={option.acronym} />
+                      </Tooltip>
                     ));
                   }}
                 />

@@ -43,10 +43,7 @@ export default class API {
         return res
     }
 
-    public static async getShortUrl(state: any): Promise<string> {
-        const shortLink: string = `${window.location.href}/?s=${btoa(JSON.stringify(state, null, 0))}`
-            .replaceAll('//', '/')
-            .replace(':/', '://')
-        return this.getRequest(`/tinyurl/api-create.php?url=${shortLink}`)
+    public static async getShortUrl(): Promise<string> {
+        return this.getRequest(`/tinyurl/api-create.php?url=${window.location.href}`)
     }
 }
