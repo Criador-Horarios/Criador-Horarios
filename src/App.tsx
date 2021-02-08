@@ -9,13 +9,15 @@ import {
   CourseUpdateType,
   Degree,
   Shift,
-  shiftTypes,
+  ShiftType,
   Lesson
 } from './utils/domain';
 import Comparables from './utils/comparables';
 import Schedule from './components/Schedule/Schedule';
 import './App.scss';
 
+import PropTypes from 'prop-types';
+import withStyles from '@material-ui/core/styles/withStyles';
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
@@ -39,8 +41,16 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FilterList from '@material-ui/icons/FilterList'
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import Paper from '@material-ui/core/Paper';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import Divider from '@material-ui/core/Divider';
+import makeStyles from '@material-ui/core/styles/makeStyles';
 
-class App extends React.PureComponent {
+class App extends React.Component <{
+  classes: any
+}>{
+
   state = {
     availableCourses: [] as Course[],
     selectedCourses: new CourseUpdates(),
@@ -48,7 +58,7 @@ class App extends React.PureComponent {
     shownShifts: [] as Shift[],
     selectedShifts: [] as Shift[],
     selectedCampus: campiList as String[],
-    selectedShiftType: shiftTypes as String[]
+    selectedShiftTypes: Object.values(ShiftType) as String[]
   }
   degrees: Degree[] = []
   selectedDegree: Degree | null = null
@@ -141,7 +151,7 @@ class App extends React.PureComponent {
 
     let shownShifts = this.filterShifts({
       selectedCampus: this.state.selectedCampus,
-      selectedShiftType: this.state.selectedShiftType,
+      selectedShiftTypes: this.state.selectedShiftTypes,
       availableShifts: availableShifts
     })
 
@@ -196,7 +206,7 @@ class App extends React.PureComponent {
   changeCampus(campi: String[]): void {
     let shownShifts = this.filterShifts({
       selectedCampus: campi,
-      selectedShiftType: this.state.selectedShiftType,
+      selectedShiftTypes: this.state.selectedShiftTypes,
       availableShifts: this.state.availableShifts
     })
 
@@ -209,37 +219,33 @@ class App extends React.PureComponent {
   changeShiftType(types: String[]): void {
     let shownShifts = this.filterShifts({
       selectedCampus: this.state.selectedCampus,
-      selectedShiftType: types,
+      selectedShiftTypes: types,
       availableShifts: this.state.availableShifts
     })
 
     this.setState({
-      selectedShiftType: types,
+      selectedShiftTypes: types,
       shownShifts
     })
   }
 
-  filterShifts(state: {selectedCampus: String[], selectedShiftType: String[], availableShifts: Shift[]}): Shift[] {
+  filterShifts(state: {selectedCampus: String[], selectedShiftTypes: String[], availableShifts: Shift[]}): Shift[] {
     return state.availableShifts.filter( (s) => {
       let campi = state.selectedCampus.includes(s.campus)
-      let type = state.selectedShiftType.includes(s.type)
+      let type = state.selectedShiftTypes.includes(s.type)
       return campi && type
     })
   }
 
   async getShortLink(): Promise<void> {
-    // FIXME: tinyurl messes up \n
-    // const shortLink = await API.getShortUrl(this.storedState)
-    if (!this.cookies.get('shifts')) {
+    const cookie = this.cookies.get('shifts')
+    if (cookie === undefined || !Array.isArray(cookie) || cookie.length === 0) {
       alert('Nothing to share')
       return
     }
 
-    const state: string = this.cookies.get('shifts')
-    // FIXME: get full path
-    const shortLink: string = `${window.location.href}/?s=${encodeURIComponent(JSON.stringify(state, null, 0))}`
-      .replaceAll('//', '/')
-      .replace(':/', '://')
+    const state: Shift[] = this.cookies.get('shifts')
+    const shortLink = await API.getShortUrl(state)
 
     const el = document.createElement('textarea')
     el.value = shortLink
@@ -258,7 +264,7 @@ class App extends React.PureComponent {
       // TODO: rebuild colors and domain chosen for the courses
       let shifts: Shift[] = []
       if (param) { // build from URL
-        shifts = JSON.parse(decodeURIComponent(param))
+        shifts = JSON.parse(atob(param))
         this.cookies.set('shifts', shifts)
         const title = document.title
         // redirect if sucess
@@ -291,8 +297,24 @@ class App extends React.PureComponent {
       stringify: (option: Course) => option.searchableName()
     })
 
+    // const classes = useStyles();
+
+    const StyledToggleButtonGroup = withStyles((theme) => ({
+      grouped: {
+        margin: theme.spacing(0.5),
+        border: 'none',
+        '&:not(:first-child)': {
+          borderRadius: theme.shape.borderRadius,
+        },
+        '&:first-child': {
+          borderRadius: theme.shape.borderRadius,
+        },
+      },
+    }))(ToggleButtonGroup);
+
     const maxTags = 14
     const maxSelectedCourses = -1
+    const { classes } = this.props;
 
     return (
       <div className="App">
@@ -336,7 +358,7 @@ class App extends React.PureComponent {
                   renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
                   renderTags={(tagValue, getTagProps) => {
                     return tagValue.map((option, index) => (
-                      <Chip {...getTagProps({ index })} size="small" label={option.acronym} />
+                      <Chip {...getTagProps({ index })} size="small" color='primary' style={{backgroundColor: option.color}} label={option.acronym} />
                     ));
                   }}
                 />
@@ -355,56 +377,28 @@ class App extends React.PureComponent {
                 </Tooltip>
               </Toolbar>
               <Toolbar>
-                <FormControl fullWidth={false} className="selector">
-                  <InputLabel>Campi</InputLabel>
-                  <Select
-                    labelId="campus"
-                    id="campus-selector"
-                    multiple
-                    autoWidth={true}
+                <Paper elevation={0} className={classes.paper}>
+                  <StyledToggleButtonGroup
+                    size="small"
                     value={this.state.selectedCampus}
-                    onChange={(event) => this.changeCampus(event.target.value as String[])}
-                    input={<Input id="select-campus" />}
-                    renderValue={(selected) => (
-                      <div>
-                        {(selected as string[]).map((value) => (
-                          <Chip key={value} label={value[0]} />
-                        ))}
-                      </div>
-                    )}
+                    onChange={(_, value) => this.changeCampus(value as String[])}
+                    aria-label="text alignment"
                   >
                     {campiList.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        {name}
-                      </MenuItem>
+                      <ToggleButton key={name} value={name}>{name}</ToggleButton>
                     ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth={false} className="selector">
-                  <InputLabel>Tipo</InputLabel>
-                  <Select
-                    labelId="shiftType"
-                    id="shift-type-selector"
-                    multiple
-                    autoWidth={true}
-                    value={this.state.selectedShiftType}
-                    onChange={(event) => this.changeShiftType(event.target.value as String[])}
-                    input={<Input id="select-shift-type" />}
-                    renderValue={(selected) => (
-                      <div>
-                        {(selected as string[]).map((value) => (
-                          <Chip key={value} label={value[0]} />
-                        ))}
-                      </div>
-                    )}
+                  </StyledToggleButtonGroup>
+                  <Divider flexItem orientation="vertical" className={classes.divider}/>
+                  <StyledToggleButtonGroup
+                    size="small"
+                    value={this.state.selectedShiftTypes}
+                    onChange={(_, value) => this.changeShiftType(value as String[])}
                   >
-                    {shiftTypes.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        {name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                    {Object.entries(ShiftType).map((name) => (
+                      <ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
+                    ))}        
+                  </StyledToggleButtonGroup>
+                </Paper>
               </Toolbar>
             </AppBar>
           </div>
@@ -448,4 +442,15 @@ class App extends React.PureComponent {
   }
 }
 
-export default App;
+const styles = (theme: any) => ({
+  paper: {
+    display: 'flex',
+    border: `1px solid ${theme.palette.divider}`,
+    flex_wrap: "wrap",
+  },
+  divider: {
+    margin: theme.spacing(1, 0.5),
+  }
+});
+
+export default withStyles(styles)(App);

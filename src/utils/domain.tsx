@@ -3,9 +3,6 @@ import rgbHex from 'rgb-hex'
 import Comparables from './comparables'
 import RandomColor from 'randomcolor'
 
-// const colors = ["#4791db", "#e33371", "#e57373", "#ffb74d", "#64b5f6", "#81c784"]
-// let colorsIndex = 0, colorsLen = colors.length
-
 export interface Comparable {
     equals(obj: Comparable): boolean
     hashString(): string
@@ -133,11 +130,16 @@ const shadeColor = (color: string, amount: number) => {
 }
 
 export const campiList = ["Alameda", "Taguspark"]
-export const shiftTypes = ['L', 'PB', 'T', 'S']
+export enum ShiftType {
+    'Teórica' = "T",
+    'Problemas' = "PB",
+    'Laboratorial' = "L",
+    'Seminário' = "S",
+}
 
 export class Shift implements Comparable {
     name: string
-    type: string
+    type: ShiftType
     acronym: string
     shiftId: string
     courseName: string
@@ -152,14 +154,14 @@ export class Shift implements Comparable {
         const re = /^([A-Za-z\d]*[A-Za-z])\d+(L|PB|T|S)([\d]{2})$/
         const match = this.name.match(re)!
         this.acronym = match[1]
-        this.type = match[2]
+        this.type = match[2] as ShiftType
         this.shiftId = match[2] + match[3]
         this.courseName = course.name
         this.campus = obj.rooms[0]?.topLevelSpace.name
 
-        if (this.type === 'T') {
+        if (this.type === ShiftType["Teórica"]) {
             this.color = shadeColor(course.color, 2)
-        } else if (this.type === 'PB') {
+        } else if (this.type === ShiftType["Problemas"]) {
             this.color = shadeColor(course.color, 1)
         } else {
             this.color = course.color

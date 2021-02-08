@@ -11,8 +11,9 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## TODOs
 
 - [ ] Add good colors
-- [ ] Save state to cookies
+- [X] Save state to cookies
+- [ ] Snackbar alerts
 - [ ] Allow english or other languages
-- [ ] Add filters for L, T, PB, S
+- [X] Add filters for L, T, PB, S
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected
-- [ ] Course chip colors match course color
+- [X] Course chip colors match course color
