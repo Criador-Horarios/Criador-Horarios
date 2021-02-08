@@ -2,6 +2,7 @@ import hexRgb from 'hex-rgb'
 import rgbHex from 'rgb-hex'
 import Comparables from './comparables'
 import RandomColor from 'randomcolor'
+import { ApiCourse, ApiDegree, ApiLesson, ApiShift } from './api'
 
 export interface Comparable {
 	equals(obj: Comparable): boolean
@@ -14,7 +15,7 @@ export class Degree {
 	name: string
 	isSelected = false
 
-	constructor(obj: { id: string, acronym: string, name: string }) {
+	constructor(obj: ApiDegree) {
 		this.id = obj.id
 		this.acronym = obj.acronym
 		this.name = obj.name
@@ -34,24 +35,23 @@ export class Course implements Comparable {
 	acronym: string
 	name: string
 	semester: number
-	credits: string
 	abbrev: string
 	color: string
 	isSelected = false
 
-	constructor(obj: Record<string, string>) {
+	constructor(obj: ApiCourse) {
 		this.id = obj.id
 		this.acronym = obj.acronym.replace(/\d/g, '')
 		this.name = obj.name
 		this.semester = +obj.academicTerm[0]
-		this.credits = obj.credits
 		this.abbrev = this.name.split(/[- //]+/).map(d => d[0]).filter(d => {
 			if (!d) return false
 			return d === d.toUpperCase()
 		}).join('')
 
 		const chosenColor = hexRgb(RandomColor({
-			luminosity: 'dark'
+			luminosity: 'dark',
+			alpha: 1
 		}))
 		this.color = '#' + rgbHex(chosenColor.red, chosenColor.green, chosenColor.blue)
 	}
@@ -119,10 +119,10 @@ export type Update = {
 
 // TODO: shades in RGB should use multiplication
 const shadeColor = (color: string, amount: number) => {
-	const newColor: any = hexRgb(color)
+	const newColor = hexRgb(color)
 	Object.keys(newColor).forEach((key: string) => {
-		newColor[key] += 20*amount
-		newColor[key] = Math.min(Math.max(0, newColor[key]), 255)
+		newColor[key as keyof hexRgb.RgbaObject] *= amount
+		newColor[key as keyof hexRgb.RgbaObject] = Math.min(Math.max(0, newColor[key as keyof hexRgb.RgbaObject]), 255)
 	})
 	return '#' + rgbHex(newColor.red, newColor.green, newColor.blue)
 }
@@ -145,10 +145,13 @@ export class Shift implements Comparable {
 	color: string
 	campus: string
 	
-	constructor(obj: Record<string, any>, course: Course) {
+	constructor(obj: ApiShift, course: Course) {
 		this.name = obj.name
 		const re = /^([A-Za-z\d]*[A-Za-z])\d+(L|PB|T|S)([\d]{2})$/
-		const match = this.name.match(re)!
+		const match = this.name.match(re)
+		if (match === null) {
+			throw 'Unexpected shift name'
+		}
 		this.acronym = match[1]
 		this.type = match[2] as ShiftType
 		this.shiftId = match[2] + match[3]
@@ -156,18 +159,17 @@ export class Shift implements Comparable {
 		this.campus = obj.rooms[0]?.topLevelSpace.name
 
 		if (this.type === ShiftType['Teórica']) {
-			this.color = shadeColor(course.color, 2)
+			this.color = shadeColor(course.color, 1.30)
 		} else if (this.type === ShiftType['Problemas']) {
-			this.color = shadeColor(course.color, 1)
+			this.color = shadeColor(course.color, 1.15)
 		} else {
 			this.color = course.color
 		}
 
-		const lessons = obj.lessons.map((l: any) => {
+		const lessons = obj.lessons.map((l: ApiLesson) => {
 			return new Lesson({
 				shiftName: this.name,
 				color: this.color,
-				originalColor: course.color,
 				start: l.start.split(' ')[1],
 				end: l.end.split(' ')[1],
 				dayOfWeek:  new Date(l.start).getDay(),
@@ -203,18 +205,15 @@ export class Lesson implements Comparable {
 	startTime: string
 	endTime: string
 	daysOfWeek: number[]
-	originalColor: string
 	color: string
-	shiftId: string
 	id: string
 
+	// eslint-disable-next-line
 	constructor(obj: Record<string, any>) {
 		this.daysOfWeek = [obj.dayOfWeek]
 		this.startTime = obj.start
 		this.endTime = obj.end
 		this.color = obj.color
-		this.originalColor = obj.originalColor
-		this.shiftId = obj.shiftId
 		this.type = obj.type
 		this.id = obj.shiftName
 
@@ -222,10 +221,10 @@ export class Lesson implements Comparable {
 	}
 
 	hashString(): string {
-		return this.title + this.startTime + this.endTime
+		return this.title + this.startTime + this.endTime + this.daysOfWeek[0]
 	}
 
 	equals(other: Lesson): boolean {
-		return this.id === other.id
+		return this.hashString() === other.hashString()
 	}
 }

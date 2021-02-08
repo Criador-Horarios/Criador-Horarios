@@ -28,15 +28,15 @@ import TextField from '@material-ui/core/TextField'
 import Icon from '@material-ui/core/Icon'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
-import FilterList from '@material-ui/icons/FilterList'
+import CardActions from '@material-ui/core/CardActions'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Paper from '@material-ui/core/Paper'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import Divider from '@material-ui/core/Divider'
-import { exportComponentAsPNG } from 'react-component-export-image'
+import { exportComponentAsJPEG } from 'react-component-export-image'
 import Snackbar from '@material-ui/core/Snackbar'
 import Collapse from '@material-ui/core/Collapse'
-import Grid from '@material-ui/core/Grid'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -58,6 +58,7 @@ class App extends React.Component <{
 	selectedDegree: Degree | null = null
 	chosenSchedule: React.RefObject<Schedule>
 
+	// eslint-disable-next-line
 	constructor(props: Readonly<{ classes: CreateCSSProperties<any>; }>) {
 		super(props)
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
@@ -145,11 +146,12 @@ class App extends React.Component <{
 
 		const currCourses = this.state.selectedCourses
 		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
-		currCourses.toggleCourse(changedCourse!)
+		currCourses.toggleCourse(changedCourse)
 
 		let availableShifts: Shift[]
-		if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Add) {
-			const schedule = await API.getCourseSchedules(this.state.selectedCourses.lastUpdate.course!)
+		if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Add &&
+			this.state.selectedCourses.lastUpdate.course !== undefined) {
+			const schedule = await API.getCourseSchedules(this.state.selectedCourses.lastUpdate.course)
 			if (schedule === null) {
 				this.showAlert('Não foi possível obter os turnos desta UC', 'error')
 				return
@@ -288,6 +290,8 @@ class App extends React.Component <{
 	}
 
 	changeUrl(toState: boolean): void {
+		// FIXME: Preventing big URLs for now
+		return
 		const title: string = document.title
 		let path: string = window.location.pathname
 		if (toState) {
@@ -325,7 +329,14 @@ class App extends React.Component <{
 	}
 
 	saveSchedule(): void {
-		exportComponentAsPNG(this.chosenSchedule, {fileName: 'ist-horario'})
+		exportComponentAsJPEG(this.chosenSchedule, {
+			fileName: 'ist-horario',
+			html2CanvasOptions: {
+				backgroundColor: undefined,
+				allowTaint: true
+			}
+		})
+	
 		this.showAlert('Horário convertido em imagem', 'success')
 	}
 
@@ -367,9 +378,11 @@ class App extends React.Component <{
 							position="static"
 						>
 							<Toolbar>
-								<Tooltip title="Mostrar/esconder filtros">
-									<IconButton color="inherit" onClick={this.changeFiltersVisibility} component="span">
-										<FilterList />
+								<Tooltip title="Mais opções">
+									<IconButton className={this.state.filtersVisible ? 'expandOpen' : ''}//className={clsx(classes.expand, {[classes.expandOpen]: this.state.filtersVisible})}
+										color="inherit" onClick={this.changeFiltersVisibility} component="span"
+									>
+										<ExpandMoreIcon />
 									</IconButton>
 								</Tooltip>
 								<Autocomplete
@@ -466,11 +479,6 @@ class App extends React.Component <{
 									<Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
 										events={this.getAllLessons()}
 									/>
-									<Tooltip title="Aqui aparecem todos os turnos, carregue neles para os escolher">
-										<IconButton color="inherit" disabled={false} component="span">
-											<Icon color="action">help</Icon>
-										</IconButton>
-									</Tooltip>
 								</CardContent>
 							</Card>
 							<Card className={classes.card as string}>
@@ -478,15 +486,14 @@ class App extends React.Component <{
 									<Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
 										events={this.getSelectedLessons()} ref={this.chosenSchedule}
 									/>
-									<Tooltip title="O seu horário aparece aqui, carregue nele para remover turnos">
-										<IconButton color="inherit" disabled={false} component="span">
-											<Icon color="action">help</Icon>
+								</CardContent>
+								<CardActions>
+									<Tooltip title="Guardar como imagem" className={classes.centered as string}>
+										<IconButton color="inherit" onClick={this.saveSchedule} component="span">
+											<Icon>download</Icon>
 										</IconButton>
 									</Tooltip>
-									<IconButton color="inherit" onClick={this.saveSchedule} component="span">
-										<Icon>download</Icon>
-									</IconButton>
-								</CardContent>
+								</CardActions>
 							</Card>
 						</div>
 					</div>
@@ -505,6 +512,7 @@ class App extends React.Component <{
 	}
 }
 
+// eslint-disable-next-line
 const styles = (theme: any) => ({
 	paper: {
 		display: 'flex',
@@ -523,6 +531,12 @@ const styles = (theme: any) => ({
 	},
 	grow: {
 		flexGrow: 1,
+	},
+	expandOpen: {
+		transform: 'rotate(180deg)',
+	},
+	centered: {
+		margin: 'auto'
 	}
 })
 

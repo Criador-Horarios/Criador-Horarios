@@ -10,8 +10,9 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## TODOs
 
-- [ ] **Important:** Set API type objects
+- [x] Set API type objects
 - [ ] Add good colors
+- [ ] When exporting to image, lessons overlapping bugs
 - [X] Save state to cookies
 - [ ] Shorten saved state and rebuild on reload (can add loading animation)
 - [X] Snackbar alerts
