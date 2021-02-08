@@ -350,7 +350,7 @@ class App extends React.PureComponent {
                 </Tooltip>
                 <Tooltip title="Obter link de partilha">
                   <IconButton color="inherit" onClick={this.getShortLink} component="span" disabled={false}>
-                    <Icon>link</Icon>
+                    <Icon>share</Icon>
                   </IconButton>
                 </Tooltip>
               </Toolbar>
