@@ -9,20 +9,17 @@
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
-    "@testing-library/jest-dom": "^5.11.9",
-    "@testing-library/react": "^11.2.5",
-    "@testing-library/user-event": "^12.6.3",
-    "@types/jest": "^26.0.20",
     "@types/node": "^12.19.16",
+    "@types/randomcolor": "^0.5.5",
     "@types/react": "^17.0.1",
     "@types/react-dom": "^17.0.0",
-    "bson": "^4.2.2",
     "hex-rgb": "^4.2.0",
     "http-proxy-middleware": "^1.0.6",
     "morgan": "^1.10.0",
     "node-sass": "^4.14.1",
     "randomcolor": "^0.6.2",
     "react": "^17.0.1",
+    "react-component-export-image": "^1.0.5",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.2",
     "rgb-hex": "^3.0.0",
@@ -59,7 +56,6 @@
   },
   "devDependencies": {
     "@types/material-ui": "^0.21.8",
-    "@types/randomcolor": "^0.5.5",
     "@types/react-router-dom": "^5.1.7"
   }
 }

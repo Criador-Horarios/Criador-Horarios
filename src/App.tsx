@@ -16,7 +16,6 @@ import Comparables from './utils/comparables';
 import Schedule from './components/Schedule/Schedule';
 import './App.scss';
 
-import PropTypes from 'prop-types';
 import withStyles from '@material-ui/core/styles/withStyles';
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
@@ -30,22 +29,12 @@ import TextField from '@material-ui/core/TextField';
 import Icon from '@material-ui/core/Icon'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select'
-import MenuItem from '@material-ui/core/MenuItem';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
 import FilterList from '@material-ui/icons/FilterList'
-import BottomNavigation from '@material-ui/core/BottomNavigation';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import Paper from '@material-ui/core/Paper';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import Divider from '@material-ui/core/Divider';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import { exportComponentAsPNG } from 'react-component-export-image';
 
 class App extends React.Component <{
   classes: any
@@ -63,6 +52,7 @@ class App extends React.Component <{
   degrees: Degree[] = []
   selectedDegree: Degree | null = null
   cookies: Cookies = new Cookies()
+  chosenSchedule: React.RefObject<any>
 
   constructor(props: any) {
     super(props)
@@ -72,6 +62,8 @@ class App extends React.Component <{
     this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
     this.getShortLink = this.getShortLink.bind(this)
     this.changeCampus = this.changeCampus.bind(this)
+    this.saveSchedule = this.saveSchedule.bind(this)
+    this.chosenSchedule = React.createRef()
   }
 
   async componentDidMount() {
@@ -292,12 +284,14 @@ class App extends React.Component <{
     }
   }
 
+  saveSchedule(): void {
+    exportComponentAsPNG(this.chosenSchedule, {fileName: "ist-horario"})
+  }
+
   render(): ReactNode {
     const courseFilterOptions = createFilterOptions({
       stringify: (option: Course) => option.searchableName()
     })
-
-    // const classes = useStyles();
 
     const StyledToggleButtonGroup = withStyles((theme) => ({
       grouped: {
@@ -422,11 +416,14 @@ class App extends React.Component <{
               <Card>
                 <CardContent>
                   <Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
-                    events={this.getSelectedLessons()}
+                    events={this.getSelectedLessons()} ref={this.chosenSchedule}
                   />
                   <Tooltip title="O teu horário aparece aqui, carrega nele para remover turnos">
                     <Icon color="action">help</Icon>
                   </Tooltip>
+                  <IconButton color="inherit" onClick={this.saveSchedule} component="span">
+                    <Icon>download</Icon>
+                  </IconButton>
                 </CardContent>
               </Card>
             </div>
@@ -445,12 +442,12 @@ class App extends React.Component <{
 const styles = (theme: any) => ({
   paper: {
     display: 'flex',
+    flexWrap: 'wrap' as const,
     border: `1px solid ${theme.palette.divider}`,
-    flex_wrap: "wrap",
   },
   divider: {
     margin: theme.spacing(1, 0.5),
   }
-});
+})
 
 export default withStyles(styles)(App);
