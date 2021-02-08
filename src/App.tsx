@@ -34,11 +34,13 @@ import Paper from '@material-ui/core/Paper'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import Divider from '@material-ui/core/Divider'
 import { exportComponentAsPNG } from 'react-component-export-image'
+import Snackbar from '@material-ui/core/Snackbar'
+import Collapse from '@material-ui/core/Collapse'
+import Grid from '@material-ui/core/Grid'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
-
 	state = {
 		availableCourses: [] as Course[],
 		selectedCourses: new CourseUpdates(),
@@ -46,7 +48,11 @@ class App extends React.Component <{
 		shownShifts: [] as Shift[],
 		selectedShifts: [] as Shift[],
 		selectedCampus: campiList as string[],
-		selectedShiftTypes: Object.values(ShiftType) as string[]
+		selectedShiftTypes: Object.values(ShiftType) as string[],
+		alertMessage: '',
+		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
+		hasAlert: false as boolean,
+		filtersVisible: false
 	}
 	degrees: Degree[] = []
 	selectedDegree: Degree | null = null
@@ -61,11 +67,19 @@ class App extends React.Component <{
 		this.getShortLink = this.getShortLink.bind(this)
 		this.changeCampus = this.changeCampus.bind(this)
 		this.saveSchedule = this.saveSchedule.bind(this)
+		this.handleCloseAlert = this.handleCloseAlert.bind(this)
+		this.changeFiltersVisibility = this.changeFiltersVisibility.bind(this)
 		this.chosenSchedule = React.createRef()
 	}
 
 	async componentDidMount() {
-		this.degrees = await API.getDegrees()
+		const degrees = await API.getDegrees()
+		if (degrees !== null) {
+			this.degrees = degrees
+		} else {
+			this.degrees = []
+			this.showAlert('Erro ao fazer pedido externo', 'error')
+		}
 		const queryParam = /\?s=(.*)$/
 		await this.buildState(window.location.href.match(queryParam)?.[1])
 		this.forceUpdate()
@@ -75,6 +89,10 @@ class App extends React.Component <{
 		this.selectedDegree = degree
 		if (degree !== null) {
 			const degreeCourses = await API.getCourses(degree.id) 
+			if (degreeCourses === null) {
+				this.showAlert('Erro ao fazer pedido externo', 'error')
+				return
+			}
 			const selected = this.state.selectedCourses.courses
 			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
 			availableCourses.sort(Course.compare)
@@ -132,6 +150,10 @@ class App extends React.Component <{
 		let availableShifts: Shift[]
 		if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Add) {
 			const schedule = await API.getCourseSchedules(this.state.selectedCourses.lastUpdate.course!)
+			if (schedule === null) {
+				this.showAlert('Erro ao fazer pedido externo', 'error')
+				return
+			}
 			availableShifts = this.state.availableShifts.concat(schedule)
 		} else if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Remove) {
 			availableShifts = this.state.availableShifts
@@ -188,10 +210,14 @@ class App extends React.Component <{
 	}
 
 	clearSelectedShifts(): void {
-		this.setState({
-			selectedShifts: []
-		})
-		this.changeUrl(false)
+		if (this.state.selectedShifts.length === 0) {
+			this.showAlert('Não tem nenhum turno selecionado, faça o seu horário primeiro', 'info')
+		} else {
+			this.setState({
+				selectedShifts: []
+			})
+			this.changeUrl(false)
+		}
 	}
 
 	changeCampus(campi: string[]): void {
@@ -228,9 +254,23 @@ class App extends React.Component <{
 		})
 	}
 
+	showAlert(message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined): void {
+		this.setState({
+			alertMessage: message,
+			alertSeverity: severity,
+			hasAlert: true
+		})
+	}
+
+	handleCloseAlert(): void {
+		this.setState({
+			hasAlert: false
+		})
+	}
+
 	async getShortLink(): Promise<void> {
 		if (this.state.selectedShifts.length === 0) {
-			alert('Nothing to share')
+			this.showAlert('Nada para partilhar, faça o seu horário primeiro', 'warning')
 			return
 		}
 
@@ -244,7 +284,7 @@ class App extends React.Component <{
 		document.execCommand('copy')
 
 		document.body.removeChild(el)
-		alert('Copied the text: ' + shortLink)
+		this.showAlert('Sucesso! Link copiado para a sua área de transferência', 'success')
 	}
 
 	changeUrl(toState: boolean): void {
@@ -286,6 +326,13 @@ class App extends React.Component <{
 
 	saveSchedule(): void {
 		exportComponentAsPNG(this.chosenSchedule, {fileName: 'ist-horario'})
+		this.showAlert('Horário convertido em imagem', 'success')
+	}
+
+	changeFiltersVisibility(): void {
+		this.setState({
+			filtersVisible: !this.state.filtersVisible
+		})
 	}
 
 	render(): ReactNode {
@@ -320,6 +367,11 @@ class App extends React.Component <{
 							position="static"
 						>
 							<Toolbar>
+								<Tooltip title="Mostrar/esconder filtros">
+									<IconButton color="inherit" onClick={this.changeFiltersVisibility} component="span">
+										<FilterList />
+									</IconButton>
+								</Tooltip>
 								<Autocomplete
 									color="inherit"
 									size="small"
@@ -357,9 +409,6 @@ class App extends React.Component <{
 										))
 									}}
 								/>
-								<IconButton color="inherit" disabled onClick={this.clearSelectedShifts} component="span">
-									<FilterList />
-								</IconButton>
 								<Tooltip title="Limpar horário">
 									<IconButton color="inherit" onClick={this.clearSelectedShifts} component="span">
 										<Icon>delete</Icon>
@@ -371,56 +420,68 @@ class App extends React.Component <{
 									</IconButton>
 								</Tooltip>
 							</Toolbar>
-							<Toolbar>
-								<Paper elevation={0} className={classes.paper as string}>
-									<StyledToggleButtonGroup
-										size="small"
-										value={this.state.selectedCampus}
-										onChange={(_, value) => this.changeCampus(value as string[])}
-										aria-label="text alignment"
-									>
-										{campiList.map((name) => (
-											<ToggleButton key={name} value={name}>{name}</ToggleButton>
-										))}
-									</StyledToggleButtonGroup>
-									<Divider flexItem orientation="vertical" className={classes.divider as string}/>
-									<StyledToggleButtonGroup
-										size="small"
-										value={this.state.selectedShiftTypes}
-										onChange={(_, value) => this.changeShiftType(value as string[])}
-									>
-										{Object.entries(ShiftType).map((name) => (
-											<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
-										))}        
-									</StyledToggleButtonGroup>
-								</Paper>
-							</Toolbar>
+							<Collapse in={this.state.filtersVisible} timeout="auto" unmountOnExit>
+								<Toolbar>
+									<Paper elevation={0} className={classes.paper as string}>
+										<StyledToggleButtonGroup
+											size="small"
+											value={this.state.selectedCampus}
+											onChange={(_, value) => this.changeCampus(value as string[])}
+											aria-label="text alignment"
+										>
+											{campiList.map((name) => (
+												<ToggleButton key={name} value={name}>{name}</ToggleButton>
+											))}
+										</StyledToggleButtonGroup>
+										<Divider flexItem orientation="vertical" className={classes.divider as string}/>
+										<StyledToggleButtonGroup
+											size="small"
+											value={this.state.selectedShiftTypes}
+											onChange={(_, value) => this.changeShiftType(value as string[])}
+										>
+											{Object.entries(ShiftType).map((name) => (
+												<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
+											))}        
+										</StyledToggleButtonGroup>
+									</Paper>
+								</Toolbar>
+							</Collapse>
 						</AppBar>
 					</div>
-					{/* <div className="alerts">
-						<Alert id='success-copy-link' severity="success">O link foi copiado para o seu clipboard.</Alert>
-						<Alert id='error-copy-link' severity="error">Não conseguimos gerar um link.</Alert>
-					</div> */}
+					<Snackbar open={this.state.hasAlert}
+						autoHideDuration={3000}
+						onClose={this.handleCloseAlert}
+						anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+						<Alert
+							action={<IconButton size='small' onClick={this.handleCloseAlert}><Icon>close</Icon></IconButton>}
+							severity={this.state.alertSeverity}>
+							{this.state.alertMessage}
+						</Alert>
+					</Snackbar>
 					<div className="body">
 						<div className="bg-image" />
 						<div className="schedules">
-							<Card>
+							<Card className={classes.card as string}>
 								<CardContent>
 									<Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
 										events={this.getAllLessons()}
 									/>
-									<Tooltip title="Aqui aparecem todos os turnos, carrega neles para os escolher">
-										<Icon color="action">help</Icon>
+									<Tooltip title="Aqui aparecem todos os turnos, carregue neles para os escolher">
+										<IconButton color="inherit" disabled={false} component="span">
+											<Icon color="action">help</Icon>
+										</IconButton>
 									</Tooltip>
 								</CardContent>
 							</Card>
-							<Card>
+							<Card className={classes.card as string}>
 								<CardContent>
 									<Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
 										events={this.getSelectedLessons()} ref={this.chosenSchedule}
 									/>
-									<Tooltip title="O teu horário aparece aqui, carrega nele para remover turnos">
-										<Icon color="action">help</Icon>
+									<Tooltip title="O seu horário aparece aqui, carregue nele para remover turnos">
+										<IconButton color="inherit" disabled={false} component="span">
+											<Icon color="action">help</Icon>
+										</IconButton>
 									</Tooltip>
 									<IconButton color="inherit" onClick={this.saveSchedule} component="span">
 										<Icon>download</Icon>
@@ -430,9 +491,13 @@ class App extends React.Component <{
 						</div>
 					</div>
 					<div className="footer">
-						<Toolbar>
-							<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/favicon.ico`} />
-						</Toolbar>
+						<AppBar className={classes.footer as string} color="transparent">
+							<Toolbar>
+								<div className={classes.grow as string} />
+								<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
+								<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
+							</Toolbar>													
+						</AppBar>
 					</div>
 				</div>
 			</div>
@@ -448,6 +513,16 @@ const styles = (theme: any) => ({
 	},
 	divider: {
 		margin: theme.spacing(1, 0.5),
+	},
+	card: {
+		margin: '2% 1% 1% 1%'
+	},
+	footer: {
+		bottom: 0,
+		top: 'auto',
+	},
+	grow: {
+		flexGrow: 1,
 	}
 })
 

@@ -14,10 +14,15 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] Add good colors
 - [X] Save state to cookies
 - [ ] Saved state is bugging
-- [ ] Snackbar alerts
+- [X] Snackbar alerts
 - [ ] Allow english or other languages
 - [X] Add filters for L, T, PB, S
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected
 - [X] Course chip colors match course color
 - [ ] Add Github link and donation link
+- [ ] Enqueue snackbars?
+
+## Suggestions
+
 - [X] Allow export image of the chosen schedule
+- [ ] Allow selection of multiple degrees to have all the courses in the selection list

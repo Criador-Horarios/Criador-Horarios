@@ -11,22 +11,26 @@ export default class API {
 			} else if (contentType?.includes('text/plain')) {
 				return r.text()
 			} else {
-				// TODO: improve this alert
-				alert('API not answering properly.')
-				return JSON.parse('[]')
+				return null
 			}
 		})
 	}
 
-	public static async getDegrees(): Promise<Degree[]> {
+	public static async getDegrees(): Promise<Degree[] | null> {
 		let res = await this.getRequest(`/api/degrees?academicTerm=${this.ACADEMIC_TERM}`)
+		if (res === null) {
+			return null
+		}
 		res = res.map((d: any) => new Degree(d))
 		res.sort(Degree.compare)
 		return res
 	}
 
-	public static async getCourses(degree: string): Promise<Course[]> {
+	public static async getCourses(degree: string): Promise<Course[] | null> {
 		let res = await this.getRequest(`/api/degrees/${degree}/courses?academicTerm=${this.ACADEMIC_TERM}`)
+		if (res === null) {
+			return null
+		}
 		res = res
 			.map((d: any) => new Course(d))
 			.filter( (c: Course) => {
@@ -37,8 +41,11 @@ export default class API {
 		return res
 	}
 
-	public static async getCourseSchedules(course: Course): Promise<Shift[]> {
+	public static async getCourseSchedules(course: Course): Promise<Shift[] | null> {
 		let res = await this.getRequest(`/api/courses/${course.id}/schedule?academicTerm=${this.ACADEMIC_TERM}`)
+		if (res === null) {
+			return null
+		}
 		res = res.shifts.map((d: any) => new Shift(d, course))
 		return res
 	}
