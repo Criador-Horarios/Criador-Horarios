@@ -10,6 +10,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## TODOs
 
+- [ ] **Important:** Set API type objects
 - [ ] Add good colors
 - [X] Save state to cookies
 - [ ] Saved state is bugging
