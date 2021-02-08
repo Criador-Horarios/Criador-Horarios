@@ -78,7 +78,7 @@ class App extends React.Component <{
 			this.degrees = degrees
 		} else {
 			this.degrees = []
-			this.showAlert('Erro ao fazer pedido externo', 'error')
+			this.showAlert('Não foi possível obter os cursos', 'error')
 		}
 		const queryParam = /\?s=(.*)$/
 		await this.buildState(window.location.href.match(queryParam)?.[1])
@@ -90,7 +90,7 @@ class App extends React.Component <{
 		if (degree !== null) {
 			const degreeCourses = await API.getCourses(degree.id) 
 			if (degreeCourses === null) {
-				this.showAlert('Erro ao fazer pedido externo', 'error')
+				this.showAlert('Não foi possível obter as UCs deste curso', 'error')
 				return
 			}
 			const selected = this.state.selectedCourses.courses
@@ -151,7 +151,7 @@ class App extends React.Component <{
 		if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Add) {
 			const schedule = await API.getCourseSchedules(this.state.selectedCourses.lastUpdate.course!)
 			if (schedule === null) {
-				this.showAlert('Erro ao fazer pedido externo', 'error')
+				this.showAlert('Não foi possível obter os turnos desta UC', 'error')
 				return
 			}
 			availableShifts = this.state.availableShifts.concat(schedule)

@@ -13,7 +13,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] **Important:** Set API type objects
 - [ ] Add good colors
 - [X] Save state to cookies
-- [ ] Saved state is bugging
+- [ ] Shorten saved state and rebuild on reload (can add loading animation)
 - [X] Snackbar alerts
 - [ ] Allow english or other languages
 - [X] Add filters for L, T, PB, S
@@ -21,8 +21,12 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Course chip colors match course color
 - [ ] Add Github link and donation link
 - [ ] Enqueue snackbars?
+- [ ] Choose academic term
+- [ ] Center buttons
+- [ ] Background Image
 
 ## Suggestions
 
 - [X] Allow export image of the chosen schedule
 - [ ] Allow selection of multiple degrees to have all the courses in the selection list
+- [ ] Add loading progress when making request
