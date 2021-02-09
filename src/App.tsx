@@ -63,7 +63,6 @@ class App extends React.Component <{
 		this.forceUpdate()
 	}
 
-	//FIXME: Available courses not updating when a course from another degree is removed 
 	async onSelectedCourse(availableShifts: Shift[]): Promise<void> {
 		const shownShifts = this.filterShifts({
 			selectedCampi: this.state.selectedCampi,
