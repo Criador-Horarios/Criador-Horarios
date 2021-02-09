@@ -233,6 +233,10 @@ class App extends React.Component <{
 	}
 
 	saveSchedule(): void {
+		if (this.state.selectedShifts.length === 0) {
+			this.showAlert('Não tem nenhum turno selecionado, faça o seu horário primeiro', 'info')
+			return
+		}
 		exportComponentAsPNG(this.chosenSchedule, {
 			fileName: 'ist-horario',
 			html2CanvasOptions: {
