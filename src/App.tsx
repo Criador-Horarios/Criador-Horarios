@@ -33,10 +33,12 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Paper from '@material-ui/core/Paper'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import Divider from '@material-ui/core/Divider'
-import { exportComponentAsJPEG } from 'react-component-export-image'
+import { exportComponentAsPNG } from 'react-component-export-image'
 import Snackbar from '@material-ui/core/Snackbar'
 import Collapse from '@material-ui/core/Collapse'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import Link from '@material-ui/core/Link'
+import GitHubIcon from '@material-ui/icons/GitHub'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -329,7 +331,7 @@ class App extends React.Component <{
 	}
 
 	saveSchedule(): void {
-		exportComponentAsJPEG(this.chosenSchedule, {
+		exportComponentAsPNG(this.chosenSchedule, {
 			fileName: 'ist-horario',
 			html2CanvasOptions: {
 				backgroundColor: undefined,
@@ -374,12 +376,12 @@ class App extends React.Component <{
 				<div className="main">
 					<div className="topbar">
 						<AppBar
-							color="transparent"
+							color="default"
 							position="static"
 						>
 							<Toolbar>
 								<Tooltip title="Mais opções">
-									<IconButton className={this.state.filtersVisible ? 'expandOpen' : ''}//className={clsx(classes.expand, {[classes.expandOpen]: this.state.filtersVisible})}
+									<IconButton className={`${classes.expand} ${this.state.filtersVisible ? 'expandOpen' : ''}`}//className={clsx(classes.expand, {[classes.expandOpen]: this.state.filtersVisible})}
 										color="inherit" onClick={this.changeFiltersVisibility} component="span"
 									>
 										<ExpandMoreIcon />
@@ -472,7 +474,6 @@ class App extends React.Component <{
 						</Alert>
 					</Snackbar>
 					<div className="body">
-						<div className="bg-image" />
 						<div className="schedules">
 							<Card className={classes.card as string}>
 								<CardContent>
@@ -498,9 +499,14 @@ class App extends React.Component <{
 						</div>
 					</div>
 					<div className="footer">
-						<AppBar className={classes.footer as string} color="transparent">
+						<AppBar className={classes.footer as string} color="inherit">
 							<Toolbar>
 								<div className={classes.grow as string} />
+								<Link href="https://github.com/joaocmd/Criador-Horarios/" target="_blank" onClick={() => {return}} color="inherit">
+									<IconButton color="inherit" onClick={() => {return}} component="span">
+										<GitHubIcon></GitHubIcon>
+									</IconButton>
+								</Link>
 								<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
 								<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
 							</Toolbar>													
@@ -532,8 +538,10 @@ const styles = (theme: any) => ({
 	grow: {
 		flexGrow: 1,
 	},
-	expandOpen: {
-		transform: 'rotate(180deg)',
+	expand: {
+		transition: theme.transitions.create('transform', {
+			duration: theme.transitions.duration.shortest,
+		}),
 	},
 	centered: {
 		margin: 'auto'

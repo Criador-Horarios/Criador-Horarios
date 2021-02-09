@@ -1,3 +1,6 @@
+$blur: 5px;
+$brightness: 1;
+
 body {
   /* Don't allow selection of text */
   -webkit-user-select: none;
@@ -86,15 +89,27 @@ body {
 
   .body {
     height: 100%;
-    .bg-image {
-      background-image: url("https://tecnico.ulisboa.pt/files/2021/02/99-cientistas-do-tecnico-entre-os-melhores-do-mundo-de-acordo-com-estudo-de-stanford-1140x641.jpg");
-      height: 100%;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-      filter: blur(8px);
-      -webkit-filter: blur(8px);
-    }
+  }
+
+  .body::before {
+    content: "";
+    position: fixed;
+    top: -5%;
+    left: -5%;
+    right: 0;
+    z-index: -1;
+
+    display: block;
+    background-image: url('https://tecnico.ulisboa.pt/files/2021/02/99-cientistas-do-tecnico-entre-os-melhores-do-mundo-de-acordo-com-estudo-de-stanford-1140x641.jpg');
+    background-size: cover;
+    width: 110%;
+    height: 110%;
+
+    -webkit-filter: blur($blur) brightness($brightness);
+    -moz-filter: blur($blur) brightness($brightness);
+    -o-filter: blur($blur) brightness($brightness);
+    -ms-filter: blur($blur) brightness($brightness);
+    filter: blur($blur) brightness($brightness);
   }
 
   .footer {
@@ -131,6 +146,11 @@ body {
 
 .fc-timegrid-event-harness {
   cursor: pointer;
+}
+
+// Expanding and collapsing
+.expandOpen {
+  transform: rotate(180deg),
 }
 
 // Reset
