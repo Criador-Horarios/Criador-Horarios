@@ -1,42 +1,34 @@
 import React, { ReactNode } from 'react'
 import API from './utils/api'
-
-import {
-	campiList,
-	Course,
-	CourseUpdates,
-	CourseUpdateType,
-	Degree,
-	Shift,
-	ShiftType,
-	Lesson
-} from './utils/domain'
-import Comparables from './utils/comparables'
-import Schedule from './components/Schedule/Schedule'
 import './App.scss'
+
+import campiList from './domain/CampiList'
+import Course from './domain/Course'
+import CourseUpdates, { CourseUpdateType } from './utils/CourseUpdate'
+import Degree from './domain/Degree'
+import Shift, { ShiftType } from './domain/Shift'
+import Lesson from './domain/Lesson'
+import { Comparables } from './domain/Comparable'
+import Schedule from './components/Schedule/Schedule'
+import TopBar from './components/TopBar/TopBar'
 
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import Avatar from '@material-ui/core/Avatar'
-import Chip from '@material-ui/core/Chip'
-import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
 import IconButton from '@material-ui/core/IconButton'
 import Tooltip from '@material-ui/core/Tooltip'
 import Toolbar from '@material-ui/core/Toolbar'
 import Alert from '@material-ui/lab/Alert'
 import AppBar from '@material-ui/core/AppBar'
-import TextField from '@material-ui/core/TextField'
 import Icon from '@material-ui/core/Icon'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardActions from '@material-ui/core/CardActions'
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Paper from '@material-ui/core/Paper'
 import ToggleButton from '@material-ui/lab/ToggleButton'
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Divider from '@material-ui/core/Divider'
 import { exportComponentAsPNG } from 'react-component-export-image'
 import Snackbar from '@material-ui/core/Snackbar'
-import Collapse from '@material-ui/core/Collapse'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import Link from '@material-ui/core/Link'
 import GitHubIcon from '@material-ui/icons/GitHub'
 
@@ -49,40 +41,31 @@ class App extends React.Component <{
 		availableShifts: [] as Shift[],
 		shownShifts: [] as Shift[],
 		selectedShifts: [] as Shift[],
-		selectedCampus: campiList as string[],
+		selectedCampi: [...campiList] as string[],
 		selectedShiftTypes: Object.values(ShiftType) as string[],
 		alertMessage: '',
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
-		filtersVisible: false
 	}
 	degrees: Degree[] = []
 	selectedDegree: Degree | null = null
 	chosenSchedule: React.RefObject<Schedule>
 
 	// eslint-disable-next-line
-	constructor(props: Readonly<{ classes: CreateCSSProperties<any>; }>) {
+	constructor(props: any) {
 		super(props)
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
-		this.getShortLink = this.getShortLink.bind(this)
-		this.changeCampus = this.changeCampus.bind(this)
+		this.getLink = this.getLink.bind(this)
+		this.changeCampi = this.changeCampi.bind(this)
 		this.saveSchedule = this.saveSchedule.bind(this)
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
-		this.changeFiltersVisibility = this.changeFiltersVisibility.bind(this)
 		this.chosenSchedule = React.createRef()
 	}
 
 	async componentDidMount() {
-		const degrees = await API.getDegrees()
-		if (degrees !== null) {
-			this.degrees = degrees
-		} else {
-			this.degrees = []
-			this.showAlert('Não foi possível obter os cursos', 'error')
-		}
 		const queryParam = /\?s=(.*)$/
 		await this.buildState(window.location.href.match(queryParam)?.[1])
 		this.forceUpdate()
@@ -167,7 +150,7 @@ class App extends React.Component <{
 		}
 
 		const shownShifts = this.filterShifts({
-			selectedCampus: this.state.selectedCampus,
+			selectedCampi: this.state.selectedCampi,
 			selectedShiftTypes: this.state.selectedShiftTypes,
 			availableShifts: availableShifts
 		})
@@ -224,22 +207,22 @@ class App extends React.Component <{
 		}
 	}
 
-	changeCampus(campi: string[]): void {
+	changeCampi(campi: string[]): void {
 		const shownShifts = this.filterShifts({
-			selectedCampus: campi,
+			selectedCampi: campi,
 			selectedShiftTypes: this.state.selectedShiftTypes,
 			availableShifts: this.state.availableShifts
 		})
 
 		this.setState({
-			selectedCampus: campi,
+			selectedCampi: campi,
 			shownShifts
 		})
 	}
 
-	changeShiftType(types: string[]): void {
+	changeShiftTypes(types: string[]): void {
 		const shownShifts = this.filterShifts({
-			selectedCampus: this.state.selectedCampus,
+			selectedCampi: this.state.selectedCampi,
 			selectedShiftTypes: types,
 			availableShifts: this.state.availableShifts
 		})
@@ -250,9 +233,9 @@ class App extends React.Component <{
 		})
 	}
 
-	filterShifts(state: {selectedCampus: string[], selectedShiftTypes: string[], availableShifts: Shift[]}): Shift[] {
+	filterShifts(state: {selectedCampi: string[], selectedShiftTypes: string[], availableShifts: Shift[]}): Shift[] {
 		return state.availableShifts.filter( (s) => {
-			const campi = state.selectedCampus.includes(s.campus)
+			const campi = state.selectedCampi.includes(s.campus)
 			const type = state.selectedShiftTypes.includes(s.type)
 			return campi && type
 		})
@@ -272,7 +255,7 @@ class App extends React.Component <{
 		})
 	}
 
-	async getShortLink(): Promise<void> {
+	async getLink(): Promise<void> {
 		if (this.state.selectedShifts.length === 0) {
 			this.showAlert('Nada para partilhar, faça o seu horário primeiro', 'warning')
 			return
@@ -342,16 +325,8 @@ class App extends React.Component <{
 		this.showAlert('Horário convertido em imagem', 'success')
 	}
 
-	changeFiltersVisibility(): void {
-		this.setState({
-			filtersVisible: !this.state.filtersVisible
-		})
-	}
-
 	render(): ReactNode {
-		const courseFilterOptions = createFilterOptions({
-			stringify: (option: Course) => option.searchableName()
-		})
+		const classes = this.props.classes
 
 		const StyledToggleButtonGroup = withStyles((theme) => ({
 			grouped: {
@@ -366,104 +341,22 @@ class App extends React.Component <{
 			},
 		}))(ToggleButtonGroup)
 
-		const maxTags = 14
-		const { classes } = this.props
 
 		return (
 			<div className="App">
 				<header className="App-header">
 				</header>
 				<div className="main">
-					<div className="topbar">
-						<AppBar
-							color="default"
-							position="static"
-						>
-							<Toolbar>
-								<Tooltip title="Mais opções">
-									<IconButton className={`${classes.expand} ${this.state.filtersVisible ? 'expandOpen' : ''}`}//className={clsx(classes.expand, {[classes.expandOpen]: this.state.filtersVisible})}
-										color="inherit" onClick={this.changeFiltersVisibility} component="span"
-									>
-										<ExpandMoreIcon />
-									</IconButton>
-								</Tooltip>
-								<Autocomplete
-									color="inherit"
-									size="small"
-									className="selector course-selector"
-									selectOnFocus
-									clearOnBlur
-									handleHomeEndKeys={false}
-									onChange={(_, value) => this.onSelectedDegree(value)}
-									noOptionsText="Sem opções"
-									options={this.degrees}
-									getOptionLabel={(option) => option.displayName()}
-									renderInput={(params) => <TextField {...params} label="Escolha um curso" variant="outlined" />}
-								/>
-								<Autocomplete
-									color="inherit"
-									size="small"
-									className="selector"
-									multiple
-									selectOnFocus
-									clearOnBlur
-									disableCloseOnSelect
-									handleHomeEndKeys={false}
-									limitTags={maxTags}
-									onChange={(_, courses: Course[]) => this.onSelectedCourse(courses)}
-									filterOptions={courseFilterOptions} options={this.state.availableCourses}
-									noOptionsText="Sem opções, escolha um curso primeiro"
-									// getOptionDisabled={(_) => this.state.courses.length === maxSelectedCourses ? true : false}
-									getOptionLabel={(option) => option.displayName()}
-									renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
-									renderTags={(tagValue, getTagProps) => {
-										return tagValue.map((option, index) => (
-											<Tooltip title={option.name} key={option.name}>
-												<Chip {...getTagProps({ index })} size="small" color='primary' style={{backgroundColor: option.color}} label={option.acronym} />
-											</Tooltip>
-										))
-									}}
-								/>
-								<Tooltip title="Limpar horário">
-									<IconButton color="inherit" onClick={this.clearSelectedShifts} component="span">
-										<Icon>delete</Icon>
-									</IconButton>
-								</Tooltip>
-								<Tooltip title="Obter link de partilha">
-									<IconButton color="inherit" onClick={this.getShortLink} component="span" disabled={false}>
-										<Icon>share</Icon>
-									</IconButton>
-								</Tooltip>
-							</Toolbar>
-							<Collapse in={this.state.filtersVisible} timeout="auto" unmountOnExit>
-								<Toolbar>
-									<Paper elevation={0} className={classes.paper as string}>
-										<StyledToggleButtonGroup
-											size="small"
-											value={this.state.selectedCampus}
-											onChange={(_, value) => this.changeCampus(value as string[])}
-											aria-label="text alignment"
-										>
-											{campiList.map((name) => (
-												<ToggleButton key={name} value={name}>{name}</ToggleButton>
-											))}
-										</StyledToggleButtonGroup>
-										<Divider flexItem orientation="vertical" className={classes.divider as string}/>
-										<StyledToggleButtonGroup
-											size="small"
-											value={this.state.selectedShiftTypes}
-											onChange={(_, value) => this.changeShiftType(value as string[])}
-										>
-											{Object.entries(ShiftType).map((name) => (
-												<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
-											))}        
-										</StyledToggleButtonGroup>
-									</Paper>
-								</Toolbar>
-							</Collapse>
-						</AppBar>
-					</div>
-					<Snackbar open={this.state.hasAlert}
+					<TopBar
+						onSelectedDegree={this.onSelectedDegree}
+						onSelectedCourse={this.onSelectedCourse}
+						onClearShifts={this.clearSelectedShifts}
+						onGetLink={this.getLink}
+						classes={classes}
+					>
+					</TopBar>
+					<Snackbar
+						open={this.state.hasAlert}
 						autoHideDuration={3000}
 						onClose={this.handleCloseAlert}
 						anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
@@ -477,14 +370,40 @@ class App extends React.Component <{
 						<div className="schedules">
 							<Card className={classes.card as string}>
 								<CardContent>
-									<Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
+									<Schedule
+										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
 										events={this.getAllLessons()}
 									/>
 								</CardContent>
+								<CardActions>
+									<Paper elevation={0} className={classes.paper as string}>
+										<StyledToggleButtonGroup
+											size="small"
+											value={this.state.selectedCampi}
+											onChange={(_, value) => this.changeCampi(value as string[])}
+											aria-label="text alignment"
+										>
+											{campiList.map((name: string) => (
+												<ToggleButton key={name} value={name}>{name}</ToggleButton>
+											))}
+										</StyledToggleButtonGroup>
+										<Divider flexItem orientation="vertical" className={classes.divider as string}/>
+										<StyledToggleButtonGroup
+											size="small"
+											value={this.state.selectedShiftTypes}
+											onChange={(_, value) => this.changeShiftTypes(value as string[])}
+										>
+											{Object.entries(ShiftType).map((name) => (
+												<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
+											))}        
+										</StyledToggleButtonGroup>
+									</Paper>
+								</CardActions>
 							</Card>
 							<Card className={classes.card as string}>
 								<CardContent>
-									<Schedule onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
+									<Schedule
+										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
 										events={this.getSelectedLessons()} ref={this.chosenSchedule}
 									/>
 								</CardContent>
@@ -498,20 +417,20 @@ class App extends React.Component <{
 							</Card>
 						</div>
 					</div>
-					<div className="footer">
-						<AppBar className={classes.footer as string} color="inherit">
-							<Toolbar>
-								<div className={classes.grow as string} />
-								<Link href="https://github.com/joaocmd/Criador-Horarios/" target="_blank" onClick={() => {return}} color="inherit">
-									<IconButton color="inherit" onClick={() => {return}} component="span">
-										<GitHubIcon></GitHubIcon>
-									</IconButton>
-								</Link>
-								<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
-								<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
-							</Toolbar>													
-						</AppBar>
-					</div>
+				</div>
+				<div className="footer">
+					<AppBar className={classes.footer as string} color="inherit">
+						<Toolbar>
+							<div className={classes.grow as string} />
+							<Link href="https://github.com/joaocmd/Criador-Horarios/" target="_blank" onClick={() => {return}} color="inherit">
+								<IconButton color="inherit" onClick={() => {return}} component="span">
+									<GitHubIcon></GitHubIcon>
+								</IconButton>
+							</Link>
+							<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
+							<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
+						</Toolbar>													
+					</AppBar>
 				</div>
 			</div>
 		)
@@ -537,11 +456,6 @@ const styles = (theme: any) => ({
 	},
 	grow: {
 		flexGrow: 1,
-	},
-	expand: {
-		transition: theme.transitions.create('transform', {
-			duration: theme.transitions.duration.shortest,
-		}),
 	},
 	centered: {
 		margin: 'auto'

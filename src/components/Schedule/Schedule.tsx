@@ -1,5 +1,5 @@
 import React from 'react'
-import { Lesson } from '../../utils/domain'
+import Lesson from '../../domain/Lesson'
 import styles from './Schedule.module.scss'
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
