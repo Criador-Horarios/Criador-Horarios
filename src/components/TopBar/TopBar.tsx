@@ -140,6 +140,7 @@ class TopBar extends React.Component <{
 		const courseFilterOptions = createFilterOptions({
 			stringify: (option: Course) => option.searchableName()
 		})
+		const maxSelectedCourses = 10
 
 		return (
 			<div className = {styles.TopBar}>
@@ -173,6 +174,10 @@ class TopBar extends React.Component <{
 							limitTags={maxTags}
 							onChange={(_, courses: Course[]) => this.onSelectedCourse(courses)}
 							filterOptions={courseFilterOptions} options={this.state.availableCourses}
+							getOptionDisabled={(option) => {
+								return !option.isSelected &&
+									this.selectedCourses.courses.length === maxSelectedCourses
+							}}
 							noOptionsText="Sem opções, escolha um curso primeiro"
 							getOptionLabel={(option) => option.displayName()}
 							renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
@@ -185,7 +190,7 @@ class TopBar extends React.Component <{
 							}}
 						/>
 						<Tooltip title="Obter link de partilha">
-							<IconButton color="inherit" onClick={this.props.onGetLink} component="span" disabled={false}>
+							<IconButton color="inherit" onClick={this.props.onGetLink} component="span" disabled={true}>
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>

@@ -350,8 +350,12 @@ class App extends React.Component <{
 									<GitHubIcon></GitHubIcon>
 								</IconButton>
 							</Link>
-							<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
-							<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
+							<Tooltip title="João David">
+								<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
+							</Tooltip>
+							<Tooltip title="Daniel Gonçalves">
+								<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
+							</Tooltip>
 						</Toolbar>													
 					</AppBar>
 				</div>

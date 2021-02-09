@@ -9,7 +9,7 @@ export default class Course implements Comparable {
 	name: string
 	semester: number
 	abbrev: string
-	color: string
+	color = ''
 	isSelected = false
 
 	constructor(obj: CourseDto) {
@@ -22,9 +22,18 @@ export default class Course implements Comparable {
 			return d === d.toUpperCase()
 		}).join('')
 
-		const chosenColor = getRandomDarkColor()
+		// const chosenColor = getRandomDarkColor()
+		// this.color = '#' + rgbHex(chosenColor.red, chosenColor.green, chosenColor.blue)
+	}
 
-		this.color = '#' + rgbHex(chosenColor.red, chosenColor.green, chosenColor.blue)
+	setColor(color: string): void {
+		this.color = color
+	}
+
+	removeColor(): string {
+		const color = this.color
+		this.color = ''
+		return color
 	}
 
 	equals(other: Course): boolean {
