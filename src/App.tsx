@@ -12,8 +12,6 @@ import TopBar from './components/TopBar/TopBar'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import Avatar from '@material-ui/core/Avatar'
 import IconButton from '@material-ui/core/IconButton'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 import Toolbar from '@material-ui/core/Toolbar'
 import Alert from '@material-ui/lab/Alert'
@@ -114,13 +112,11 @@ class App extends React.Component <{
 	}
 
 	clearSelectedShifts(): void {
-		if (this.state.selectedShifts.length === 0) {
-			this.showAlert('Não tem nenhum turno selecionado, faça o seu horário primeiro', 'info')
-		} else {
+		if (this.state.selectedShifts.length !== 0) {
 			this.setState({
 				selectedShifts: []
 			})
-			this.showAlert('Horário limpo', 'success')
+			this.showAlert('Horário limpo com sucesso', 'success')
 			this.changeUrl(false)
 		}
 	}
@@ -174,11 +170,6 @@ class App extends React.Component <{
 	}
 
 	async getLink(): Promise<void> {
-		if (this.state.selectedShifts.length === 0) {
-			this.showAlert('Nada para partilhar, faça o seu horário primeiro', 'warning')
-			return
-		}
-
 		const state = this.state.selectedShifts.map((s) => s.getShortDescription()).join(';')
 		const shortLink = await API.getShortUrl(state)
 		const el = document.createElement('textarea')
@@ -326,12 +317,20 @@ class App extends React.Component <{
 								<CardActions>
 									<div className={classes.centered as string}>
 										<Tooltip title="Guardar como imagem">
-											<IconButton color="inherit" onClick={this.saveSchedule} component="span">
+											<IconButton
+												disabled={this.state.selectedShifts.length === 0}
+												color="inherit"
+												onClick={this.clearSelectedShifts}
+												component="span">
 												<Icon>download</Icon>
 											</IconButton>
 										</Tooltip>
 										<Tooltip title="Limpar horário">
-											<IconButton color="inherit" onClick={this.clearSelectedShifts} component="span">
+											<IconButton
+												disabled={this.state.selectedShifts.length === 0}
+												color="inherit"
+												onClick={this.clearSelectedShifts}
+												component="span">
 												<Icon>delete</Icon>
 											</IconButton>
 										</Tooltip>
