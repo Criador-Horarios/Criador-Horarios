@@ -56,6 +56,7 @@ class App extends React.Component <{
 		this.changeCampi = this.changeCampi.bind(this)
 		this.saveSchedule = this.saveSchedule.bind(this)
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
+		this.showAlert = this.showAlert.bind(this)
 		this.chosenSchedule = React.createRef()
 	}
 
@@ -119,6 +120,7 @@ class App extends React.Component <{
 			this.setState({
 				selectedShifts: []
 			})
+			this.showAlert('Horário limpo', 'success')
 			this.changeUrl(false)
 		}
 	}
@@ -265,6 +267,7 @@ class App extends React.Component <{
 					onSelectedCourse={this.onSelectedCourse}
 					onClearShifts={this.clearSelectedShifts}
 					onGetLink={this.getLink}
+					showAlert={this.showAlert}
 				>
 				</TopBar>
 				<div className="main">

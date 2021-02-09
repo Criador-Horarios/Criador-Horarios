@@ -16,12 +16,12 @@ import Tooltip from '@material-ui/core/Tooltip'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
 import Icon from '@material-ui/core/Icon'
-import { withSnackbar } from 'notistack'
 
-class TopBar extends React.PureComponent <{
-  onSelectedCourse: (availableShifts: Shift[]) => Promise<void>
-  onClearShifts: () => void
-  onGetLink: () => void
+class TopBar extends React.Component <{
+	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
+	onSelectedCourse: (availableShifts: Shift[]) => Promise<void>
+	onClearShifts: () => void
+	onGetLink: () => void
 }, unknown>{
 	state = {
 		degrees: [] as Degree[],
@@ -45,8 +45,7 @@ class TopBar extends React.PureComponent <{
 			degrees: degrees ?? []
 		})
 		if (degrees === null) {
-			alert('AHHHHHHHHHHHH')
-			// this.showAlert('Não foi possível obter os cursos', 'error')
+			this.props.showAlert('Não foi possível obter os cursos', 'error')
 		}
 	}
 
@@ -55,8 +54,7 @@ class TopBar extends React.PureComponent <{
 		if (degree !== null) {
 			const degreeCourses = await API.getCourses(degree.id) 
 			if (degreeCourses === null) {
-				alert('ASKDLASDJLKSDALKKL')
-				// this.showAlert('Não foi possível obter as UCs deste curso', 'error')
+				this.props.showAlert('Não foi possível obter as UCs deste curso', 'error')
 				return
 			}
 			const selected = this.selectedCourses.courses
@@ -123,8 +121,7 @@ class TopBar extends React.PureComponent <{
 			this.selectedCourses.lastUpdate.course !== undefined) {
 			const schedule = await API.getCourseSchedules(this.selectedCourses.lastUpdate.course)
 			if (schedule === null) {
-				alert('ASKLDKLASDJKLDASJKLDASKL')
-				// this.showAlert('Não foi possível obter os turnos desta UC', 'error')
+				this.props.showAlert('Não foi possível obter os turnos desta UC', 'error')
 				return
 			}
 			availableShifts = this.availableShifts.concat(schedule)

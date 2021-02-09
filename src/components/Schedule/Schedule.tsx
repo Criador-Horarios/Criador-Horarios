@@ -5,8 +5,8 @@ import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 
 class Schedule extends React.PureComponent <{
-  onSelectedEvent: (id: string) => void
-  events: Lesson[]
+	onSelectedEvent: (id: string) => void
+	events: Lesson[]
 }, unknown>{
 	render(): React.ReactNode {
 		return (
