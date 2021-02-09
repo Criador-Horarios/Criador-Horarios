@@ -64,15 +64,6 @@ body {
     // grid-row: 1;
     // align-items: center;
     // justify-content: space-evenly;
-
-    .selector {
-      width: 100%;
-      margin: 0 10px;
-    }
-
-    .course-selector {
-      width: 50% !important;
-    }
   }
 
   .schedules {
@@ -85,31 +76,6 @@ body {
     @media (max-width: 700px) {
       flex-direction: column;
     }
-  }
-
-  .body {
-    height: 100%;
-  }
-
-  .body::before {
-    content: "";
-    position: fixed;
-    top: -5%;
-    left: -5%;
-    right: 0;
-    z-index: -1;
-
-    display: block;
-    background-image: url('https://thumbs.web.sapo.io/?W=775&H=0&delay_optim=1&webp=1&epic=NjFjy4anJSVBbr5CuJ3/iWcBohfajR3sm8U6JoUIOPRIOmnf3o79VL8bgcozJNFu/j/lJUhEZ8pZZ6ddMtbm0hp9uF4B9IoWXVq5gSHroaU4qhg=');
-    background-size: cover;
-    width: 110%;
-    height: 110%;
-
-    -webkit-filter: blur($blur) brightness($brightness);
-    -moz-filter: blur($blur) brightness($brightness);
-    -o-filter: blur($blur) brightness($brightness);
-    -ms-filter: blur($blur) brightness($brightness);
-    filter: blur($blur) brightness($brightness);
   }
 
   .footer {

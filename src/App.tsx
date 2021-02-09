@@ -352,7 +352,6 @@ class App extends React.Component <{
 						onSelectedCourse={this.onSelectedCourse}
 						onClearShifts={this.clearSelectedShifts}
 						onGetLink={this.getLink}
-						classes={classes}
 					>
 					</TopBar>
 					<Snackbar
@@ -366,7 +365,7 @@ class App extends React.Component <{
 							{this.state.alertMessage}
 						</Alert>
 					</Snackbar>
-					<div className="body">
+					<div className={classes.body as string}>
 						<div className="schedules">
 							<Card className={classes.card as string}>
 								<CardContent>
@@ -376,7 +375,7 @@ class App extends React.Component <{
 									/>
 								</CardContent>
 								<CardActions>
-									<Paper elevation={0} className={classes.paper as string}>
+									<Paper elevation={0} className={`${classes.paper as string} ${classes.centered as string}`}>
 										<StyledToggleButtonGroup
 											size="small"
 											value={this.state.selectedCampi}
@@ -419,7 +418,7 @@ class App extends React.Component <{
 					</div>
 				</div>
 				<div className="footer">
-					<AppBar className={classes.footer as string} color="inherit">
+					<AppBar className={classes.footer as string} color="inherit" position="relative">
 						<Toolbar>
 							<div className={classes.grow as string} />
 							<Link href="https://github.com/joaocmd/Criador-Horarios/" target="_blank" onClick={() => {return}} color="inherit">
@@ -459,6 +458,29 @@ const styles = (theme: any) => ({
 	},
 	centered: {
 		margin: 'auto'
+	},
+	body: {
+		height: '100%',
+		'&::before': {
+			content: '""',
+			position: 'fixed',
+			top: '-5%',
+			left: '-5%',
+			right: 0,
+			zIndex: -1,
+
+			display: 'block',
+			backgroundImage: `url(${process.env.PUBLIC_URL}/img/background.jpg)`,
+			backgroundSize: 'cover',
+			width: '110%',
+			height: '110%',
+
+			webkitFilter: 'blur(5px) brightness(1)',
+			mozFilter: 'blur(5px) brightness(1)',
+			oFilter: 'blur(5px) brightness(1)',
+			msFilter: 'blur(5px) brightness(1)',
+			filter: 'blur(5px) brightness(1)',
+		}
 	}
 })
 

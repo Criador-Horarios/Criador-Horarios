@@ -12,15 +12,13 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/IconButton'
-import { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
+import Icon from '@material-ui/core/Icon'
 
 class TopBar extends React.PureComponent <{
   onSelectedDegree: (degree: Degree | null) => Promise<void>
   onSelectedCourse: (courses: Course[]) => Promise<void>
   onClearShifts: () => void
   onGetLink: () => void
-  classes: CreateCSSProperties
 }, unknown>{
 	state = {
 		filtersVisible: false,
@@ -52,8 +50,6 @@ class TopBar extends React.PureComponent <{
 	}
 
 	render(): React.ReactNode {
-		const classes = this.props.classes
-
 		const maxTags = 14
 		const courseFilterOptions = createFilterOptions({
 			stringify: (option: Course) => option.searchableName()
@@ -69,7 +65,7 @@ class TopBar extends React.PureComponent <{
 						<Autocomplete
 							color="inherit"
 							size="small"
-							className="selector course-selector"
+							className={styles.degreeSelector}
 							selectOnFocus
 							clearOnBlur
 							handleHomeEndKeys={false}
@@ -82,7 +78,7 @@ class TopBar extends React.PureComponent <{
 						<Autocomplete
 							color="inherit"
 							size="small"
-							className="selector"
+							className={styles.courseSelector}
 							multiple
 							selectOnFocus
 							clearOnBlur
