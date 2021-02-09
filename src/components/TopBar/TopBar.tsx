@@ -23,9 +23,8 @@ class TopBar extends React.PureComponent <{
   onGetLink: () => void
 }, unknown>{
 	state = {
-		filtersVisible: false,
-		availableCourses: [] as Course[],
-		degrees: [] as Degree[]
+		degrees: [] as Degree[],
+		availableCourses: [] as Course[]
 	}
 	availableCourses: Course[] = []
 	availableShifts: Shift[] = []
