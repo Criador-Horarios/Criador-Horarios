@@ -3,9 +3,6 @@ import API from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
-import Course from './domain/Course'
-import CourseUpdates, { CourseUpdateType } from './utils/CourseUpdate'
-import Degree from './domain/Degree'
 import Shift, { ShiftType } from './domain/Shift'
 import Lesson from './domain/Lesson'
 import { Comparables } from './domain/Comparable'
@@ -36,8 +33,6 @@ class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
 	state = {
-		availableCourses: [] as Course[],
-		selectedCourses: new CourseUpdates(),
 		availableShifts: [] as Shift[],
 		shownShifts: [] as Shift[],
 		selectedShifts: [] as Shift[],
@@ -47,14 +42,11 @@ class App extends React.Component <{
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
 	}
-	degrees: Degree[] = []
-	selectedDegree: Degree | null = null
 	chosenSchedule: React.RefObject<Schedule>
 
 	// eslint-disable-next-line
 	constructor(props: any) {
 		super(props)
-		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
@@ -71,84 +63,8 @@ class App extends React.Component <{
 		this.forceUpdate()
 	}
 
-	async onSelectedDegree(degree: Degree | null): Promise<void> {
-		this.selectedDegree = degree
-		if (degree !== null) {
-			const degreeCourses = await API.getCourses(degree.id) 
-			if (degreeCourses === null) {
-				this.showAlert('Não foi possível obter as UCs deste curso', 'error')
-				return
-			}
-			const selected = this.state.selectedCourses.courses
-			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
-			availableCourses.sort(Course.compare)
-			this.setState({
-				availableCourses
-			})
-		} else {
-			this.setState({
-				availableCourses: this.state.selectedCourses.courses
-			})
-		}
-	}
-
-	getCoursesDifference(prevCourses: Course[], courses: Course[]): Course | undefined {
-		const prevSet = Comparables.toUnique(prevCourses)
-		const newSet = Comparables.toUnique(courses)
-
-		if (prevSet.length === newSet.length) {
-			// Nothing changed
-			return undefined
-		} else if (prevSet.length === newSet.length + 1) {
-			// Removed element, find missing in courses
-			return prevCourses.find((c: Course) => !Comparables.includes(courses, c))
-		} else if (prevSet.length === newSet.length - 1) {
-			// Added element, return first last on courses
-			return courses[courses.length - 1]
-		}
-	}
-
 	//FIXME: Available courses not updating when a course from another degree is removed 
-	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
-		if (selectedCourses.length === 0) {
-			this.setState(() => {
-				const currCourses = new CourseUpdates()
-				currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
-				// eslint-disable-next-line
-				const update: any = { selectedCourses: { ...currCourses}, availableShifts: [], shownShifts: [] }
-				if (this.selectedDegree === null) {
-					update.availableCourses = []
-				}
-				return update
-			})
-			return
-		}
-
-		const changedCourse = this.getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
-		if (!changedCourse) {
-			return
-		}
-
-		const currCourses = this.state.selectedCourses
-		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
-		currCourses.toggleCourse(changedCourse)
-
-		let availableShifts: Shift[]
-		if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Add &&
-			this.state.selectedCourses.lastUpdate.course !== undefined) {
-			const schedule = await API.getCourseSchedules(this.state.selectedCourses.lastUpdate.course)
-			if (schedule === null) {
-				this.showAlert('Não foi possível obter os turnos desta UC', 'error')
-				return
-			}
-			availableShifts = this.state.availableShifts.concat(schedule)
-		} else if (this.state.selectedCourses.lastUpdate?.type === CourseUpdateType.Remove) {
-			availableShifts = this.state.availableShifts
-				.filter((shift: Shift) => shift.courseName !== this.state.selectedCourses.lastUpdate?.course?.name)
-		} else {
-			availableShifts = []
-		}
-
+	async onSelectedCourse(availableShifts: Shift[]): Promise<void> {
 		const shownShifts = this.filterShifts({
 			selectedCampi: this.state.selectedCampi,
 			selectedShiftTypes: this.state.selectedShiftTypes,
@@ -156,7 +72,6 @@ class App extends React.Component <{
 		})
 
 		this.setState({
-			selectedCourses: { ...currCourses },
 			availableShifts,
 			shownShifts
 		})
@@ -348,7 +263,6 @@ class App extends React.Component <{
 				</header>
 				<div className="main">
 					<TopBar
-						onSelectedDegree={this.onSelectedDegree}
 						onSelectedCourse={this.onSelectedCourse}
 						onClearShifts={this.clearSelectedShifts}
 						onGetLink={this.getLink}

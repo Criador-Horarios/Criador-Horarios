@@ -2,8 +2,11 @@ import React from 'react'
 import styles from './TopBar.module.scss'
 
 import API from '../../utils/api'
+import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
+import Shift from '../../domain/Shift'
+import CourseUpdates, { CourseUpdateType } from '../../utils/CourseUpdate'
 
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
@@ -15,21 +18,25 @@ import IconButton from '@material-ui/core/IconButton'
 import Icon from '@material-ui/core/Icon'
 
 class TopBar extends React.PureComponent <{
-  onSelectedDegree: (degree: Degree | null) => Promise<void>
-  onSelectedCourse: (courses: Course[]) => Promise<void>
+  onSelectedCourse: (availableShifts: Shift[]) => Promise<void>
   onClearShifts: () => void
   onGetLink: () => void
 }, unknown>{
 	state = {
 		filtersVisible: false,
-		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
+		degrees: [] as Degree[]
 	}
+	availableCourses: Course[] = []
+	availableShifts: Shift[] = []
+	selectedCourses = new CourseUpdates()
+	selectedDegree: Degree | null = null
 
 	// eslint-disable-next-line
 	constructor(props: any) {
 		super(props)
-		this.changeFiltersVisibility = this.changeFiltersVisibility.bind(this)
+		this.onSelectedDegree = this.onSelectedDegree.bind(this)
+		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 	}
 
 	async componentDidMount(): Promise<void> {
@@ -43,10 +50,89 @@ class TopBar extends React.PureComponent <{
 		}
 	}
 
-	changeFiltersVisibility(): void {
-		this.setState({
-			filtersVisible: !this.state.filtersVisible
-		})
+	async onSelectedDegree(degree: Degree | null): Promise<void> {
+		this.selectedDegree = degree
+		if (degree !== null) {
+			const degreeCourses = await API.getCourses(degree.id) 
+			if (degreeCourses === null) {
+				alert('ASKDLASDJLKSDALKKL')
+				// this.showAlert('Não foi possível obter as UCs deste curso', 'error')
+				return
+			}
+			const selected = this.selectedCourses.courses
+			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
+			availableCourses.sort(Course.compare)
+			this.setState({
+				availableCourses
+			})
+		} else {
+			this.setState({
+				availableCourses: this.selectedCourses.courses
+			})
+		}
+	}
+
+	getCoursesDifference(prevCourses: Course[], courses: Course[]): Course | undefined {
+		const prevSet = Comparables.toUnique(prevCourses)
+		const newSet = Comparables.toUnique(courses)
+
+		if (prevSet.length === newSet.length) {
+			// Nothing changed
+			return undefined
+		} else if (prevSet.length === newSet.length + 1) {
+			// Removed element, find missing in courses
+			return prevCourses.find((c: Course) => !Comparables.includes(courses, c))
+		} else if (prevSet.length === newSet.length - 1) {
+			// Added element, return first last on courses
+			return courses[courses.length - 1]
+		}
+	}
+
+	//FIXME: Available courses not updating when a course from another degree is removed 
+	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
+		if (selectedCourses.length === 0) {
+			this.setState(() => {
+				const currCourses = new CourseUpdates()
+				currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
+				// eslint-disable-next-line
+				const update: any = { selectedCourses: { ...currCourses}, availableShifts: [], shownShifts: [] }
+				if (this.selectedDegree === null) {
+					update.availableCourses = []
+				}
+				return update
+			})
+			this.props.onSelectedCourse([] as Shift[])
+			return
+		}
+
+
+		const changedCourse = this.getCoursesDifference(this.selectedCourses.courses, selectedCourses)
+		if (!changedCourse) {
+			return
+		}
+
+		const currCourses = this.selectedCourses
+		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
+		currCourses.toggleCourse(changedCourse)
+
+		let availableShifts: Shift[]
+		if (this.selectedCourses.lastUpdate?.type === CourseUpdateType.Add &&
+			this.selectedCourses.lastUpdate.course !== undefined) {
+			const schedule = await API.getCourseSchedules(this.selectedCourses.lastUpdate.course)
+			if (schedule === null) {
+				alert('ASKLDKLASDJKLDASJKLDASKL')
+				// this.showAlert('Não foi possível obter os turnos desta UC', 'error')
+				return
+			}
+			availableShifts = this.availableShifts.concat(schedule)
+		} else if (this.selectedCourses.lastUpdate?.type === CourseUpdateType.Remove) {
+			availableShifts = this.availableShifts
+				.filter((shift: Shift) => shift.courseName !== this.selectedCourses.lastUpdate?.course?.name)
+		} else {
+			availableShifts = []
+		}
+		this.availableShifts = availableShifts
+		this.props.onSelectedCourse(availableShifts)
 	}
 
 	render(): React.ReactNode {
@@ -69,7 +155,7 @@ class TopBar extends React.PureComponent <{
 							selectOnFocus
 							clearOnBlur
 							handleHomeEndKeys={false}
-							onChange={(_, value) => this.props.onSelectedDegree(value)}
+							onChange={(_, value) => this.onSelectedDegree(value)}
 							noOptionsText="Sem opções"
 							options={this.state.degrees}
 							getOptionLabel={(option) => option.displayName()}
@@ -85,7 +171,7 @@ class TopBar extends React.PureComponent <{
 							disableCloseOnSelect
 							handleHomeEndKeys={false}
 							limitTags={maxTags}
-							onChange={(_, courses: Course[]) => this.props.onSelectedCourse(courses)}
+							onChange={(_, courses: Course[]) => this.onSelectedCourse(courses)}
 							filterOptions={courseFilterOptions} options={this.state.availableCourses}
 							noOptionsText="Sem opções, escolha um curso primeiro"
 							getOptionLabel={(option) => option.displayName()}
