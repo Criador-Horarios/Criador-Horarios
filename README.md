@@ -11,7 +11,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## TODOs
 
 - [x] Set API type objects
-- [x] Add good colors -> For now random it's random
+- [x] Add good colors
 - [X] Save state to cookies
 - [ ] Shorten saved state and rebuild on reload (can add loading animation)
 - [X] Snackbar alerts
@@ -24,7 +24,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Center buttons
 - [X] Background Image
 - [ ] Add help button/animation
-- [ ] Choose colors only when selecting the course
+- [x] Choose colors only when selecting the course
 
 ## Bug
 
