@@ -86,7 +86,7 @@ export default class Shift implements Comparable {
 	}
 
 	getShortDescription(): string {
-		return `${this.courseId}~${this.name}`
+		return `${this.courseId}~${this.shiftId}`
 	}
 }
 

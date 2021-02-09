@@ -12,6 +12,8 @@ import TopBar from './components/TopBar/TopBar'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import Avatar from '@material-ui/core/Avatar'
 import IconButton from '@material-ui/core/IconButton'
+import Button from '@material-ui/core/Button'
+import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 import Toolbar from '@material-ui/core/Toolbar'
 import Alert from '@material-ui/lab/Alert'
@@ -233,7 +235,7 @@ class App extends React.Component <{
 			fileName: 'ist-horario',
 			html2CanvasOptions: {
 				backgroundColor: undefined,
-				allowTaint: true
+				allowTaint: true,
 			}
 		})
 	
@@ -259,15 +261,13 @@ class App extends React.Component <{
 
 		return (
 			<div className="App">
-				<header className="App-header">
-				</header>
+				<TopBar
+					onSelectedCourse={this.onSelectedCourse}
+					onClearShifts={this.clearSelectedShifts}
+					onGetLink={this.getLink}
+				>
+				</TopBar>
 				<div className="main">
-					<TopBar
-						onSelectedCourse={this.onSelectedCourse}
-						onClearShifts={this.clearSelectedShifts}
-						onGetLink={this.getLink}
-					>
-					</TopBar>
 					<Snackbar
 						open={this.state.hasAlert}
 						autoHideDuration={3000}
@@ -282,7 +282,7 @@ class App extends React.Component <{
 					<div className={classes.body as string}>
 						<div className="schedules">
 							<Card className={classes.card as string}>
-								<CardContent>
+								<CardContent className={classes.cardContent as string}>
 									<Schedule
 										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
 										events={this.getAllLessons()}
@@ -314,25 +314,32 @@ class App extends React.Component <{
 								</CardActions>
 							</Card>
 							<Card className={classes.card as string}>
-								<CardContent>
+								<CardContent className={classes.cardContent as string}>
 									<Schedule
 										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
 										events={this.getSelectedLessons()} ref={this.chosenSchedule}
 									/>
 								</CardContent>
 								<CardActions>
-									<Tooltip title="Guardar como imagem" className={classes.centered as string}>
-										<IconButton color="inherit" onClick={this.saveSchedule} component="span">
-											<Icon>download</Icon>
-										</IconButton>
-									</Tooltip>
+									<div className={classes.centered as string}>
+										<Tooltip title="Guardar como imagem">
+											<IconButton color="inherit" onClick={this.saveSchedule} component="span">
+												<Icon>download</Icon>
+											</IconButton>
+										</Tooltip>
+										<Tooltip title="Limpar horário">
+											<IconButton color="inherit" onClick={this.clearSelectedShifts} component="span">
+												<Icon>delete</Icon>
+											</IconButton>
+										</Tooltip>
+									</div>
 								</CardActions>
 							</Card>
 						</div>
 					</div>
 				</div>
 				<div className="footer">
-					<AppBar className={classes.footer as string} color="inherit" position="relative">
+					<AppBar className={classes.footer as string} color="default" position="sticky">
 						<Toolbar>
 							<div className={classes.grow as string} />
 							<Link href="https://github.com/joaocmd/Criador-Horarios/" target="_blank" onClick={() => {return}} color="inherit">
@@ -350,6 +357,11 @@ class App extends React.Component <{
 	}
 }
 
+const cssVariables = {
+	blur: '5px',
+	brightness: 1
+}
+
 // eslint-disable-next-line
 const styles = (theme: any) => ({
 	paper: {
@@ -361,10 +373,13 @@ const styles = (theme: any) => ({
 		margin: theme.spacing(1, 0.5),
 	},
 	card: {
-		margin: '2% 1% 1% 1%'
+		margin: '1% 1% 2% 1%'
+	},
+	cardContent: {
+		paddingBottom: '0px'
 	},
 	footer: {
-		bottom: 0,
+		bottom: '0px',
 		top: 'auto',
 	},
 	grow: {
@@ -389,11 +404,11 @@ const styles = (theme: any) => ({
 			width: '110%',
 			height: '110%',
 
-			webkitFilter: 'blur(5px) brightness(1)',
-			mozFilter: 'blur(5px) brightness(1)',
-			oFilter: 'blur(5px) brightness(1)',
-			msFilter: 'blur(5px) brightness(1)',
-			filter: 'blur(5px) brightness(1)',
+			webkitFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
+			mozFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
+			oFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
+			msFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
+			filter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
 		}
 	}
 })

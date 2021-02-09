@@ -12,6 +12,9 @@ body {
 
 .App {
   // text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 
   .App-logo {
     height: 40vmin;
@@ -52,9 +55,10 @@ body {
 
 .main {
   height: 100%;
-  // display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr 8fr;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   .topbar {
     // padding: 4px;

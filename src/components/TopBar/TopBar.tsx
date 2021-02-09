@@ -16,6 +16,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
 import Icon from '@material-ui/core/Icon'
+import { withSnackbar } from 'notistack'
 
 class TopBar extends React.PureComponent <{
   onSelectedCourse: (availableShifts: Shift[]) => Promise<void>
@@ -90,20 +91,23 @@ class TopBar extends React.PureComponent <{
 	//FIXME: Available courses not updating when a course from another degree is removed 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		if (selectedCourses.length === 0) {
+			// FIXME: Does this need to be a setState?
 			this.setState(() => {
 				const currCourses = new CourseUpdates()
 				currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
+				currCourses.courses = []
 				// eslint-disable-next-line
-				const update: any = { selectedCourses: { ...currCourses}, availableShifts: [], shownShifts: [] }
+				const update: any = { }
+				this.availableShifts = []
+				this.selectedCourses = currCourses
 				if (this.selectedDegree === null) {
-					update.availableCourses = []
+					this.availableCourses = []
 				}
 				return update
 			})
 			this.props.onSelectedCourse([] as Shift[])
 			return
 		}
-
 
 		const changedCourse = this.getCoursesDifference(this.selectedCourses.courses, selectedCourses)
 		if (!changedCourse) {
@@ -183,11 +187,6 @@ class TopBar extends React.PureComponent <{
 								))
 							}}
 						/>
-						<Tooltip title="Limpar horário">
-							<IconButton color="inherit" onClick={this.props.onClearShifts} component="span">
-								<Icon>delete</Icon>
-							</IconButton>
-						</Tooltip>
 						<Tooltip title="Obter link de partilha">
 							<IconButton color="inherit" onClick={this.props.onGetLink} component="span" disabled={false}>
 								<Icon>share</Icon>
