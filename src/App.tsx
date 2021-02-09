@@ -176,7 +176,8 @@ class App extends React.Component <{
 			return
 		}
 
-		const shortLink = await API.getShortUrl()
+		const state = this.state.selectedShifts.map((s) => s.getShortDescription()).join(';')
+		const shortLink = await API.getShortUrl(state)
 		const el = document.createElement('textarea')
 		el.value = shortLink
 		el.setAttribute('readonly', '')

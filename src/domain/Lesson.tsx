@@ -8,7 +8,6 @@ export default class Lesson implements Comparable {
 	daysOfWeek: number[]
 	color: string
 	id: string
-	shiftId: string
 
 	// eslint-disable-next-line
 	constructor(obj: Record<string, any>) {
@@ -18,7 +17,6 @@ export default class Lesson implements Comparable {
 		this.color = obj.color
 		this.type = obj.type
 		this.id = obj.shiftName
-		this.shiftId = obj.shiftId
 		this.title = `${obj.acronym} - ${obj.shiftId}\n${obj.room} @ ${obj.campus}`
 	}
 
@@ -28,10 +26,6 @@ export default class Lesson implements Comparable {
 
 	equals(other: Lesson): boolean {
 		return this.hashString() === other.hashString()
-	}
-
-	toShortDescription(): string[] {
-		return [this.shiftId, this.id]
 	}
 }
 

@@ -54,7 +54,13 @@ export default class API {
 		return shifts
 	}
 
-	public static async getShortUrl(): Promise<string> {
-		return this.getRequest(`/tinyurl/api-create.php?url=${window.location.href}`)
+	public static async getShortUrl(state: string): Promise<string> {
+		return `${window.location.href}/?s=${state}`
+			.replace('//', '/')
+			.replace(':/', '://')
+		// return this.getRequest(`/tinyurl/api-create.php?url=${window.location.href}/?s=${state}`
+		// 	.replace('//', '/')
+		// 	.replace(':/', '://')
+		// )
 	}
 }
