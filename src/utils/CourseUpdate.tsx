@@ -51,6 +51,20 @@ export default class CourseUpdates {
 		} as Update
 		return type
 	}
+
+	removeAllCourses(): void {
+		this.courses.forEach( (c: Course) => {
+			c.isSelected = false
+			const color = c.removeColor()
+			selectedColors.add(color)
+		})
+
+		this.courses = []
+		this.lastUpdate = {
+			type: CourseUpdateType.Clear,
+			course: undefined
+		} as Update
+	}
 }
 
 const selectedColors = new Set([
