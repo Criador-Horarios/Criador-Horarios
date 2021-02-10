@@ -1,12 +1,28 @@
 .TopBar {
 }
 
+.ToolBar {
+    @media (max-width: 400px) {
+        flex-wrap: wrap;
+    }
+}
+
 .degreeSelector {
     width: 50%;
     margin: 0 10px;
+
+    @media (max-width: 400px) {
+        width: 100%;
+        margin: 10px 0;
+    }
 }
 
 .courseSelector {
     width: 100%;
     margin: 0 10px;
+
+    @media (max-width: 400px) {
+        width: 100%;
+        margin: 0;
+    }
 }

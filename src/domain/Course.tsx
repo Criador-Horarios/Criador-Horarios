@@ -1,4 +1,5 @@
-import Comparable from './Comparable'
+import Comparable, { Comparables } from './Comparable'
+import Shift, { ShiftType } from './Shift'
 import hexRgb from 'hex-rgb'
 import rgbHex from 'rgb-hex'
 import RandomColor from 'randomcolor'
@@ -10,6 +11,8 @@ export default class Course implements Comparable {
 	semester: number
 	abbrev: string
 	color = ''
+	shiftTypes: Map<string, boolean | undefined> = new Map()
+	selectedShifts = 0
 	isSelected = false
 
 	constructor(obj: CourseDto) {
@@ -22,8 +25,45 @@ export default class Course implements Comparable {
 			return d === d.toUpperCase()
 		}).join('')
 
+		Object.values(ShiftType).forEach( (s) => {
+			this.shiftTypes.set(s, undefined)
+		})
+
 		// const chosenColor = getRandomDarkColor()
 		// this.color = '#' + rgbHex(chosenColor.red, chosenColor.green, chosenColor.blue)
+	}
+
+	addShift(shift: Shift): void {
+		this.shiftTypes.set(shift.type, false)
+	}
+
+	addSelectedShift(shift: Shift): void {
+		this.shiftTypes.set(shift.type, true)
+		this.selectedShifts++
+	}
+
+	removeSelectedShift(shift: Shift): void {
+		this.shiftTypes.set(shift.type, false)
+		this.selectedShifts--
+	}
+
+	saveShifts(): void {
+		const undefinedKeys = Array.from(this.shiftTypes).filter( (s) => s[1] === undefined)
+		undefinedKeys.forEach( (arr) => this.shiftTypes.delete(arr[0]))
+	}
+
+	clearSelectedShifts(): void {
+		this.shiftTypes.forEach( (value, key) => {
+			if (value !== undefined) this.shiftTypes.set(key as string, false)
+		})
+	}
+
+	hasShiftsSelected(): boolean {
+		return this.selectedShifts > 0
+	}
+
+	getShiftsDisplay(): Map<string, boolean | undefined> {
+		return this.shiftTypes
 	}
 
 	setColor(color: string): void {
@@ -64,29 +104,4 @@ export type CourseDto = {
 	credits: string
 	id: string
 	name: string
-}
-
-const getRandomDarkColor = () => {
-	let chosenColor: hexRgb.RgbaObject
-	do {
-		chosenColor = hexRgb(RandomColor({
-			luminosity: 'dark',
-			alpha: 1,
-			hue: 'random'
-		}))
-	} while (!isOkWithWhite(chosenColor))
-	return chosenColor
-}
-
-const isOkWithWhite = function(hexColor: hexRgb.RgbaObject): boolean {
-	const C = [ hexColor.red/255, hexColor.green/255, hexColor.blue/255 ]
-	for ( let i = 0; i < C.length; ++i ) {
-		if ( C[i] <= 0.03928 ) {
-			C[i] = C[i] / 12.92
-		} else {
-			C[i] = Math.pow( ( C[i] + 0.055 ) / 1.055, 2.4)
-		}
-	}
-	const L = 0.2126 * C[0] + 0.7152 * C[1] + 0.0722 * C[2]
-	return L <= 0.179
 }

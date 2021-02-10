@@ -39,4 +39,9 @@ export class Comparables {
 		})
 		return Object.values(res) as Comparable[]
 	}
+
+	static addToSet(set: Record<string, Comparable>, obj: Comparable): Record<string, Comparable> {
+		set[obj.hashString()] = obj
+		return set
+	}
 }

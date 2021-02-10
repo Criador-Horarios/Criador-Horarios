@@ -25,7 +25,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Background Image
 - [ ] Add help button/animation
 - [x] Choose colors only when selecting the course
-- [ ] Disable clear and export schedule buttons when unable to use them
+- [X] Disable clear and export schedule buttons when unable to use them
 
 ## Bug
 
@@ -38,3 +38,4 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Allow export image of the chosen schedule
 - [ ] Allow selection of multiple degrees to have all the courses in the selection list
 - [ ] Add loading progress when making request
+- [X] Add checklist with chosen shifts from each course to keep track

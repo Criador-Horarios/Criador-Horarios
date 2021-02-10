@@ -19,7 +19,7 @@ import Icon from '@material-ui/core/Icon'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
-	onSelectedCourse: (availableShifts: Shift[]) => Promise<void>
+	onSelectedCourse: (availableShifts: Shift[], selectedCourses: Course[]) => Promise<void>
 	onClearShifts: () => void
 	onGetLink: () => void
 }, unknown>{
@@ -95,7 +95,7 @@ class TopBar extends React.Component <{
 					availableCourses: []
 				})
 			}
-			this.props.onSelectedCourse([] as Shift[])
+			this.props.onSelectedCourse([] as Shift[], selectedCourses)
 			return
 		}
 
@@ -107,6 +107,7 @@ class TopBar extends React.Component <{
 		const currCourses = this.selectedCourses
 		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
 		currCourses.toggleCourse(changedCourse)
+		this.selectedCourses = currCourses
 
 		let availableShifts: Shift[]
 		if (this.selectedCourses.lastUpdate?.type === CourseUpdateType.Add &&
@@ -124,7 +125,7 @@ class TopBar extends React.Component <{
 			availableShifts = []
 		}
 		this.availableShifts = availableShifts
-		this.props.onSelectedCourse(availableShifts)
+		this.props.onSelectedCourse(availableShifts, currCourses.courses)
 	}
 
 	render(): React.ReactNode {
@@ -140,7 +141,7 @@ class TopBar extends React.Component <{
 					color="default"
 					position="static"
 				>
-					<Toolbar>
+					<Toolbar className={styles.ToolBar}>
 						<Autocomplete
 							color="inherit"
 							size="small"
