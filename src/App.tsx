@@ -31,6 +31,7 @@ import Snackbar from '@material-ui/core/Snackbar'
 import Link from '@material-ui/core/Link'
 import GitHubIcon from '@material-ui/icons/GitHub'
 import Typography from '@material-ui/core/Typography'
+import { returnColor } from './utils/CourseUpdate'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -125,7 +126,12 @@ class App extends React.Component <{
 
 	clearSelectedShifts(): void {
 		if (this.state.selectedShifts.length !== 0) {
-			this.state.selectedCourses.forEach( (c) => c.clearSelectedShifts())
+			this.state.selectedCourses.forEach( (c) => {
+				c.clearSelectedShifts()
+				if (!c.isSelected && !c.hasShiftsSelected) {
+					returnColor(c.removeColor())
+				}
+			})
 			this.setState({
 				selectedShifts: []
 			})
@@ -380,7 +386,7 @@ class App extends React.Component <{
 											<IconButton
 												disabled={this.state.selectedShifts.length === 0}
 												color="inherit"
-												onClick={this.clearSelectedShifts}
+												onClick={this.saveSchedule}
 												component="span">
 												<Icon>download</Icon>
 											</IconButton>

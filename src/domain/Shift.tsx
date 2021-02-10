@@ -7,6 +7,9 @@ import { DescriptionSharp } from '@material-ui/icons'
 import { stringify } from 'querystring'
 
 const shadeColor = (color: string, amount: number) => {
+	if (color === '') {
+		return ''
+	}
 	const newColor = hexRgb(color)
 	Object.keys(newColor).forEach((key: string) => {
 		newColor[key as keyof hexRgb.RgbaObject] *= amount

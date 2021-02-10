@@ -61,8 +61,9 @@ export default class CourseUpdates {
 	removeAllCourses(): void {
 		this.courses.forEach( (c: Course) => {
 			c.isSelected = false
-			const color = c.removeColor()
-			selectedColors.add(color)
+			if (!c.hasShiftsSelected) {
+				returnColor(c.removeColor())
+			}
 		})
 
 		this.courses = []
@@ -80,7 +81,7 @@ const selectedColors = new Set([
 ])
 const initialColors = new Set(selectedColors)
 
-function getColor(): string {
+export function getColor(): string {
 	let chosenColor: string
 	if (initialColors.size > 0) {
 		chosenColor = Array.from(initialColors)[Math.floor(Math.random()*initialColors.size)]
@@ -92,7 +93,7 @@ function getColor(): string {
 	return chosenColor
 }
 
-function returnColor(color: string): void {
+export function returnColor(color: string): void {
 	if (initialColors.has(color)) {
 		selectedColors.add(color)
 	}

@@ -63,22 +63,26 @@ export default class API {
 		if (!course.isSelected) {
 			return []
 		}
+		let hasBeenUnselected = false
 		const shifts = res.shifts.map((d: ShiftDto) => {
+			if (!course.isSelected) {
+				hasBeenUnselected = true
+				return null
+			}
 			const shift = new Shift(d, course)
 			course.addShift(shift)
 			return shift
 		})
+		if (hasBeenUnselected) {
+			return []
+		}
 		course.saveShifts()
-		return shifts
+		return shifts as Shift[]
 	}
 
 	public static async getShortUrl(state: string): Promise<string> {
 		return `${window.location.href}/?s=${state}`
 			.replace('//', '/')
 			.replace(':/', '://')
-		// return this.getRequest(`/tinyurl/api-create.php?url=${window.location.href}/?s=${state}`
-		// 	.replace('//', '/')
-		// 	.replace(':/', '://')
-		// )
 	}
 }
