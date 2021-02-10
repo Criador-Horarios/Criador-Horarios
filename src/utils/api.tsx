@@ -45,6 +45,15 @@ export default class API {
 		return courses
 	}
 
+	public static async getCourse(course: string): Promise<Course | null> {
+		const res = (await this.getRequest(`/api/courses/${course}`) as CourseDto | null)
+		if (res === null) {
+			return null
+		}
+		res.id = course
+		return new Course(res)
+	}
+
 	public static async getCourseSchedules(course: Course): Promise<Shift[] | null> {
 		const res = await this.getRequest(`/api/courses/${course.id}/schedule?academicTerm=${this.ACADEMIC_TERM}`) as ScheduleDto | null
 		if (res === null) {

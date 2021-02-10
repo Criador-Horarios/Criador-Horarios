@@ -27,7 +27,6 @@ class TopBar extends React.Component <{
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[]
 	}
-	availableCourses: Course[] = []
 	availableShifts: Shift[] = []
 	selectedCourses = new CourseUpdates()
 	selectedDegree: Degree | null = null
@@ -92,7 +91,9 @@ class TopBar extends React.Component <{
 			this.availableShifts = []
 			this.selectedCourses.removeAllCourses()
 			if (this.selectedDegree === null) {
-				this.availableCourses = []
+				this.setState({
+					availableCourses: []
+				})
 			}
 			this.props.onSelectedCourse([] as Shift[])
 			return
@@ -181,7 +182,7 @@ class TopBar extends React.Component <{
 							}}
 						/>
 						<Tooltip title="Obter link de partilha">
-							<IconButton color="inherit" onClick={this.props.onGetLink} component="span" disabled={true}>
+							<IconButton color="inherit" onClick={this.props.onGetLink} component="span">
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>
