@@ -31,6 +31,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 - [ ] When exporting to image, lessons overlapping bugs
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected
+- [ ] When a shift is selected, if the course is unselected and selected again, it may have a different color
 
 ## Suggestions
 
