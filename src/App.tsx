@@ -3,7 +3,8 @@ import API from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
-import Shift, { ShiftType } from './domain/Shift'
+import Course from './domain/Course'
+import Shift, { ShiftType, shortenDescriptions } from './domain/Shift'
 import Lesson from './domain/Lesson'
 import { Comparables } from './domain/Comparable'
 import Schedule from './components/Schedule/Schedule'
@@ -171,6 +172,7 @@ class App extends React.Component <{
 
 	async getLink(): Promise<void> {
 		const state = this.state.selectedShifts.map((s) => s.getShortDescription()).join(';')
+		const state = shortenDescriptions(this.state.selectedShifts)
 		const shortLink = await API.getShortUrl(state)
 		const el = document.createElement('textarea')
 		el.value = shortLink
@@ -199,6 +201,19 @@ class App extends React.Component <{
 		}
 	}
 
+	async buildCourse(description: string[]): Promise<void> {
+		// FIXME
+		// const course = await API.getCourse(description[0])
+		// if (!course) {
+		// 	throw 'Could not build course'
+		// }
+		// const schedule = await API.getCourseSchedules(course)
+		// description.slice(1).forEach((d: string) => {
+		// 	// TODO: availableCourses/selectedCourses need to be synced...
+		// 	console.log(d)
+		// })
+	}
+
 	async buildState(param: string | undefined): Promise<void> {
 		if (!param) {
 			return
@@ -206,16 +221,9 @@ class App extends React.Component <{
 
 		try {
 			// TODO: rebuild colors and domain chosen for the courses
-			const shifts: Shift[] = JSON.parse(atob(param))
-			// Set prototypes for each object received
-			shifts.forEach((s) => {
-				Object.setPrototypeOf(s, Shift.prototype)
-				s.lessons.forEach((l) => Object.setPrototypeOf(l, Lesson.prototype))
-			})
-			
-			this.setState({
-				selectedShifts: [...shifts]
-			})
+			param.split(';')
+				.map((shift: string) => shift.split('~'))
+				.forEach((description: string[]) => this.buildCourse(description))
 			this.changeUrl(true)
 		} catch (err) {
 			console.error(err)
@@ -224,6 +232,10 @@ class App extends React.Component <{
 	}
 
 	saveSchedule(): void {
+		if (this.state.selectedShifts.length === 0) {
+			this.showAlert('Não tem nenhum turno selecionado, faça o seu horário primeiro', 'info')
+			return
+		}
 		exportComponentAsPNG(this.chosenSchedule, {
 			fileName: 'ist-horario',
 			html2CanvasOptions: {

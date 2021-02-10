@@ -27,7 +27,6 @@ class TopBar extends React.Component <{
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[]
 	}
-	availableCourses: Course[] = []
 	availableShifts: Shift[] = []
 	selectedCourses = new CourseUpdates()
 	selectedDegree: Degree | null = null
@@ -89,20 +88,13 @@ class TopBar extends React.Component <{
 	//FIXME: Available courses not updating when a course from another degree is removed 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		if (selectedCourses.length === 0) {
-			// FIXME: Does this need to be a setState?
-			this.setState(() => {
-				const currCourses = new CourseUpdates()
-				currCourses.lastUpdate = { course: undefined, type: CourseUpdateType.Clear}
-				currCourses.courses = []
-				// eslint-disable-next-line
-				const update: any = { }
-				this.availableShifts = []
-				this.selectedCourses = currCourses
-				if (this.selectedDegree === null) {
-					this.availableCourses = []
-				}
-				return update
-			})
+			this.availableShifts = []
+			this.selectedCourses.removeAllCourses()
+			if (this.selectedDegree === null) {
+				this.setState({
+					availableCourses: []
+				})
+			}
 			this.props.onSelectedCourse([] as Shift[])
 			return
 		}
@@ -190,7 +182,7 @@ class TopBar extends React.Component <{
 							}}
 						/>
 						<Tooltip title="Obter link de partilha">
-							<IconButton color="inherit" onClick={this.props.onGetLink} component="span" disabled={true}>
+							<IconButton color="inherit" onClick={this.props.onGetLink} component="span">
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>
