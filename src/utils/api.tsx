@@ -8,7 +8,7 @@ export default class API {
 
 	// eslint-disable-next-line
 	private static async getRequest(url: string): Promise<any> {
-		return await fetch('/horarios' + url).then(r => {
+		return await fetch('' + url).then(r => {
 			const contentType = r.headers.get('content-type')
 			if (contentType?.includes('application/json') && r.status === 200) {
 				return r.json()

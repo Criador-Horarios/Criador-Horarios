@@ -1,7 +1,6 @@
 {
   "name": "horarios",
   "version": "0.1.0",
-  "homepage": "horarios",
   "private": true,
   "dependencies": {
     "@fullcalendar/react": "^5.5.0",
