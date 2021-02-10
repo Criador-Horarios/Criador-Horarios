@@ -13,8 +13,6 @@ import TopBar from './components/TopBar/TopBar'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import Avatar from '@material-ui/core/Avatar'
 import IconButton from '@material-ui/core/IconButton'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 import Toolbar from '@material-ui/core/Toolbar'
 import Alert from '@material-ui/lab/Alert'
@@ -23,6 +21,7 @@ import Icon from '@material-ui/core/Icon'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardActions from '@material-ui/core/CardActions'
+import Chip from '@material-ui/core/Chip'
 import Paper from '@material-ui/core/Paper'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
@@ -31,11 +30,13 @@ import { exportComponentAsPNG } from 'react-component-export-image'
 import Snackbar from '@material-ui/core/Snackbar'
 import Link from '@material-ui/core/Link'
 import GitHubIcon from '@material-ui/icons/GitHub'
+import Typography from '@material-ui/core/Typography'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
 	state = {
+		selectedCourses: [] as Course[],
 		availableShifts: [] as Shift[],
 		shownShifts: [] as Shift[],
 		selectedShifts: [] as Shift[],
@@ -67,7 +68,7 @@ class App extends React.Component <{
 		this.forceUpdate()
 	}
 
-	async onSelectedCourse(availableShifts: Shift[]): Promise<void> {
+	async onSelectedCourse(availableShifts: Shift[], selectedCourses: Course[]): Promise<void> {
 		const shownShifts = this.filterShifts({
 			selectedCampi: this.state.selectedCampi,
 			selectedShiftTypes: this.state.selectedShiftTypes,
@@ -76,7 +77,8 @@ class App extends React.Component <{
 
 		this.setState({
 			availableShifts,
-			shownShifts
+			shownShifts,
+			selectedCourses
 		})
 	}
 
@@ -92,6 +94,8 @@ class App extends React.Component <{
 		const chosenShift = arr.find((s: Shift) => s.name === shiftName)
 
 		if (chosenShift) {
+			const shiftCourse = this.state.selectedCourses.filter( (c) => c.id === chosenShift.courseId)
+
 			// Verify if of the same type and course to replace, but not the same
 			const replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
 			const selectedShifts = this.state.selectedShifts
@@ -102,9 +106,14 @@ class App extends React.Component <{
 				selectedShifts.push(chosenShift)
 				if (replacingIndex !== -1) {
 					selectedShifts.splice(replacingIndex, 1)  
+				} else if (shiftCourse.length === 1) {
+					shiftCourse[0].addSelectedShift(chosenShift)
 				}
 			} else {
 				selectedShifts.splice(idx, 1)
+				if (shiftCourse.length === 1) {
+					shiftCourse[0].removeSelectedShift(chosenShift)
+				}
 			}
 
 			this.setState({
@@ -115,15 +124,28 @@ class App extends React.Component <{
 	}
 
 	clearSelectedShifts(): void {
-		if (this.state.selectedShifts.length === 0) {
-			this.showAlert('Não tem nenhum turno selecionado, faça o seu horário primeiro', 'info')
-		} else {
+		if (this.state.selectedShifts.length !== 0) {
+			this.state.selectedCourses.forEach( (c) => c.clearSelectedShifts())
 			this.setState({
 				selectedShifts: []
 			})
-			this.showAlert('Horário limpo', 'success')
+			this.showAlert('Horário limpo com sucesso', 'success')
 			this.changeUrl(false)
 		}
+	}
+
+	getCoursesBySelectedShifts(): Course[] {
+		const finalCourses = [...this.state.selectedCourses]
+		// let courses: Record<string, Course> = {}
+		this.state.selectedShifts.forEach( (s) => {
+			// FIXME: Includes? hmmmm
+			// finalCourses = Comparables.addToSet(finalCourses, s.course) as Record<string, Course>
+			if (!finalCourses.includes(s.course)) {
+				finalCourses.push(s.course)
+			}
+		})
+		finalCourses.sort(Course.compare)
+		return finalCourses
 	}
 
 	changeCampi(campi: string[]): void {
@@ -263,7 +285,7 @@ class App extends React.Component <{
 				'&:first-child': {
 					borderRadius: theme.shape.borderRadius,
 				},
-			},
+			}
 		}))(ToggleButtonGroup)
 
 
@@ -300,6 +322,7 @@ class App extends React.Component <{
 								<CardActions>
 									<Paper elevation={0} className={`${classes.paper as string} ${classes.centered as string}`}>
 										<StyledToggleButtonGroup
+											className={classes.toggleGroup as string}
 											size="small"
 											value={this.state.selectedCampi}
 											onChange={(_, value) => this.changeCampi(value as string[])}
@@ -311,13 +334,14 @@ class App extends React.Component <{
 										</StyledToggleButtonGroup>
 										<Divider flexItem orientation="vertical" className={classes.divider as string}/>
 										<StyledToggleButtonGroup
+											className={classes.toggleGroup as string}
 											size="small"
 											value={this.state.selectedShiftTypes}
 											onChange={(_, value) => this.changeShiftTypes(value as string[])}
 										>
 											{Object.entries(ShiftType).map((name) => (
 												<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
-											))}        
+											))}       
 										</StyledToggleButtonGroup>
 									</Paper>
 								</CardActions>
@@ -330,14 +354,43 @@ class App extends React.Component <{
 									/>
 								</CardContent>
 								<CardActions>
+									<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
+										{this.getCoursesBySelectedShifts().map((c) => (
+											<Paper elevation={0} variant={'outlined'} key={c.id}
+												style={{padding: '4px', margin: '4px', display: 'flex'}}
+											>
+												<Tooltip title={c.name} key={c.id}>
+													<Chip size="small" color='primary'
+														style={{backgroundColor: c.color}} label={c.acronym}
+													/>
+												</Tooltip>
+												{Array.from(c.getShiftsDisplay()).map( (s) => (
+													<Paper elevation={0} key={s[0]}
+														style={{marginLeft: '4px', marginRight: '4px',
+															color: s[1] ? '#000' : 'rgba(0, 0, 0, 0.26)'}}
+													>
+														<Typography variant='body1' style={{ fontWeight: 500 }}>{s[0]}</Typography>
+													</Paper>
+												))}
+											</Paper>
+										))}
+									</div>
 									<div className={classes.centered as string}>
 										<Tooltip title="Guardar como imagem">
-											<IconButton color="inherit" onClick={this.saveSchedule} component="span">
+											<IconButton
+												disabled={this.state.selectedShifts.length === 0}
+												color="inherit"
+												onClick={this.clearSelectedShifts}
+												component="span">
 												<Icon>download</Icon>
 											</IconButton>
 										</Tooltip>
 										<Tooltip title="Limpar horário">
-											<IconButton color="inherit" onClick={this.clearSelectedShifts} component="span">
+											<IconButton
+												disabled={this.state.selectedShifts.length === 0}
+												color="inherit"
+												onClick={this.clearSelectedShifts}
+												component="span">
 												<Icon>delete</Icon>
 											</IconButton>
 										</Tooltip>
@@ -351,16 +404,26 @@ class App extends React.Component <{
 					<AppBar className={classes.footer as string} color="default" position="sticky">
 						<Toolbar>
 							<div className={classes.grow as string} />
-							<Link href="https://github.com/joaocmd/Criador-Horarios/" target="_blank" onClick={() => {return}} color="inherit">
-								<IconButton color="inherit" onClick={() => {return}} component="span">
-									<GitHubIcon></GitHubIcon>
-								</IconButton>
-							</Link>
+							<Tooltip title="Ver código fonte">
+								<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">
+									<IconButton color="inherit" onClick={() => {return}} component="span">
+										<GitHubIcon></GitHubIcon>
+									</IconButton>
+								</Link>
+							</Tooltip>
 							<Tooltip title="João David">
-								<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
+								<Link href="https://github.com/joaocmd" target="_blank" onClick={() => {return}} color="inherit">
+									<IconButton size="small" title="João David" onClick={() => {return}}>
+										<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
+									</IconButton>
+								</Link>
 							</Tooltip>
 							<Tooltip title="Daniel Gonçalves">
-								<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
+								<Link href="https://dagoncalves.me" target="_blank" onClick={() => {return}} color="inherit">
+									<IconButton size="small" title="Daniel Gonçalves" onClick={() => {return}}>
+										<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
+									</IconButton>
+								</Link>
 							</Tooltip>
 						</Toolbar>													
 					</AppBar>
@@ -384,6 +447,9 @@ const styles = (theme: any) => ({
 	},
 	divider: {
 		margin: theme.spacing(1, 0.5),
+	},
+	toggleGroup: {
+		flexWrap: 'wrap' as const
 	},
 	card: {
 		margin: '1% 1% 2% 1%'

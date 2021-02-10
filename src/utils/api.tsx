@@ -59,7 +59,16 @@ export default class API {
 		if (res === null) {
 			return null
 		}
-		const shifts = res.shifts.map((d: ShiftDto) => new Shift(d, course))
+		// course might be unselected because of async
+		if (!course.isSelected) {
+			return []
+		}
+		const shifts = res.shifts.map((d: ShiftDto) => {
+			const shift = new Shift(d, course)
+			course.addShift(shift)
+			return shift
+		})
+		course.saveShifts()
 		return shifts
 	}
 

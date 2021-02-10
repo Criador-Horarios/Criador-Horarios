@@ -24,6 +24,7 @@ export enum ShiftType {
 
 export default class Shift implements Comparable {
 	courseId: string
+	course: Course
 	name: string
 	type: ShiftType
 	acronym: string
@@ -35,6 +36,7 @@ export default class Shift implements Comparable {
 	
 	constructor(obj: ShiftDto, course: Course) {
 		this.courseId = course.id
+		this.course = course
 		this.name = obj.name
 		const re = /^([A-Za-z\d._]*[A-Za-z])\d+(L|PB|T|S)([\d]{2})$/
 		const match = this.name.match(re)
