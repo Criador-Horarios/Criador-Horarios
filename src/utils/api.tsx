@@ -97,7 +97,7 @@ export default class API {
 
 	public static async getShortUrl(state: string): Promise<string> {
 		return `${window.location.href}/?s=${state}`
-			.replace('//', '/')
+			.replaceAll('//', '/')
 			.replace(':/', '://')
 	}
 }
