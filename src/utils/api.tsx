@@ -100,10 +100,8 @@ export default class API {
 			.replace(':/', '://')
 	}
 }
-<<<<<<< HEAD
-=======
 
 export const staticData = {
 	terms: [] as AcademicTerm[]
 }
->>>>>>> origin/master
+
