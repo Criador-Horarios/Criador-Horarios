@@ -54,6 +54,7 @@ class App extends React.Component <{
 		loading: true as boolean,
 	}
 	chosenSchedule: React.RefObject<Schedule>
+	topBar: React.RefObject<TopBar>
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -67,12 +68,15 @@ class App extends React.Component <{
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
 		this.showAlert = this.showAlert.bind(this)
 		this.chosenSchedule = React.createRef()
+		this.topBar = React.createRef()
 	}
 
 	async componentDidMount() {
-		const queryParam = /\?s=(.*)$/
-		await this.buildState(window.location.href.match(queryParam)?.[1])
 		staticData.terms = await API.getAcademicTerms()
+
+		const params = API.getUrlParams()
+		await this.buildState(params.s)
+
 		this.setState({
 			loading: false
 		})
@@ -129,7 +133,7 @@ class App extends React.Component <{
 			this.setState({
 				selectedShifts: [...selectedShifts]
 			})
-			this.changeUrl(true)
+			this.topBar.current?.setHasSelectedShifts(selectedShifts)
 		}
 	}
 
@@ -144,8 +148,8 @@ class App extends React.Component <{
 			this.setState({
 				selectedShifts: []
 			})
+			this.topBar.current?.setHasSelectedShifts([])
 			this.showAlert('Horário limpo com sucesso', 'success')
-			this.changeUrl(false)
 		}
 	}
 
@@ -223,24 +227,26 @@ class App extends React.Component <{
 
 		document.body.removeChild(el)
 		this.showAlert('Sucesso! Link copiado para a sua área de transferência', 'success')
+
+		await this.changeUrl()
 	}
 
-	changeUrl(toState: boolean): void {
-		// FIXME: Preventing big URLs for now
-		return
-	// 	const title: string = document.title
-	// 	let path: string = window.location.pathname
-	// 	if (toState) {
-	// 		path = (path + `/?s=${btoa(JSON.stringify(this.state.selectedShifts))}`).replace('//', '/')
-	// 	}
-	// 	if (window.history.replaceState) {
-	// 		window.history.replaceState({}, title, path)
-	// 	} else {
-	// 		window.history.pushState({}, title, path)
-	// 	}
+	async changeUrl(): Promise<void> {
+		const title: string = document.title
+		let path = API.PATH_PREFIX
+		const state = shortenDescriptions(this.state.selectedShifts)
+		if (state !== '') {
+			path += `/?s=${state}`
+		}
+
+		if (window.history.replaceState) {
+			window.history.replaceState({}, title, path)
+		} else {
+			window.history.pushState({}, title, path)
+		}
 	}
 
-	async buildCourse(description: string[]): Promise<void> {
+	async buildCourse(description: string[]): Promise<Shift[][]> {
 		const course = await API.getCourse(description[0])
 		if (!course) {
 			throw 'Could not build course'
@@ -250,9 +256,6 @@ class App extends React.Component <{
 		if (!schedule) {
 			throw 'Could not fetch course schedule'
 		}
-		this.setState({
-			availableShifts: [...this.state.availableShifts, ...schedule]
-		})
 
 		const selectedShiftIds = description.slice(1)
 		const selectedShifts = schedule.reduce((acc: Shift[], shift: Shift) => {
@@ -261,10 +264,7 @@ class App extends React.Component <{
 			}
 			return acc
 		}, [] as Shift[])
-
-		this.setState({
-			selectedShifts: this.state.selectedShifts.concat(selectedShifts)
-		})
+		return [schedule, selectedShifts]
 	}
 
 	async buildState(param: string | undefined): Promise<void> {
@@ -273,12 +273,18 @@ class App extends React.Component <{
 		}
 
 		try {
-			// TODO: rebuild colors and domain chosen for the courses
-			// /(\d)+((T|PB|L|S)[\d]{2})+/
-			param.split(';')
+			const shifts = param.split(';')
 				.map((shift: string) => shift.split('~'))
-				.forEach((description: string[]) => this.buildCourse(description))
-			this.changeUrl(true)
+
+			const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description)))
+			const state = parsedState.reduce((acc: Record<string, Shift[]>, result: Shift[][]) => {
+				acc.availableShifts = acc.availableShifts.concat(result[0])
+				acc.selectedShifts = acc.selectedShifts.concat(result[1])
+				return acc
+			}, { availableShifts: [], selectedShifts: []})
+
+			this.setState(state)
+			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL
@@ -324,6 +330,7 @@ class App extends React.Component <{
 					<CircularProgress color="inherit" />
 				</Backdrop>
 				<TopBar
+					ref={this.topBar}
 					onSelectedCourse={this.onSelectedCourse}
 					onClearShifts={this.clearSelectedShifts}
 					onGetLink={this.getLink}
@@ -435,7 +442,7 @@ class App extends React.Component <{
 				<div className="footer">
 					<AppBar className={classes.footer as string} color="default" position="sticky">
 						<Toolbar>
-							<Tooltip title="Apoiar com uma doação">
+							<Tooltip title="Ajudar na manutenção do website">
 								<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" onClick={() => {return}} color="inherit">
 									<Button color='default' variant='outlined'
 										startIcon={<FontAwesomeIcon icon={faPaypal}/>}

@@ -7,6 +7,7 @@ import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
 import Shift from '../../domain/Shift'
 import CourseUpdates, { CourseUpdateType } from '../../utils/CourseUpdate'
+import AcademicTerm from '../../domain/AcademicTerm'
 
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
@@ -25,7 +26,6 @@ import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 import DialogActions from '@material-ui/core/DialogActions'
 import Button from '@material-ui/core/Button'
-import AcademicTerm from '../../domain/AcademicTerm'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
@@ -37,10 +37,11 @@ class TopBar extends React.Component <{
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
 		dialog: false,
-		selectedAcademicTerm: ''
+		selectedAcademicTerm: '',
+		selectedCourses: new CourseUpdates(),
+		hasSelectedShifts: false
 	}
 	availableShifts: Shift[] = []
-	selectedCourses = new CourseUpdates()
 	selectedDegree: Degree | null = null
 
 	// eslint-disable-next-line
@@ -68,16 +69,22 @@ class TopBar extends React.Component <{
 				this.props.showAlert('Não foi possível obter as UCs deste curso', 'error')
 				return
 			}
-			const selected = this.selectedCourses.courses
+			const selected = this.state.selectedCourses.courses
 			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
 			this.setState({
 				availableCourses: availableCourses.sort(Course.compare)
 			})
 		} else {
 			this.setState({
-				availableCourses: this.selectedCourses.courses
+				availableCourses: this.state.selectedCourses.courses
 			})
 		}
+	}
+
+	setHasSelectedShifts(shifts: Shift[]) {
+		this.setState({
+			hasSelectedShifts: shifts.length > 0
+		})
 	}
 
 	getCoursesDifference(prevCourses: Course[], courses: Course[]): Course | undefined {
@@ -100,41 +107,53 @@ class TopBar extends React.Component <{
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		if (selectedCourses.length === 0) {
 			this.availableShifts = []
-			this.selectedCourses.removeAllCourses()
+			const currCourses = this.state.selectedCourses
+			currCourses.removeAllCourses()
 			if (this.selectedDegree === null) {
 				this.setState({
-					availableCourses: []
+					availableCourses: [],
+					autocompleteValue: [],
+					selectedCourses: currCourses
+				})
+			} else {
+				this.setState({
+					autocompleteValue: [],
+					selectedCourses: currCourses
 				})
 			}
 			this.props.onSelectedCourse([] as Shift[], selectedCourses)
 			return
 		}
 
-		const changedCourse = this.getCoursesDifference(this.selectedCourses.courses, selectedCourses)
+		const changedCourse = this.getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
 		if (!changedCourse) {
 			return
 		}
 
-		const currCourses = this.selectedCourses
+		const currCourses = this.state.selectedCourses
 		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
 		currCourses.toggleCourse(changedCourse)
-		this.selectedCourses = currCourses
+
+		this.setState({
+			selectedCourses: currCourses
+		})
 
 		let availableShifts: Shift[]
-		if (this.selectedCourses.lastUpdate?.type === CourseUpdateType.Add &&
-			this.selectedCourses.lastUpdate.course !== undefined) {
-			const schedule = await API.getCourseSchedules(this.selectedCourses.lastUpdate.course)
+		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
+			currCourses.lastUpdate.course !== undefined) {
+			const schedule = await API.getCourseSchedules(currCourses.lastUpdate.course)
 			if (schedule === null) {
 				this.props.showAlert('Não foi possível obter os turnos desta UC', 'error')
 				return
 			}
 			availableShifts = this.availableShifts.concat(schedule)
-		} else if (this.selectedCourses.lastUpdate?.type === CourseUpdateType.Remove) {
+		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Remove) {
 			availableShifts = this.availableShifts
-				.filter((shift: Shift) => shift.courseName !== this.selectedCourses.lastUpdate?.course?.name)
+				.filter((shift: Shift) => shift.courseName !== currCourses.lastUpdate?.course?.name)
 		} else {
 			availableShifts = []
 		}
+
 		this.availableShifts = availableShifts
 		this.props.onSelectedCourse(availableShifts, currCourses.courses)
 	}
@@ -182,6 +201,7 @@ class TopBar extends React.Component <{
 							renderInput={(params) => <TextField {...params} label="Escolha um curso" variant="outlined" />}
 						/>
 						<Autocomplete
+							value={this.state.selectedCourses.courses}
 							color="inherit"
 							size="small"
 							className={styles.courseSelector}
@@ -195,7 +215,7 @@ class TopBar extends React.Component <{
 							filterOptions={courseFilterOptions} options={this.state.availableCourses}
 							getOptionDisabled={(option) => {
 								return !option.isSelected &&
-									this.selectedCourses.courses.length === maxSelectedCourses
+									this.state.selectedCourses.courses.length === maxSelectedCourses
 							}}
 							noOptionsText="Sem opções, escolha um curso primeiro"
 							getOptionLabel={(option) => option.displayName()}
@@ -209,7 +229,7 @@ class TopBar extends React.Component <{
 							}}
 						/>
 						<Tooltip title="Obter link de partilha">
-							<IconButton color="inherit" onClick={this.props.onGetLink} component="span">
+							<IconButton disabled={!this.state.hasSelectedShifts} color="inherit" onClick={this.props.onGetLink} component="span">
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>
