@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import API from './utils/api'
+import API, { staticData } from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
@@ -31,6 +31,10 @@ import Snackbar from '@material-ui/core/Snackbar'
 import Link from '@material-ui/core/Link'
 import GitHubIcon from '@material-ui/icons/GitHub'
 import Typography from '@material-ui/core/Typography'
+import { returnColor } from './utils/CourseUpdate'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPaypal } from '@fortawesome/free-brands-svg-icons'
+import Button from '@material-ui/core/Button'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -65,6 +69,7 @@ class App extends React.Component <{
 	async componentDidMount() {
 		const queryParam = /\?s=(.*)$/
 		await this.buildState(window.location.href.match(queryParam)?.[1])
+		staticData.terms = await API.getAcademicTerms()
 		this.forceUpdate()
 	}
 
@@ -125,7 +130,12 @@ class App extends React.Component <{
 
 	clearSelectedShifts(): void {
 		if (this.state.selectedShifts.length !== 0) {
-			this.state.selectedCourses.forEach( (c) => c.clearSelectedShifts())
+			this.state.selectedCourses.forEach( (c) => {
+				c.clearSelectedShifts()
+				if (!c.isSelected && !c.hasShiftsSelected) {
+					returnColor(c.removeColor())
+				}
+			})
 			this.setState({
 				selectedShifts: []
 			})
@@ -380,7 +390,7 @@ class App extends React.Component <{
 											<IconButton
 												disabled={this.state.selectedShifts.length === 0}
 												color="inherit"
-												onClick={this.clearSelectedShifts}
+												onClick={this.saveSchedule}
 												component="span">
 												<Icon>download</Icon>
 											</IconButton>
@@ -403,6 +413,15 @@ class App extends React.Component <{
 				<div className="footer">
 					<AppBar className={classes.footer as string} color="default" position="sticky">
 						<Toolbar>
+							<Tooltip title="Apoiar com uma doação">
+								<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" onClick={() => {return}} color="inherit">
+									<Button color='default' variant='outlined'
+										endIcon={<FontAwesomeIcon icon={faPaypal}/>}
+										size='small'
+									>Apoiar
+									</Button>
+								</Link>
+							</Tooltip>
 							<div className={classes.grow as string} />
 							<Tooltip title="Ver código fonte">
 								<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">

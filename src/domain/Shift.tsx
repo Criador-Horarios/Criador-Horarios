@@ -7,6 +7,9 @@ import { DescriptionSharp } from '@material-ui/icons'
 import { stringify } from 'querystring'
 
 const shadeColor = (color: string, amount: number) => {
+	if (color === '') {
+		return ''
+	}
 	const newColor = hexRgb(color)
 	Object.keys(newColor).forEach((key: string) => {
 		newColor[key as keyof hexRgb.RgbaObject] *= amount
@@ -32,7 +35,7 @@ export default class Shift implements Comparable {
 	courseName: string
 	lessons: Lesson[]
 	color: string
-	campus: string
+	campus = ''
 	
 	constructor(obj: ShiftDto, course: Course) {
 		this.courseId = course.id
@@ -47,7 +50,9 @@ export default class Shift implements Comparable {
 		this.type = match[2] as ShiftType
 		this.shiftId = match[2] + match[3]
 		this.courseName = course.name
-		this.campus = obj.rooms[0]?.topLevelSpace.name
+		if (obj.rooms !== null) {
+			this.campus = obj.rooms[0]?.topLevelSpace.name
+		}
 
 		if (this.type === ShiftType['Teórica']) {
 			this.color = shadeColor(course.color, 1.30)
@@ -64,8 +69,8 @@ export default class Shift implements Comparable {
 				start: l.start.split(' ')[1],
 				end: l.end.split(' ')[1],
 				dayOfWeek:  new Date(l.start).getDay(),
-				room: l.room.name,
-				campus: l.room.topLevelSpace.name,
+				room: l.room?.name,
+				campus: l.room?.topLevelSpace.name,
 				acronym: this.acronym,
 				shiftId: this.shiftId,
 				id: this.name
