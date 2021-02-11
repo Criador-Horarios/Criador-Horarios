@@ -18,9 +18,9 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] Allow english or other languages
 - [X] Add filters for L, T, PB, S
 - [X] Course chip colors match course color
-- [ ] Add Github link and donation link
+- [X] Add Github link and donation link
 - [ ] Enqueue snackbars?
-- [ ] Choose academic term
+- [ ] Choose academic term -> missing topbar updates
 - [X] Center buttons
 - [X] Background Image
 - [ ] Add help button/animation
@@ -31,7 +31,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 - [ ] When exporting to image, lessons overlapping bugs
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected
-- [ ] When a shift is selected, if the course is unselected and selected again, it may have a different color
+- [X] When a shift is selected, if the course is unselected and selected again, it may have a different color
 
 ## Suggestions
 

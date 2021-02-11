@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './TopBar.module.scss'
 
-import API from '../../utils/api'
+import API, { staticData } from '../../utils/api'
 import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
@@ -16,6 +16,16 @@ import Tooltip from '@material-ui/core/Tooltip'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
 import Icon from '@material-ui/core/Icon'
+import Dialog from '@material-ui/core/Dialog'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContent from '@material-ui/core/DialogContent'
+import FormControl from '@material-ui/core/FormControl'
+import InputLabel from '@material-ui/core/InputLabel'
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
+import DialogActions from '@material-ui/core/DialogActions'
+import Button from '@material-ui/core/Button'
+import AcademicTerm from '../../domain/AcademicTerm'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
@@ -25,7 +35,9 @@ class TopBar extends React.Component <{
 }, unknown>{
 	state = {
 		degrees: [] as Degree[],
-		availableCourses: [] as Course[]
+		availableCourses: [] as Course[],
+		dialog: false,
+		selectedAcademicTerm: ''
 	}
 	availableShifts: Shift[] = []
 	selectedCourses = new CourseUpdates()
@@ -128,6 +140,21 @@ class TopBar extends React.Component <{
 		this.props.onSelectedCourse(availableShifts, currCourses.courses)
 	}
 
+	onSelectedAcademicTerm(s: string): void {
+		const foundArr = staticData.terms.filter( (at) => at.id === s)
+		if (foundArr.length > 0) {
+			const chosenAT = foundArr[0]
+			API.ACADEMIC_TERM = chosenAT.term
+			API.SEMESTER = chosenAT.semester
+		}
+		// FIXME: Remove selected courses from autocomplete
+		this.onSelectedCourse([])
+		this.onSelectedDegree(this.selectedDegree)
+		this.setState({
+			selectedAcademicTerm: s
+		})
+	}
+
 	render(): React.ReactNode {
 		const maxTags = 14
 		const courseFilterOptions = createFilterOptions({
@@ -183,12 +210,44 @@ class TopBar extends React.Component <{
 							}}
 						/>
 						<Tooltip title="Obter link de partilha">
-							<IconButton color="inherit" onClick={this.props.onGetLink} component="span">
+							<IconButton disabled={true} color="inherit" onClick={this.props.onGetLink} component="span">
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>
+						{/* <IconButton color='inherit' onClick={() => {this.setState({dialog: true})}} component="span">
+							<Icon>settings</Icon>
+						</IconButton> */}
 					</Toolbar>
 				</AppBar>
+				<Dialog open={this.state.dialog}
+					onClose={() => {this.setState({dialog: false})}}
+				>
+					<DialogTitle>Escolha o semestre</DialogTitle>
+					<DialogContent>
+						<FormControl variant='outlined'
+							fullWidth={true}
+						>
+							<InputLabel>Semestre</InputLabel>
+							<Select
+								id="semester"
+								value={this.state.selectedAcademicTerm}
+								onChange={(e) => {this.onSelectedAcademicTerm(e.target.value as string)}}
+								label="Semestre"
+								// className={styles.semesterSelector}
+								autoWidth={true}
+							>
+								{staticData.terms.map( (s) => 
+									<MenuItem key={s.id} value={s.id}>{s.term} {s.semester}º Semestre
+									</MenuItem>
+								)}
+							</Select>
+						</FormControl>
+					</DialogContent>
+					<DialogActions>
+						<div />
+						<Button onClick={() => {this.setState({dialog: false})}} color="primary">Guardar</Button>
+					</DialogActions>
+				</Dialog>
 			</div>
 		)
 	}
