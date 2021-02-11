@@ -25,6 +25,8 @@ import Chip from '@material-ui/core/Chip'
 import Paper from '@material-ui/core/Paper'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
+import Backdrop from '@material-ui/core/Backdrop'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import { exportComponentAsPNG } from 'react-component-export-image'
 import Snackbar from '@material-ui/core/Snackbar'
@@ -49,6 +51,7 @@ class App extends React.Component <{
 		alertMessage: '',
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
+		loading: true as boolean,
 	}
 	chosenSchedule: React.RefObject<Schedule>
 
@@ -70,7 +73,9 @@ class App extends React.Component <{
 		const queryParam = /\?s=(.*)$/
 		await this.buildState(window.location.href.match(queryParam)?.[1])
 		staticData.terms = await API.getAcademicTerms()
-		this.forceUpdate()
+		this.setState({
+			loading: false
+		})
 	}
 
 	async onSelectedCourse(availableShifts: Shift[], selectedCourses: Course[]): Promise<void> {
@@ -154,8 +159,7 @@ class App extends React.Component <{
 				finalCourses.push(s.course)
 			}
 		})
-		finalCourses.sort(Course.compare)
-		return finalCourses
+		return finalCourses.sort(Course.compare)
 	}
 
 	changeCampi(campi: string[]): void {
@@ -224,29 +228,43 @@ class App extends React.Component <{
 	changeUrl(toState: boolean): void {
 		// FIXME: Preventing big URLs for now
 		return
-		const title: string = document.title
-		let path: string = window.location.pathname
-		if (toState) {
-			path = (path + `/?s=${btoa(JSON.stringify(this.state.selectedShifts))}`).replace('//', '/')
-		}
-		if (window.history.replaceState) {
-			window.history.replaceState({}, title, path)
-		} else {
-			window.history.pushState({}, title, path)
-		}
+	// 	const title: string = document.title
+	// 	let path: string = window.location.pathname
+	// 	if (toState) {
+	// 		path = (path + `/?s=${btoa(JSON.stringify(this.state.selectedShifts))}`).replace('//', '/')
+	// 	}
+	// 	if (window.history.replaceState) {
+	// 		window.history.replaceState({}, title, path)
+	// 	} else {
+	// 		window.history.pushState({}, title, path)
+	// 	}
 	}
 
 	async buildCourse(description: string[]): Promise<void> {
-		// FIXME
-		// const course = await API.getCourse(description[0])
-		// if (!course) {
-		// 	throw 'Could not build course'
-		// }
-		// const schedule = await API.getCourseSchedules(course)
-		// description.slice(1).forEach((d: string) => {
-		// 	// TODO: availableCourses/selectedCourses need to be synced...
-		// 	console.log(d)
-		// })
+		const course = await API.getCourse(description[0])
+		if (!course) {
+			throw 'Could not build course'
+		}
+		course.isSelected = true
+		const schedule = await API.getCourseSchedules(course)
+		if (!schedule) {
+			throw 'Could not fetch course schedule'
+		}
+		this.setState({
+			availableShifts: [...this.state.availableShifts, ...schedule]
+		})
+
+		const selectedShiftIds = description.slice(1)
+		const selectedShifts = schedule.reduce((acc: Shift[], shift: Shift) => {
+			if (selectedShiftIds.includes(shift.shiftId)) {
+				acc.push(shift)
+			}
+			return acc
+		}, [] as Shift[])
+
+		this.setState({
+			selectedShifts: this.state.selectedShifts.concat(selectedShifts)
+		})
 	}
 
 	async buildState(param: string | undefined): Promise<void> {
@@ -256,6 +274,7 @@ class App extends React.Component <{
 
 		try {
 			// TODO: rebuild colors and domain chosen for the courses
+			// /(\d)+((T|PB|L|S)[\d]{2})+/
 			param.split(';')
 				.map((shift: string) => shift.split('~'))
 				.forEach((description: string[]) => this.buildCourse(description))
@@ -301,6 +320,9 @@ class App extends React.Component <{
 
 		return (
 			<div className="App">
+				<Backdrop className={classes.backdrop as string} open={this.state.loading}>
+					<CircularProgress color="inherit" />
+				</Backdrop>
 				<TopBar
 					onSelectedCourse={this.onSelectedCourse}
 					onClearShifts={this.clearSelectedShifts}
@@ -416,7 +438,7 @@ class App extends React.Component <{
 							<Tooltip title="Apoiar com uma doação">
 								<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" onClick={() => {return}} color="inherit">
 									<Button color='default' variant='outlined'
-										endIcon={<FontAwesomeIcon icon={faPaypal}/>}
+										startIcon={<FontAwesomeIcon icon={faPaypal}/>}
 										size='small'
 									>Apoiar
 									</Button>
@@ -459,6 +481,10 @@ const cssVariables = {
 
 // eslint-disable-next-line
 const styles = (theme: any) => ({
+	backdrop: {
+		zIndex: theme.zIndex.drawer + 1,
+		color: '#fff',
+	},
 	paper: {
 		display: 'flex',
 		flexWrap: 'wrap' as const,

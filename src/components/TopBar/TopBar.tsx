@@ -70,9 +70,8 @@ class TopBar extends React.Component <{
 			}
 			const selected = this.selectedCourses.courses
 			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
-			availableCourses.sort(Course.compare)
 			this.setState({
-				availableCourses
+				availableCourses: availableCourses.sort(Course.compare)
 			})
 		} else {
 			this.setState({
@@ -210,7 +209,7 @@ class TopBar extends React.Component <{
 							}}
 						/>
 						<Tooltip title="Obter link de partilha">
-							<IconButton disabled={true} color="inherit" onClick={this.props.onGetLink} component="span">
+							<IconButton color="inherit" onClick={this.props.onGetLink} component="span">
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>

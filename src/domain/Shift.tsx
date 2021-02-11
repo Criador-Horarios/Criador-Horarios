@@ -94,16 +94,15 @@ export default class Shift implements Comparable {
 		return this.name
 	}
 
-	getShortDescription(): string {
-		return `${this.courseId}~${this.shiftId}`
+	getFullId(): string[] {
+		return [this.courseId, this.shiftId]
 	}
 }
 
 export const shortenDescriptions = (shifts: Shift[]) => {
 	const res = shifts
-		.map((s) => s.getShortDescription())
-		.reduce((acc, description) => {
-			const [course, shift] = description.split('~')
+		.map((s) => s.getFullId())
+		.reduce((acc, [course, shift]) => {
 			if (!acc[course]) {
 				acc[course] = []
 			}
