@@ -24,7 +24,7 @@ app.use(
 )
 
 app.get('*', function(req, res){
-  res.status(200).send('In maintenance');
+  res.sendFile(path.join(__dirname, '../public/maintenance.html'));
 });
 
 https.createServer({
@@ -33,3 +33,5 @@ https.createServer({
 }, app).listen(443, () => {
   console.log("Server started on port 443");
 });
+
+// app.listen(5000, () => {})
