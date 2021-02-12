@@ -25,10 +25,11 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Add help button/animation
 - [x] Choose colors only when selecting the course
 - [X] Disable clear and export schedule buttons when unable to use them
+- [ ] When building, show maintenance page -> get better page
 
 ## Bugs
 
-- [ ] When exporting to image, lessons overlapping bugs
+- [ ] When exporting to image, lessons overlapping bugs -> Try react-use-screenshot
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected
 - [X] When a shift is selected, if the course is unselected and selected again, it may have a different color
 

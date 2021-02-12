@@ -10,9 +10,7 @@ const certificate = fs.readFileSync( './server/certificate.pem' );
 const app = express()
 app.use(morgan('tiny'));
 
-app.use('/', express.static(path.join(__dirname, '../build')))
 app.use(express.static(path.join(__dirname, '../build')))
-
 
 app.use(
   '/api',
@@ -24,6 +22,10 @@ app.use(
       }
   })
 )
+
+app.get('*', function(req, res){
+  res.status(200).send('In maintenance');
+});
 
 https.createServer({
 	    key: privateKey,
