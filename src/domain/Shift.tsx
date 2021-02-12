@@ -40,13 +40,12 @@ export default class Shift implements Comparable {
 		this.courseId = course.id
 		this.course = course
 		this.name = obj.name
-		const re = /^([-]*[A-Za-z\d._]*[A-Za-z])\d+(L|PB|T|S|TP)([\d]{2})$/
+		const re = /^(.+)(L|PB|T|S|TP)([\d]{2})$/
 		const match = this.name.match(re)
 		if (match === null) {
-			throw 'Unexpected shift name'
+			throw `Unexpected shift name - ${this.name}`
 		}
 		// Use course acronym
-		// this.acronym = match[1]
 		this.acronym = course.acronym
 		this.type = match[2] as ShiftType
 		this.shiftId = match[2] + match[3]

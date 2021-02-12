@@ -104,18 +104,20 @@ export type CourseDto = {
 }
 
 function getCourseAcronym(acronym: string, name: string): string {
-	const re = /^([-]*[A-Za-z\d._]*[A-Za-z])([\d.]*)$/
-	const match = acronym.match(re)
-	if (match === null) {
-		throw 'Unexpected course name'
-	}
-	let newAcronym = match[1]
-	if (name === 'Cálculo Diferencial e Integral I') {
-		// CDI-I
-		newAcronym += '-I'
-	} else if (name === 'Cálculo Diferencial e Integral II') {
-		// CDI-II
-		newAcronym += '-II'
+	let newAcronym = trimTrailingNumbers(acronym)
+	const match = name.match(/ (III|II|I|IV|V|VIII|VII|VI|)$/)
+	if (match) {
+		newAcronym += `-${match[1]}`
 	}
 	return newAcronym
+}
+
+export const trimTrailingNumbers = (id: string) => {
+	let i: number
+	for (i = id.length-1; i >= 0; i--) {
+		if (!(id[i] >= '0' && id[i] <= '9')) {
+			break
+		}
+	}
+	return id.slice(0, i+1)
 }

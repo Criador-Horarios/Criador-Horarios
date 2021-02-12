@@ -41,4 +41,4 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] Add loading progress when making request
 - [X] Add checklist with chosen shifts from each course to keep track
 - [X] Add titles to schedules (thanks to @Hugo-Marques-work)
-- [X] Distinguish CDI-I and CDI-II (FenixEdu sets the same acronym, so hardcoded :( )
+- [X] Distinguish courses with I, II, etc. (i.e. CDI-I and CDI-II) (FenixEdu sets the same acronym)
