@@ -8,8 +8,12 @@ const privateKey = fs.readFileSync( './server/private.pem' );
 const certificate = fs.readFileSync( './server/certificate.pem' );
 
 const app = express()
-app.use(morgan('tiny'));
 
+app.use(morgan('common', {
+  skip: function (req, res) {
+    return req.url !== '/' && !req.url.includes('api')
+  }
+}));
 app.use(express.static(path.join(__dirname, '../build'), {fallthrough: true}))
 
 app.use(
