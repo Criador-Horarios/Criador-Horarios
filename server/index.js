@@ -10,7 +10,7 @@ const certificate = fs.readFileSync( './server/certificate.pem' );
 const app = express()
 app.use(morgan('tiny'));
 
-app.use(express.static(path.join(__dirname, '../build')))
+app.use(express.static(path.join(__dirname, '../build'), {fallthrough: true}))
 
 app.use(
   '/api',
