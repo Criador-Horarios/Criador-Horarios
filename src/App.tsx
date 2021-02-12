@@ -39,6 +39,7 @@ import Button from '@material-ui/core/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaypal } from '@fortawesome/free-brands-svg-icons'
 import Cookies from 'universal-cookie'
+import CardHeader from '@material-ui/core/CardHeader'
 
 type BuiltCourse = {
 	course: Course,
@@ -443,6 +444,10 @@ class App extends React.Component <{
 					<div className={classes.body as string}>
 						<div className="schedules">
 							<Card className={classes.card as string}>
+								<CardHeader title="Turnos Disponíveis"
+									titleTypographyProps={{ variant: 'h6', align: 'center' }}
+									className={classes.cardTitle as string}
+								/>
 								<CardContent className={classes.cardContent as string}>
 									<Schedule
 										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
@@ -477,6 +482,10 @@ class App extends React.Component <{
 								</CardActions>
 							</Card>
 							<Card className={classes.card as string}>
+								<CardHeader title="Turnos Selecionados"
+									titleTypographyProps={{ variant: 'h6', align: 'center' }}
+									className={classes.cardTitle as string}
+								/>
 								<CardContent className={classes.cardContent as string}>
 									<Schedule
 										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
@@ -597,7 +606,11 @@ const styles = (theme: any) => ({
 	card: {
 		margin: '1% 1% 2% 1%'
 	},
+	cardTitle: {
+		padding: '8px 16px 2px 16px'
+	},
 	cardContent: {
+		paddingTop: '4px',
 		paddingBottom: '0px'
 	},
 	footer: {

@@ -128,6 +128,13 @@ body {
 	}
 }
 
+// Issue with typography -> doesn't allow changing the weight in props
+.MuiTypography-h6 {
+	font-weight: 400 !important;
+}
+
+
+
 // Reset
 ul {
  margin: 0;

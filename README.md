@@ -39,3 +39,4 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] Allow selection of multiple degrees to have all the courses in the selection list
 - [ ] Add loading progress when making request
 - [X] Add checklist with chosen shifts from each course to keep track
+- [X] Add titles to schedules (thanks to @Hugo-Marques-work)
