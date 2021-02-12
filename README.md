@@ -1,6 +1,6 @@
 # Criador de Horários
 
-![Demo video](./demo/demo.gif)
+![Demo animation](./demo/demo.gif)
 
 ## To Run
 
@@ -22,7 +22,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Choose academic term (currently disabled)
 - [X] Center buttons
 - [X] Background Image
-- [ ] Add help button/animation
+- [X] Add help button/animation
 - [x] Choose colors only when selecting the course
 - [X] Disable clear and export schedule buttons when unable to use them
 

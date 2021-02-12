@@ -35,10 +35,11 @@ class TopBar extends React.Component <{
 	state = {
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
-		settingsDialog: false,
 		selectedAcademicTerm: '',
 		selectedCourses: new CourseUpdates(),
-		hasSelectedShifts: false
+		hasSelectedShifts: false,
+		settingsDialog: false,
+		helpDialog: false
 	}
 	selectedDegree: Degree | null = null
 
@@ -176,6 +177,11 @@ class TopBar extends React.Component <{
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>
+						<Tooltip title="Ajuda">
+							<IconButton disabled={this.state.helpDialog} color="inherit" onClick={() => {this.setState({helpDialog: true})}} component="span">
+								<Icon>help</Icon>
+							</IconButton>
+						</Tooltip>
 						{/* <IconButton color='inherit' onClick={() => {this.setState({settingsDialog: true})}} component="span">
 							<Icon>settings</Icon>
 						</IconButton> */}
@@ -183,6 +189,7 @@ class TopBar extends React.Component <{
 				</AppBar>
 				<Dialog open={this.state.settingsDialog}
 					onClose={() => {this.setState({settingsDialog: false})}}
+					fullWidth={true}
 				>
 					<DialogTitle>Escolha o semestre</DialogTitle>
 					<DialogContent>
@@ -208,6 +215,21 @@ class TopBar extends React.Component <{
 					<DialogActions>
 						<div />
 						<Button onClick={() => {this.setState({settingsDialog: false})}} color="primary">Guardar</Button>
+					</DialogActions>
+				</Dialog>
+				<Dialog open={this.state.helpDialog}
+					onClose={() => {this.setState({helpDialog: false})}}
+					maxWidth={'lg'}
+					fullWidth={false}
+				>
+					<DialogContent style={{padding: 0}}>
+						<video autoPlay loop style={{width: '100%'}}>
+							<source src={`${process.env.PUBLIC_URL}/media/demo.m4v`} type="video/mp4"/>
+						</video>
+					</DialogContent>
+					<DialogActions>
+						<div />
+						<Button onClick={() => {this.setState({helpDialog: false})}} color="primary">Voltar</Button>
 					</DialogActions>
 				</Dialog>
 			</div>

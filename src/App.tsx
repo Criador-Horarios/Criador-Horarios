@@ -305,10 +305,10 @@ class App extends React.Component <{
 
 	async changeUrl(toState: boolean): Promise<void> {
 		const title: string = document.title
-		let path = API.PATH_PREFIX
+		let path = API.PATH_PREFIX + '/'
 		const state = shortenDescriptions(this.state.selectedShifts)
 		if (state !== '' && toState) {
-			path += `/?s=${state}`
+			path += `?s=${state}`
 		}
 
 		if (window.history.replaceState) {

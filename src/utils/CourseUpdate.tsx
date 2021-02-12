@@ -82,7 +82,7 @@ export default class CourseUpdates {
 const selectedColors = new Set([
 	'#c62828', '#6a1b9a', '#283593',
 	'#0277bd', '#00695c', '#558b2f',
-	'#524c00', '#ef6c00', '#4e342e', '#37474f'
+	'#6c6f00', '#ef6c00', '#4e342e', '#37474f'
 ])
 const initialColors = new Set(selectedColors)
 
