@@ -1,11 +1,11 @@
 # Criador de Horários
 
-This project uses React with Typescript.
+![Demo video](./demo/demo.m4v)
 
 ## To Run
 
-First, install the dependencies by running `npm i`.\
-Run `npm start` to start the app in the development mode.\
+This project uses React with Typescript.
+Install the dependencies by running `npm i` and then run `npm start` to start the app in development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## TODOs
@@ -19,14 +19,14 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Add filters for L, T, PB, S
 - [X] Course chip colors match course color
 - [X] Add Github link and donation link
-- [ ] Choose academic term -> missing topbar updates
+- [X] Choose academic term (currently disabled)
 - [X] Center buttons
 - [X] Background Image
 - [ ] Add help button/animation
 - [x] Choose colors only when selecting the course
 - [X] Disable clear and export schedule buttons when unable to use them
 
-## Bug
+## Bugs
 
 - [ ] When exporting to image, lessons overlapping bugs
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected

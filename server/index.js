@@ -24,16 +24,6 @@ app.use(
       }
   })
 )
-app.use(
-  '/tinyurl',
-  createProxyMiddleware({
-      target: 'https://tinyurl.com/',
-      changeOrigin: true,
-      pathRewrite: {
-          '^/tinyurl': ''
-      }
-  })
-)
 
 https.createServer({
 	    key: privateKey,

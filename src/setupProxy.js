@@ -12,14 +12,4 @@ module.exports = function(app) {
 			}
 		})
 	)
-	app.use(
-		'/tinyurl',
-		createProxyMiddleware({
-			target: 'https://tinyurl.com/',
-			changeOrigin: true,
-			pathRewrite: {
-				'^/tinyurl': ''
-			}
-		})
-	)
 }

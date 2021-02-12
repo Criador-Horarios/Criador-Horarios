@@ -36,6 +36,13 @@ module.exports = {
 		'semi': [
 			'error',
 			'never'
-		]
+		],
+		// "sort-imports": [2, {
+		// 	"ignoreCase": false,
+		// 	"ignoreDeclarationSort": false,
+		// 	"ignoreMemberSort": true,
+		// 	// "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
+		// 	"allowSeparatedGroups": true
+		// }]
 	}
 }

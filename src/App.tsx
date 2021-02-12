@@ -8,7 +8,7 @@ import Shift, { ShiftType, shortenDescriptions } from './domain/Shift'
 import Lesson from './domain/Lesson'
 import { Comparables } from './domain/Comparable'
 import Schedule from './components/Schedule/Schedule'
-import CourseUpdates from './utils/CourseUpdate'
+import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -36,7 +36,6 @@ import Link from '@material-ui/core/Link'
 import GitHubIcon from '@material-ui/icons/GitHub'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
-import CourseUpdate, { CourseUpdateType, returnColor, getCoursesDifference } from './utils/CourseUpdate'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaypal } from '@fortawesome/free-brands-svg-icons'
 import Cookies from 'universal-cookie'
@@ -358,6 +357,7 @@ class App extends React.Component <{
 
 			const courseUpdates = new CourseUpdates()
 			const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
+			// eslint-disable-next-line
 			const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
 				acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
 				acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
@@ -375,7 +375,6 @@ class App extends React.Component <{
 				})
 			})
 			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-			this.cookies.set('s', shortenDescriptions(state.selectedShifts), { maxAge: 60*60*24*31*3 })
 			this.changeUrl(false)
 		} catch (err) {
 			console.error(err)

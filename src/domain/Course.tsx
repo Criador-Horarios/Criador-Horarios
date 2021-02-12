@@ -1,4 +1,4 @@
-import Comparable, { Comparables } from './Comparable'
+import Comparable from './Comparable'
 import Shift, { ShiftType } from './Shift'
 
 export default class Course implements Comparable {

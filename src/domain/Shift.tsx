@@ -3,8 +3,6 @@ import Lesson, { LessonDto } from './Lesson'
 import Course from './Course'
 import hexRgb from 'hex-rgb'
 import rgbHex from 'rgb-hex'
-import { DescriptionSharp } from '@material-ui/icons'
-import { stringify } from 'querystring'
 
 const shadeColor = (color: string, amount: number) => {
 	if (color === '') {
@@ -99,7 +97,7 @@ export default class Shift implements Comparable {
 	}
 }
 
-export const shortenDescriptions = (shifts: Shift[]) => {
+export const shortenDescriptions = (shifts: Shift[]): string => {
 	const res = shifts
 		.map((s) => s.getFullId())
 		.reduce((acc, [course, shift]) => {

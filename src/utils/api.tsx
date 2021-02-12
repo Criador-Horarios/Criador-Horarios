@@ -1,8 +1,8 @@
-import Shift, { ShiftDto } from '../domain/Shift'
-import Degree, { DegreeDto } from '../domain/Degree'
-import Course, { CourseDto } from '../domain/Course'
-import { ScheduleDto } from '../domain/Schedule'
 import AcademicTerm from '../domain/AcademicTerm'
+import Course, { CourseDto } from '../domain/Course'
+import Degree, { DegreeDto } from '../domain/Degree'
+import { ScheduleDto } from '../domain/Schedule'
+import Shift, { ShiftDto } from '../domain/Shift'
 
 export default class API {
 	static ACADEMIC_TERM = '2020/2021'

@@ -35,12 +35,11 @@ class TopBar extends React.Component <{
 	state = {
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
-		dialog: false,
+		settingsDialog: false,
 		selectedAcademicTerm: '',
 		selectedCourses: new CourseUpdates(),
 		hasSelectedShifts: false
 	}
-	// availableShifts: Shift[] = []
 	selectedDegree: Degree | null = null
 
 	// eslint-disable-next-line
@@ -80,7 +79,7 @@ class TopBar extends React.Component <{
 		}
 	}
 
-	setHasSelectedShifts(shifts: Shift[]) {
+	setHasSelectedShifts(shifts: Shift[]): void {
 		this.setState({
 			hasSelectedShifts: shifts.length > 0
 		})
@@ -89,7 +88,6 @@ class TopBar extends React.Component <{
 	//FIXME: Available courses not updating when a course from another degree is removed 
 	private async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		this.props.onSelectedCourse(selectedCourses)
-		// this.props.onSelectedCourse(availableShifts, currCourses.courses)
 	}
 
 	setSelectedCourses(selectedCourses: CourseUpdates): void {
@@ -109,9 +107,10 @@ class TopBar extends React.Component <{
 			API.ACADEMIC_TERM = chosenAT.term
 			API.SEMESTER = chosenAT.semester
 		}
-		// FIXME: Remove selected courses from autocomplete
+
 		this.onSelectedCourse([])
 		this.onSelectedDegree(this.selectedDegree)
+		this.props.onClearShifts()
 		this.setState({
 			selectedAcademicTerm: s
 		})
@@ -177,13 +176,13 @@ class TopBar extends React.Component <{
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>
-						{/* <IconButton color='inherit' onClick={() => {this.setState({dialog: true})}} component="span">
+						{/* <IconButton color='inherit' onClick={() => {this.setState({settingsDialog: true})}} component="span">
 							<Icon>settings</Icon>
 						</IconButton> */}
 					</Toolbar>
 				</AppBar>
-				<Dialog open={this.state.dialog}
-					onClose={() => {this.setState({dialog: false})}}
+				<Dialog open={this.state.settingsDialog}
+					onClose={() => {this.setState({settingsDialog: false})}}
 				>
 					<DialogTitle>Escolha o semestre</DialogTitle>
 					<DialogContent>
@@ -208,7 +207,7 @@ class TopBar extends React.Component <{
 					</DialogContent>
 					<DialogActions>
 						<div />
-						<Button onClick={() => {this.setState({dialog: false})}} color="primary">Guardar</Button>
+						<Button onClick={() => {this.setState({settingsDialog: false})}} color="primary">Guardar</Button>
 					</DialogActions>
 				</Dialog>
 			</div>
