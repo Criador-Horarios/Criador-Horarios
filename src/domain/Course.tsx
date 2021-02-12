@@ -104,9 +104,10 @@ export type CourseDto = {
 }
 
 function getCourseAcronym(name: string, id: string): string {
-	const re = /^([-]*[A-Za-z\d._]*[A-Za-z])(\d+)$/
+	const re = /^([-]*[A-Za-z\d._]*[A-Za-z])([\d.]*)$/
 	const match = name.match(re)
 	if (match === null) {
+		console.log(name, id)
 		throw 'Unexpected course name'
 	}
 	let acronym = match[1]
