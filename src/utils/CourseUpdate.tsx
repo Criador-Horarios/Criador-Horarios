@@ -7,7 +7,8 @@ import Course from '../domain/Course'
 export enum CourseUpdateType {
 	Add,
 	Remove,
-	Clear
+	Clear,
+	Many
 }
 
 export type Update = {
@@ -21,6 +22,10 @@ export default class CourseUpdates {
 
 	constructor() {
 		this.courses = []
+	}
+
+	has(course: Course): boolean {
+		return Comparables.includes(this.courses, course)
 	}
 
 	toggleCourse(course: Course): CourseUpdateType {
@@ -122,4 +127,22 @@ const isOkWithWhite = function(hexColor: hexRgb.RgbaObject): boolean {
 	}
 	const L = 0.2126 * C[0] + 0.7152 * C[1] + 0.0722 * C[2]
 	return L <= 0.179
+}
+
+export function getCoursesDifference(prevCourses: Course[], courses: Course[]): Update | undefined {
+	const prevSet = Comparables.toUnique(prevCourses)
+	const newSet = Comparables.toUnique(courses)
+
+	if (prevSet.length === newSet.length) {
+		// Nothing changed
+		return undefined
+	} else if (prevSet.length === newSet.length + 1) {
+		// Removed element, find missing in courses
+		return { type: CourseUpdateType.Remove, course: prevCourses.find((c: Course) => !Comparables.includes(courses, c)) }
+	} else if (prevSet.length === newSet.length - 1) {
+		// Added element, return first last on courses
+		return { type: CourseUpdateType.Add, course: courses[courses.length - 1] }
+	} else if (prevSet.length < newSet.length) {
+		return { type: CourseUpdateType.Many, course: undefined }
+	}
 }

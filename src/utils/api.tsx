@@ -8,10 +8,12 @@ export default class API {
 	static ACADEMIC_TERM = '2020/2021'
 	static SEMESTER = 2
 	static LANG = 'pt-PT'
+	static PREFIX = ''
+	static PATH_PREFIX = ''
 
 	// eslint-disable-next-line
 	private static async getRequest(url: string): Promise<any> {
-		return await fetch(`${url}?academicTerm=${this.ACADEMIC_TERM}&lang=${this.LANG}`).then(r => {
+		return fetch(`${API.PATH_PREFIX}${url}?academicTerm=${this.ACADEMIC_TERM}&lang=${this.LANG}`).then(r => {
 			const contentType = r.headers.get('content-type')
 			if (contentType?.includes('application/json') && r.status === 200) {
 				return r.json()
@@ -23,14 +25,32 @@ export default class API {
 		})
 	}
 
+	public static setPrefix(): void {
+		const cut = window.location.pathname.slice(-1) === '/' ? 1 : 0
+		API.PATH_PREFIX = window.location.pathname.slice(0, window.location.pathname.length - cut)
+		API.PREFIX = `${window.location.protocol}//${window.location.host}${window.location.pathname}`	
+	}
+
+	public static getUrlParams(): Record<string, string> {
+		const params = window.location.href.slice(API.PREFIX.length)
+		if (params.startsWith('?')) {
+			const re = /(&|\?)([A-Za-z]\w*)=(.*)(&|$)/g
+			const matches = params.matchAll(re)
+			return Array.from(matches).reduce((acc: Record<string, string>, match) => {
+				acc[match[2]] = match[3]
+				return acc
+			}, {})
+		}
+		return {}
+	}
+
 	public static async getDegrees(): Promise<Degree[] | null> {
 		const res = (await this.getRequest('/api/degrees') as DegreeDto[] | null)
 		if (res === null) {
 			return null
 		}
 		const degrees = res.map((d: DegreeDto) => new Degree(d))
-		degrees.sort(Degree.compare)
-		return degrees
+		return degrees.sort(Degree.compare)
 	}
 
 	public static async getCourses(degree: string): Promise<Course[] | null> {
@@ -43,8 +63,7 @@ export default class API {
 			.filter( (c: Course) => {
 				return c.semester === this.SEMESTER
 			})
-		courses.sort(Course.compare)
-		return courses
+		return courses.sort(Course.compare)
 	}
 
 	public static async getCourse(course: string): Promise<Course | null> {
@@ -88,16 +107,17 @@ export default class API {
 			return []
 		}
 		// Prepare from array of [string, [string, string]] to array of string
-		let terms = Object.entries(res).sort().reverse().slice(0, 2).map( (arr) => arr[1])
-		terms = [].concat(...terms as [])
-
-		return terms.map( (s) => new AcademicTerm(s as string))
+		return Object.entries(res)
+			.sort()
+			.reverse()
+			.slice(0, 2)
+			.map((arr) => arr[1])
+			.flat()
+			.map((s) => new AcademicTerm(s as string))
 	}
 
 	public static async getShortUrl(state: string): Promise<string> {
-		return `${window.location.href}/?s=${state}`
-			.replace('//', '/')
-			.replace(':/', '://')
+		return `${API.PREFIX}?s=${state}`
 	}
 }
 

@@ -1,8 +1,5 @@
 import Comparable, { Comparables } from './Comparable'
 import Shift, { ShiftType } from './Shift'
-import hexRgb from 'hex-rgb'
-import rgbHex from 'rgb-hex'
-import RandomColor from 'randomcolor'
 
 export default class Course implements Comparable {
 	id: string

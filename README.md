@@ -13,13 +13,12 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [x] Set API type objects
 - [x] Add good colors
 - [X] Save state to cookies
-- [ ] Shorten saved state and rebuild on reload (can add loading animation)
+- [X] Shorten saved state and rebuild on reload (can add loading animation)
 - [X] Snackbar alerts
 - [ ] Allow english or other languages
 - [X] Add filters for L, T, PB, S
 - [X] Course chip colors match course color
 - [X] Add Github link and donation link
-- [ ] Enqueue snackbars?
 - [ ] Choose academic term -> missing topbar updates
 - [X] Center buttons
 - [X] Background Image

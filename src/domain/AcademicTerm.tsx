@@ -19,21 +19,21 @@ export default class AcademicTerm {
 /*
 Example:
 {
-  "2018/2019": [
-    "2ºSemestre 2018/2019",
-    "1ºSemestre 2018/2019"
-  ],
-  "2019/2020": [
-    "2º Semestre 2019/2020",
-    "1º Semestre 2019/2020"
-  ],
-  "2017/2018": [
-    "2Semestre 2017/2018",
-    "1Semestre 2017/2018"
-  ],
-  "2014/2015": [
-    "2 Semestre 2014/2015",
-    "1 Semestre 2014/2015"
-  ]
+	"2018/2019": [
+		"2ºSemestre 2018/2019",
+		"1ºSemestre 2018/2019"
+	],
+	"2019/2020": [
+		"2º Semestre 2019/2020",
+		"1º Semestre 2019/2020"
+	],
+	"2017/2018": [
+		"2Semestre 2017/2018",
+		"1Semestre 2017/2018"
+	],
+	"2014/2015": [
+		"2 Semestre 2014/2015",
+		"1 Semestre 2014/2015"
+	]
 }
 */
