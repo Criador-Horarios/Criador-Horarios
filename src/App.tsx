@@ -8,7 +8,8 @@ import Shift, { ShiftType, shortenDescriptions } from './domain/Shift'
 import Lesson from './domain/Lesson'
 import { Comparables } from './domain/Comparable'
 import Schedule from './components/Schedule/Schedule'
-import TopBar from './components/TopBar/TopBar'
+import CourseUpdates from './utils/CourseUpdate'
+import Degree from './domain/Degree'
 
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import Avatar from '@material-ui/core/Avatar'
@@ -17,6 +18,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Toolbar from '@material-ui/core/Toolbar'
 import Alert from '@material-ui/lab/Alert'
 import AppBar from '@material-ui/core/AppBar'
+import TopBar from './components/TopBar/TopBar'
 import Icon from '@material-ui/core/Icon'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
@@ -33,16 +35,24 @@ import Snackbar from '@material-ui/core/Snackbar'
 import Link from '@material-ui/core/Link'
 import GitHubIcon from '@material-ui/icons/GitHub'
 import Typography from '@material-ui/core/Typography'
-import { returnColor } from './utils/CourseUpdate'
+import Button from '@material-ui/core/Button'
+import CourseUpdate, { CourseUpdateType, returnColor, getCoursesDifference } from './utils/CourseUpdate'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaypal } from '@fortawesome/free-brands-svg-icons'
-import Button from '@material-ui/core/Button'
+import Cookies from 'universal-cookie'
+
+type BuiltCourse = {
+	course: Course,
+	availableShifts: Shift[],
+	selectedShifts: Shift[]
+}
+
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
 	state = {
-		selectedCourses: [] as Course[],
+		selectedCourses: new CourseUpdates(),
 		availableShifts: [] as Shift[],
 		shownShifts: [] as Shift[],
 		selectedShifts: [] as Shift[],
@@ -53,6 +63,8 @@ class App extends React.Component <{
 		hasAlert: false as boolean,
 		loading: true as boolean,
 	}
+	cookies = new Cookies()
+	selectedDegree: Degree | null = null
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 
@@ -82,17 +94,71 @@ class App extends React.Component <{
 		})
 	}
 
-	async onSelectedCourse(availableShifts: Shift[], selectedCourses: Course[]): Promise<void> {
+	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
+		if (selectedCourses.length === 0) {
+			const currCourses = this.state.selectedCourses as CourseUpdates
+			currCourses.removeAllCourses()
+			if (this.selectedDegree === null) {
+				this.setState({
+					availableCourses: [],
+					selectedCourses: currCourses,
+					availableShifts: [],
+					shownShifts: []
+				})
+			} else {
+				this.setState({
+					selectedCourses: currCourses,
+					availableShifts: [],
+					shownShifts: []
+				})
+			}
+			this.topBar.current?.setSelectedCourses(currCourses)
+			return
+		}
+
+		const changedCourse = getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
+		if (!changedCourse) {
+			return
+		}
+
+		const currCourses = this.state.selectedCourses
+		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
+		if (changedCourse.course !== undefined) {
+			currCourses.toggleCourse(changedCourse.course)
+		} else if (changedCourse.type === CourseUpdateType.Many) {
+			selectedCourses.forEach(c => currCourses.toggleCourse(c))
+		}
+
+		this.setState({
+			selectedCourses: currCourses
+		})
+
+		let availableShifts: Shift[] = []
+		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
+			currCourses.lastUpdate.course !== undefined) {
+			const schedule = await API.getCourseSchedules(currCourses.lastUpdate.course)
+			if (schedule === null) {
+				this.showAlert('Não foi possível obter os turnos desta UC', 'error')
+				return
+			}
+			availableShifts = this.state.availableShifts.concat(schedule)
+		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Remove) {
+			availableShifts = this.state.availableShifts
+				.filter((shift: Shift) => shift.courseName !== currCourses.lastUpdate?.course?.name)
+		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Clear) {
+			availableShifts = []
+		}
+
 		const shownShifts = this.filterShifts({
 			selectedCampi: this.state.selectedCampi,
 			selectedShiftTypes: this.state.selectedShiftTypes,
 			availableShifts: availableShifts
 		})
 
+		this.topBar.current?.setSelectedCourses(currCourses)
 		this.setState({
 			availableShifts,
-			shownShifts,
-			selectedCourses
+			shownShifts
 		})
 	}
 
@@ -104,11 +170,24 @@ class App extends React.Component <{
 		return this.state.selectedShifts.map((shift: Shift) => shift.lessons).flat()
 	}
 
+	setSelectedShifts(shifts: Shift[]) {
+		this.setState({
+			selectedShifts: shifts
+		})
+		this.topBar.current?.setHasSelectedShifts(shifts)
+		if (shifts.length === 0) {
+			this.cookies.remove('s')
+		} else {
+			const state = shortenDescriptions(shifts)
+			this.cookies.set('s', state, { maxAge: 60*60*24*31*3 })
+		}
+	}
+
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
 		const chosenShift = arr.find((s: Shift) => s.name === shiftName)
 
 		if (chosenShift) {
-			const shiftCourse = this.state.selectedCourses.filter( (c) => c.id === chosenShift.courseId)
+			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
 
 			// Verify if of the same type and course to replace, but not the same
 			const replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
@@ -130,31 +209,27 @@ class App extends React.Component <{
 				}
 			}
 
-			this.setState({
-				selectedShifts: [...selectedShifts]
-			})
-			this.topBar.current?.setHasSelectedShifts(selectedShifts)
+			this.setSelectedShifts(selectedShifts)
 		}
 	}
 
 	clearSelectedShifts(): void {
 		if (this.state.selectedShifts.length !== 0) {
-			this.state.selectedCourses.forEach( (c) => {
+			this.state.selectedCourses.courses.forEach( (c) => {
 				c.clearSelectedShifts()
 				if (!c.isSelected && !c.hasShiftsSelected) {
 					returnColor(c.removeColor())
 				}
 			})
-			this.setState({
-				selectedShifts: []
-			})
-			this.topBar.current?.setHasSelectedShifts([])
+			this.setSelectedShifts([])
 			this.showAlert('Horário limpo com sucesso', 'success')
+
+			this.changeUrl(false)
 		}
 	}
 
 	getCoursesBySelectedShifts(): Course[] {
-		const finalCourses = [...this.state.selectedCourses]
+		const finalCourses = [...this.state.selectedCourses.courses]
 		// let courses: Record<string, Course> = {}
 		this.state.selectedShifts.forEach( (s) => {
 			// FIXME: Includes? hmmmm
@@ -228,14 +303,14 @@ class App extends React.Component <{
 		document.body.removeChild(el)
 		this.showAlert('Sucesso! Link copiado para a sua área de transferência', 'success')
 
-		await this.changeUrl()
+		await this.changeUrl(true)
 	}
 
-	async changeUrl(): Promise<void> {
+	async changeUrl(toState: boolean): Promise<void> {
 		const title: string = document.title
 		let path = API.PATH_PREFIX
 		const state = shortenDescriptions(this.state.selectedShifts)
-		if (state !== '') {
+		if (state !== '' && toState) {
 			path += `/?s=${state}`
 		}
 
@@ -246,45 +321,65 @@ class App extends React.Component <{
 		}
 	}
 
-	async buildCourse(description: string[]): Promise<Shift[][]> {
+	async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
 		const course = await API.getCourse(description[0])
 		if (!course) {
 			throw 'Could not build course'
 		}
-		course.isSelected = true
-		const schedule = await API.getCourseSchedules(course)
-		if (!schedule) {
+
+		if (updates.has(course)) {
+			throw 'Repeated course on URL'
+		}
+
+		updates.toggleCourse(course)
+		const availableShifts = await API.getCourseSchedules(course)
+		if (!availableShifts) {
 			throw 'Could not fetch course schedule'
 		}
 
 		const selectedShiftIds = description.slice(1)
-		const selectedShifts = schedule.reduce((acc: Shift[], shift: Shift) => {
+		const selectedShifts = availableShifts.reduce((acc: Shift[], shift: Shift) => {
 			if (selectedShiftIds.includes(shift.shiftId)) {
 				acc.push(shift)
+				course.addSelectedShift(shift)
 			}
 			return acc
 		}, [] as Shift[])
-		return [schedule, selectedShifts]
+		return { course, availableShifts, selectedShifts }
 	}
 
 	async buildState(param: string | undefined): Promise<void> {
 		if (!param) {
-			return
+			param = this.cookies.get('s')
+			if (!param) {
+				return
+			}
 		}
 
 		try {
 			const shifts = param.split(';')
 				.map((shift: string) => shift.split('~'))
 
-			const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description)))
-			const state = parsedState.reduce((acc: Record<string, Shift[]>, result: Shift[][]) => {
-				acc.availableShifts = acc.availableShifts.concat(result[0])
-				acc.selectedShifts = acc.selectedShifts.concat(result[1])
+			const courseUpdates = new CourseUpdates()
+			const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
+			const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
+				acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
+				acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
 				return acc
-			}, { availableShifts: [], selectedShifts: []})
+			}, { availableShifts: [], selectedShifts: [] })
 
-			this.setState(state)
+			this.topBar.current?.setSelectedCourses(courseUpdates)
+			this.setState({
+				...state,
+				selectedCourses: courseUpdates,
+				shownShifts: this.filterShifts({
+					selectedCampi: this.state.selectedCampi,
+					selectedShiftTypes: this.state.selectedShiftTypes,
+					availableShifts: state.availableShifts
+				})
+			})
 			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
+			this.cookies.set('s', shortenDescriptions(state.selectedShifts), { maxAge: 60*60*24*31*3 })
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL
@@ -403,7 +498,7 @@ class App extends React.Component <{
 														style={{backgroundColor: c.color}} label={c.acronym}
 													/>
 												</Tooltip>
-												{Array.from(c.getShiftsDisplay()).map( (s) => (
+												{Array.from(c.getShiftsDisplay()).map((s) => (
 													<Paper elevation={0} key={s[0]}
 														style={{marginLeft: '4px', marginRight: '4px',
 															color: s[1] ? '#000' : 'rgba(0, 0, 0, 0.26)'}}

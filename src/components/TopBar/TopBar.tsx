@@ -6,8 +6,7 @@ import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
 import Shift from '../../domain/Shift'
-import CourseUpdates, { CourseUpdateType } from '../../utils/CourseUpdate'
-import AcademicTerm from '../../domain/AcademicTerm'
+import CourseUpdates from '../../utils/CourseUpdate'
 
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
@@ -29,7 +28,7 @@ import Button from '@material-ui/core/Button'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
-	onSelectedCourse: (availableShifts: Shift[], selectedCourses: Course[]) => Promise<void>
+	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
 	onClearShifts: () => void
 	onGetLink: () => void
 }, unknown>{
@@ -41,7 +40,7 @@ class TopBar extends React.Component <{
 		selectedCourses: new CourseUpdates(),
 		hasSelectedShifts: false
 	}
-	availableShifts: Shift[] = []
+	// availableShifts: Shift[] = []
 	selectedDegree: Degree | null = null
 
 	// eslint-disable-next-line
@@ -87,75 +86,20 @@ class TopBar extends React.Component <{
 		})
 	}
 
-	getCoursesDifference(prevCourses: Course[], courses: Course[]): Course | undefined {
-		const prevSet = Comparables.toUnique(prevCourses)
-		const newSet = Comparables.toUnique(courses)
-
-		if (prevSet.length === newSet.length) {
-			// Nothing changed
-			return undefined
-		} else if (prevSet.length === newSet.length + 1) {
-			// Removed element, find missing in courses
-			return prevCourses.find((c: Course) => !Comparables.includes(courses, c))
-		} else if (prevSet.length === newSet.length - 1) {
-			// Added element, return first last on courses
-			return courses[courses.length - 1]
-		}
+	//FIXME: Available courses not updating when a course from another degree is removed 
+	private async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
+		this.props.onSelectedCourse(selectedCourses)
+		// this.props.onSelectedCourse(availableShifts, currCourses.courses)
 	}
 
-	//FIXME: Available courses not updating when a course from another degree is removed 
-	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
-		if (selectedCourses.length === 0) {
-			this.availableShifts = []
-			const currCourses = this.state.selectedCourses
-			currCourses.removeAllCourses()
-			if (this.selectedDegree === null) {
-				this.setState({
-					availableCourses: [],
-					autocompleteValue: [],
-					selectedCourses: currCourses
-				})
-			} else {
-				this.setState({
-					autocompleteValue: [],
-					selectedCourses: currCourses
-				})
-			}
-			this.props.onSelectedCourse([] as Shift[], selectedCourses)
-			return
-		}
-
-		const changedCourse = this.getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
-		if (!changedCourse) {
-			return
-		}
-
-		const currCourses = this.state.selectedCourses
-		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
-		currCourses.toggleCourse(changedCourse)
-
+	setSelectedCourses(selectedCourses: CourseUpdates): void {
+		// FIXME: Maybe not use toUnique?
+		const availableCourses = 
+			Comparables.toUnique(this.state.availableCourses.concat(selectedCourses.courses)) as Course[]
 		this.setState({
-			selectedCourses: currCourses
+			selectedCourses,
+			availableCourses
 		})
-
-		let availableShifts: Shift[]
-		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
-			currCourses.lastUpdate.course !== undefined) {
-			const schedule = await API.getCourseSchedules(currCourses.lastUpdate.course)
-			if (schedule === null) {
-				this.props.showAlert('Não foi possível obter os turnos desta UC', 'error')
-				return
-			}
-			availableShifts = this.availableShifts.concat(schedule)
-		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Remove) {
-			availableShifts = this.availableShifts
-				.filter((shift: Shift) => shift.courseName !== currCourses.lastUpdate?.course?.name)
-		} else {
-			availableShifts = []
-		}
-
-		this.availableShifts = availableShifts
-		this.props.onSelectedCourse(availableShifts, currCourses.courses)
 	}
 
 	onSelectedAcademicTerm(s: string): void {
