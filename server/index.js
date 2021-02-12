@@ -14,7 +14,7 @@ app.use(morgan('common', {
     return req.url !== '/' && !req.url.includes('api')
   }
 }));
-app.use(express.static(path.join(__dirname, '../build'), {fallthrough: true}))
+app.use(express.static(path.join(__dirname, '../build_deploy'), {fallthrough: true}))
 
 app.use(
   '/api',
