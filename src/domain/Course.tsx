@@ -14,7 +14,7 @@ export default class Course implements Comparable {
 
 	constructor(obj: CourseDto) {
 		this.id = obj.id
-		this.acronym = obj.acronym.replace(/\d/g, '')
+		this.acronym = getCourseAcronym(obj.acronym, obj.id)
 		this.name = obj.name
 		this.semester = +obj.academicTerm[0]
 		this.abbrev = this.name.split(/[- //]+/).map(d => d[0]).filter(d => {
@@ -101,4 +101,21 @@ export type CourseDto = {
 	credits: string
 	id: string
 	name: string
+}
+
+function getCourseAcronym(name: string, id: string): string {
+	const re = /^([-]*[A-Za-z\d._]*[A-Za-z])(\d+)$/
+	const match = name.match(re)
+	if (match === null) {
+		throw 'Unexpected course name'
+	}
+	let acronym = match[1]
+	if (id === '1127510519585252') {
+		// CDI-I
+		acronym += '-I'
+	} else if (id === '1127510519585253') {
+		// CDI-II
+		acronym += '-II'
+	}
+	return acronym
 }

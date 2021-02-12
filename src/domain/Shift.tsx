@@ -17,10 +17,11 @@ const shadeColor = (color: string, amount: number) => {
 }
 
 export enum ShiftType {
-	'Teórica' = 'T',
-	'Problemas' = 'PB',
-	'Laboratorial' = 'L',
-	'Seminário' = 'S',
+	'Teo' = 'T',
+	'PB' = 'PB',
+	'Lab' = 'L',
+	'TP' = 'TP',
+	'Sem' = 'S',
 }
 
 export default class Shift implements Comparable {
@@ -39,12 +40,14 @@ export default class Shift implements Comparable {
 		this.courseId = course.id
 		this.course = course
 		this.name = obj.name
-		const re = /^([A-Za-z\d._]*[A-Za-z])\d+(L|PB|T|S)([\d]{2})$/
+		const re = /^([-]*[A-Za-z\d._]*[A-Za-z])\d+(L|PB|T|S|TP)([\d]{2})$/
 		const match = this.name.match(re)
 		if (match === null) {
 			throw 'Unexpected shift name'
 		}
-		this.acronym = match[1]
+		// Use course acronym
+		// this.acronym = match[1]
+		this.acronym = course.acronym
 		this.type = match[2] as ShiftType
 		this.shiftId = match[2] + match[3]
 		this.courseName = course.name
@@ -52,9 +55,9 @@ export default class Shift implements Comparable {
 			this.campus = obj.rooms[0]?.topLevelSpace.name
 		}
 
-		if (this.type === ShiftType['Teórica']) {
+		if (this.type === ShiftType['Teo']) {
 			this.color = shadeColor(course.color, 1.30)
-		} else if (this.type === ShiftType['Problemas']) {
+		} else if (this.type === ShiftType['PB']) {
 			this.color = shadeColor(course.color, 1.15)
 		} else {
 			this.color = course.color

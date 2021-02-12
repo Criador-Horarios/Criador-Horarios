@@ -32,6 +32,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] When exporting to image, lessons overlapping bugs -> Try react-use-screenshot
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected
 - [X] When a shift is selected, if the course is unselected and selected again, it may have a different color
+- [x] There were no 'Teórico-Práticas' type of shifts
 
 ## Suggestions
 
@@ -40,3 +41,4 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] Add loading progress when making request
 - [X] Add checklist with chosen shifts from each course to keep track
 - [X] Add titles to schedules (thanks to @Hugo-Marques-work)
+- [X] Distinguish CDI-I and CDI-II (FenixEdu sets the same acronym, so hardcoded :( )
