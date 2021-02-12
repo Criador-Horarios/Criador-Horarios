@@ -301,9 +301,7 @@ class App extends React.Component <{
 		document.execCommand('copy')
 
 		document.body.removeChild(el)
-		this.showAlert('Sucesso! Link copiado para a sua área de transferência', 'success')
-
-		await this.changeUrl(true)
+		this.showAlert('Sucesso! O link foi copiado para a sua área de transferência', 'success')
 	}
 
 	async changeUrl(toState: boolean): Promise<void> {
@@ -349,11 +347,9 @@ class App extends React.Component <{
 	}
 
 	async buildState(param: string | undefined): Promise<void> {
+		param = param ?? this.cookies.get('s')
 		if (!param) {
-			param = this.cookies.get('s')
-			if (!param) {
-				return
-			}
+			return
 		}
 
 		try {
@@ -380,6 +376,7 @@ class App extends React.Component <{
 			})
 			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
 			this.cookies.set('s', shortenDescriptions(state.selectedShifts), { maxAge: 60*60*24*31*3 })
+			this.changeUrl(false)
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL
