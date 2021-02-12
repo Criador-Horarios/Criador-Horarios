@@ -1,6 +1,6 @@
 # Criador de Horários
 
-![Demo video](./demo/demo.m4v)
+![Demo video](./demo/demo.gif)
 
 ## To Run
 
