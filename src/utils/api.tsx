@@ -124,3 +124,4 @@ export default class API {
 export const staticData = {
 	terms: [] as AcademicTerm[]
 }
+
