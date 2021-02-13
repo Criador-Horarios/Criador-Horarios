@@ -63,7 +63,7 @@ class TopBar extends React.Component <{
 	async onSelectedDegree(degree: Degree | null): Promise<void> {
 		this.selectedDegree = degree
 		if (degree !== null) {
-			const degreeCourses = await API.getCourses(degree.id) 
+			const degreeCourses = await API.getCourses(degree) 
 			if (degreeCourses === null) {
 				this.props.showAlert('Não foi possível obter as UCs deste curso', 'error')
 				return
@@ -166,7 +166,7 @@ class TopBar extends React.Component <{
 							renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
 							renderTags={(tagValue, getTagProps) => {
 								return tagValue.map((option, index) => (
-									<Tooltip title={option.name} key={option.name}>
+									<Tooltip title={option.displayName()} key={option.hashString()}>
 										<Chip {...getTagProps({ index })} size="small" color='primary' style={{backgroundColor: option.color}} label={option.acronym} />
 									</Tooltip>
 								))

@@ -7,12 +7,14 @@ export default class Course implements Comparable {
 	name: string
 	semester: number
 	abbrev: string
+	degreeAcronym: string
 	color = ''
 	shiftTypes: Map<string, boolean | undefined> = new Map()
 	selectedShifts = 0
 	isSelected = false
+	showDegree = false
 
-	constructor(obj: CourseDto) {
+	constructor(obj: CourseDto, degreeAcronym: string) {
 		this.id = obj.id
 		this.acronym = getCourseAcronym(obj.acronym, obj.name)
 		this.name = obj.name
@@ -21,6 +23,7 @@ export default class Course implements Comparable {
 			if (!d) return false
 			return d === d.toUpperCase()
 		}).join('')
+		this.degreeAcronym = degreeAcronym
 
 		Object.values(ShiftType).forEach( (s) => {
 			this.shiftTypes.set(s, undefined)
@@ -74,14 +77,23 @@ export default class Course implements Comparable {
 	}
 
 	equals(other: Course): boolean {
-		return this.name === other.name && this.semester === other.semester
+		const nameSem = (this.name === other.name && this.semester === other.semester)
+		const diffDegree = (this.degreeAcronym === other.degreeAcronym && this.id === other.id)
+		return nameSem && diffDegree
+			
 	}
 
 	hashString(): string {
-		return this.name + this.semester
+		return this.name + this.semester + this.id
 	}
 
 	static compare(a: Course, b: Course): number {
+		const nameSem = (a.name === b.name && a.semester === b.semester)
+		const diffDegree = (a.degreeAcronym === b.degreeAcronym && a.id === b.id)
+		if (nameSem && !diffDegree) {
+			a.showDegree = true
+			b.showDegree = true
+		}
 		const sem = a.semester < b.semester ? -1 : a.semester === b.semester ? 0 : 1
 		return sem || a.name.localeCompare(b.name)
 	}
@@ -91,7 +103,15 @@ export default class Course implements Comparable {
 	}
 
 	displayName() : string {
-		return this.name
+		let display = this.name
+		if (this.showDegree) {
+			if (this.degreeAcronym !== '') {
+				display += ` (${this.degreeAcronym})`
+			} else {
+				display += ' (N/A)'
+			}
+		}
+		return display
 	}
 }
 
@@ -101,6 +121,13 @@ export type CourseDto = {
 	credits: string
 	id: string
 	name: string
+	competences: {
+		degrees: {
+			id: string,
+			name: string,
+			acronym: string
+		}[]
+	}[]
 }
 
 function getCourseAcronym(acronym: string, name: string): string {

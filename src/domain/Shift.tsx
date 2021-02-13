@@ -84,10 +84,13 @@ export default class Shift implements Comparable {
 		const s1 = o1 as Shift
 		const s2 = o2 as Shift
 		return s1.courseName === s2.courseName && s1.type === s2.type && s1.name !== s2.name
+		// If we need to replace shifts from same courses from different degrees (like CDI from LEIC-A and MEEC)
+		// comment the next line
+			&& s1.courseId === s2.courseId
 	}
 
 	equals(other: Shift): boolean {
-		return this.name === other.name
+		return this.name === other.name && this.courseId === other.courseId
 	}
 
 	hashString(): string {

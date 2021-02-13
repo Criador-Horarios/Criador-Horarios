@@ -53,13 +53,13 @@ export default class API {
 		return degrees.sort(Degree.compare)
 	}
 
-	public static async getCourses(degree: string): Promise<Course[] | null> {
-		const res = (await this.getRequest(`/api/degrees/${degree}/courses`) as CourseDto[] | null)
+	public static async getCourses(degree: Degree): Promise<Course[] | null> {
+		const res = (await this.getRequest(`/api/degrees/${degree.id}/courses`) as CourseDto[] | null)
 		if (res === null) {
 			return null
 		}
 		const courses = res
-			.map((d: CourseDto) => new Course(d))
+			.map((d: CourseDto) => new Course(d, degree.acronym))
 			.filter( (c: Course) => {
 				return c.semester === this.SEMESTER
 			})
@@ -72,7 +72,13 @@ export default class API {
 			return null
 		}
 		res.id = course
-		return new Course(res)
+		let courseAcronyms = ''
+		if (res.competences !== undefined && res.competences.length > 0 && res.competences[0] !== undefined
+			&& res.competences[0].degrees !== undefined && res.competences[0].degrees.length > 0
+		) {
+			courseAcronyms = res.competences[0].degrees.map(d => d.acronym).join('/')
+		}
+		return new Course(res, courseAcronyms)
 	}
 
 	public static async getCourseSchedules(course: Course): Promise<Shift[] | null> {

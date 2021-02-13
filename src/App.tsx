@@ -144,7 +144,7 @@ class App extends React.Component <{
 			availableShifts = this.state.availableShifts.concat(schedule)
 		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Remove) {
 			availableShifts = this.state.availableShifts
-				.filter((shift: Shift) => shift.courseName !== currCourses.lastUpdate?.course?.name)
+				.filter((shift: Shift) => shift.courseId !== currCourses.lastUpdate?.course?.id)
 		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Clear) {
 			availableShifts = []
 		}
@@ -495,10 +495,10 @@ class App extends React.Component <{
 								<CardActions>
 									<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
 										{this.getCoursesBySelectedShifts().map((c) => (
-											<Paper elevation={0} variant={'outlined'} key={c.id}
+											<Paper elevation={0} variant={'outlined'} key={c.hashString()}
 												style={{padding: '4px', margin: '4px', display: 'flex'}}
 											>
-												<Tooltip title={c.name} key={c.id}>
+												<Tooltip title={c.displayName()} key={c.hashString()}>
 													<Chip size="small" color='primary'
 														style={{backgroundColor: c.color}} label={c.acronym}
 													/>
