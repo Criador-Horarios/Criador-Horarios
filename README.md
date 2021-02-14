@@ -15,7 +15,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Save state to cookies
 - [X] Shorten saved state and rebuild on reload (can add loading animation)
 - [X] Snackbar alerts
-- [ ] Allow english or other languages
+- [X] Allow english (missing other languages)
 - [X] Add filters for L, T, PB, S
 - [X] Course chip colors match course color
 - [X] Add Github link and donation link
@@ -25,7 +25,8 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Add help button/animation
 - [x] Choose colors only when selecting the course
 - [X] Disable clear and export schedule buttons when unable to use them
-- [ ] When building, show maintenance page -> get better page
+- [X] When building, show maintenance page (downtime is almost 0)
+- [ ] Add tooltip to filter buttons 
 
 ## Bugs
 

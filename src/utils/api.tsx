@@ -31,6 +31,15 @@ export default class API {
 		API.PREFIX = `${window.location.protocol}//${window.location.host}${window.location.pathname}`	
 	}
 
+	public static setLanguage(recvLang: string): void {
+		const lang = languages.has(recvLang)
+		if (lang) {
+			API.LANG = languages.get(recvLang) as string
+		} else {
+			API.LANG = languages.get('en') as string
+		}
+	}
+
 	public static getUrlParams(): Record<string, string> {
 		const params = window.location.href.slice(API.PREFIX.length)
 		if (params.startsWith('?')) {
@@ -130,4 +139,9 @@ export default class API {
 export const staticData = {
 	terms: [] as AcademicTerm[]
 }
+
+const languages = new Map([
+	['en', 'en-GB'],
+	['pt', 'pt-PT']
+])
 

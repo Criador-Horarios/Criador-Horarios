@@ -7,6 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 class Schedule extends React.PureComponent <{
 	onSelectedEvent: (id: string) => void
 	events: Lesson[]
+	lang: string
 }, unknown>{
 	render(): React.ReactNode {
 		return (
@@ -46,7 +47,7 @@ class Schedule extends React.PureComponent <{
 					contentHeight={'auto'}
 					events={this.props.events}
 					eventClick={(info) => this.props.onSelectedEvent(info.event.id)}
-					locale="pt"
+					locale={this.props.lang}
 				/>
 			</div>
 		)

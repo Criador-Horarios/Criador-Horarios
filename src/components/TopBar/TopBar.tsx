@@ -26,11 +26,16 @@ import MenuItem from '@material-ui/core/MenuItem'
 import DialogActions from '@material-ui/core/DialogActions'
 import Button from '@material-ui/core/Button'
 
+import i18next from 'i18next'
+import Menu from '@material-ui/core/Menu'
+import Avatar from '@material-ui/core/Avatar'
+
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
-	onClearShifts: () => void
+	onClearShifts: (alert: boolean) => void
 	onGetLink: () => void
+	onChangeLanguage: (language: string) => void
 }, unknown>{
 	state = {
 		degrees: [] as Degree[],
@@ -39,7 +44,8 @@ class TopBar extends React.Component <{
 		selectedCourses: new CourseUpdates(),
 		hasSelectedShifts: false,
 		settingsDialog: false,
-		helpDialog: false
+		helpDialog: false,
+		languageAnchor: null
 	}
 	selectedDegree: Degree | null = null
 
@@ -48,6 +54,7 @@ class TopBar extends React.Component <{
 		super(props)
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
+		this.onLanguageMenuClick = this.onLanguageMenuClick.bind(this)
 	}
 
 	async componentDidMount(): Promise<void> {
@@ -56,7 +63,7 @@ class TopBar extends React.Component <{
 			degrees: degrees ?? []
 		})
 		if (degrees === null) {
-			this.props.showAlert('Não foi possível obter os cursos', 'error')
+			this.props.showAlert(i18next.t('alert.cannot-obtain-degrees'), 'error')
 		}
 	}
 
@@ -65,7 +72,7 @@ class TopBar extends React.Component <{
 		if (degree !== null) {
 			const degreeCourses = await API.getCourses(degree) 
 			if (degreeCourses === null) {
-				this.props.showAlert('Não foi possível obter as UCs deste curso', 'error')
+				this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
 				return
 			}
 			const selected = this.state.selectedCourses.courses
@@ -111,10 +118,36 @@ class TopBar extends React.Component <{
 
 		this.onSelectedCourse([])
 		this.onSelectedDegree(this.selectedDegree)
-		this.props.onClearShifts()
+		this.props.onClearShifts(false)
 		this.setState({
 			selectedAcademicTerm: s
 		})
+	}
+
+	onLanguageMenuClick(event: React.MouseEvent<HTMLSpanElement, MouseEvent> | null, open: boolean): void {
+		if (open && event !== null) {
+			this.setState({
+				languageAnchor: event.currentTarget
+			})
+		} else {
+			this.setState({
+				languageAnchor: null
+			})
+		}
+	}
+
+	async onLanguageSelect(language: string): Promise<void> {
+		this.onLanguageMenuClick(null, false)
+		this.props.onChangeLanguage(language)
+
+		// Get degrees with correct language and erase courses
+		const degrees = await API.getDegrees()
+		this.setState({
+			degrees: degrees ?? []
+		})
+
+		this.selectedDegree = null
+		this.onSelectedCourse([])
 	}
 
 	render(): React.ReactNode {
@@ -132,6 +165,7 @@ class TopBar extends React.Component <{
 				>
 					<Toolbar className={styles.ToolBar}>
 						<Autocomplete
+							value={this.selectedDegree}
 							color="inherit"
 							size="small"
 							className={styles.degreeSelector}
@@ -139,10 +173,10 @@ class TopBar extends React.Component <{
 							clearOnBlur
 							handleHomeEndKeys={false}
 							onChange={(_, value) => this.onSelectedDegree(value)}
-							noOptionsText="Sem opções"
+							noOptionsText={i18next.t('degree-selector.noOptions') as string}
 							options={this.state.degrees}
 							getOptionLabel={(option) => option.displayName()}
-							renderInput={(params) => <TextField {...params} label="Escolha um curso" variant="outlined" />}
+							renderInput={(params) => <TextField {...params} label={i18next.t('degree-selector.title') as string} variant="outlined" />}
 						/>
 						<Autocomplete
 							value={this.state.selectedCourses.courses}
@@ -161,9 +195,9 @@ class TopBar extends React.Component <{
 								return !option.isSelected &&
 									this.state.selectedCourses.courses.length === maxSelectedCourses
 							}}
-							noOptionsText="Sem opções, escolha um curso primeiro"
+							noOptionsText={i18next.t('course-selector.noOptions') as string}
 							getOptionLabel={(option) => option.displayName()}
-							renderInput={(params) => <TextField  {...params} label="Escolha as UCs" variant="outlined" />}
+							renderInput={(params) => <TextField  {...params} label={i18next.t('course-selector.title') as string} variant="outlined" />}
 							renderTags={(tagValue, getTagProps) => {
 								return tagValue.map((option, index) => (
 									<Tooltip title={option.displayName()} key={option.hashString()}>
@@ -172,12 +206,38 @@ class TopBar extends React.Component <{
 								))
 							}}
 						/>
-						<Tooltip title="Obter link de partilha">
+						<Tooltip title={i18next.t('link-button.tooltip') as string}>
 							<IconButton disabled={!this.state.hasSelectedShifts} color="inherit" onClick={this.props.onGetLink} component="span">
 								<Icon>share</Icon>
 							</IconButton>
 						</Tooltip>
-						<Tooltip title="Ajuda">
+						<Tooltip title={i18next.t('language-button.tooltip') as string}>
+							<IconButton color="inherit"
+								onClick={(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {this.onLanguageMenuClick(e, true)}}
+								component="span"
+							>
+								<Icon>language</Icon>
+							</IconButton>
+						</Tooltip>
+						<Menu
+							id="language-menu"
+							anchorEl={this.state.languageAnchor}
+							keepMounted
+							open={Boolean(this.state.languageAnchor)}
+							onClose={() => {this.onLanguageMenuClick(null, false)}}
+						>
+							<MenuItem onClick={() => {this.onLanguageSelect('en')}}>
+								<Tooltip open={false} title={i18next.t('language.english') as string} placement='left-start'>
+									<Avatar alt="English" src={`${process.env.PUBLIC_URL}/img/language/united-kingdom.png`} />
+								</Tooltip>
+							</MenuItem>
+							<MenuItem onClick={() => {this.onLanguageSelect('pt')}}>
+								<Tooltip open={false} title={i18next.t('language.portuguese') as string} placement='left-start'>
+									<Avatar alt="Portuguese" src={`${process.env.PUBLIC_URL}/img/language/portugal.png`} />
+								</Tooltip>
+							</MenuItem>
+						</Menu>
+						<Tooltip title={i18next.t('help-button.tooltip') as string}>
 							<IconButton disabled={this.state.helpDialog} color="inherit" onClick={() => {this.setState({helpDialog: true})}} component="span">
 								<Icon>help</Icon>
 							</IconButton>
@@ -191,22 +251,23 @@ class TopBar extends React.Component <{
 					onClose={() => {this.setState({settingsDialog: false})}}
 					fullWidth={true}
 				>
-					<DialogTitle>Escolha o semestre</DialogTitle>
+					<DialogTitle>{i18next.t('settings-dialog.title')}
+					</DialogTitle>
 					<DialogContent>
 						<FormControl variant='outlined'
 							fullWidth={true}
 						>
-							<InputLabel>Semestre</InputLabel>
+							<InputLabel>{i18next.t('settings-dialog.select.label') as string}</InputLabel>
 							<Select
 								id="semester"
 								value={this.state.selectedAcademicTerm}
 								onChange={(e) => {this.onSelectedAcademicTerm(e.target.value as string)}}
-								label="Semestre"
+								label={i18next.t('settings-dialog.select.label') as string}
 								// className={styles.semesterSelector}
 								autoWidth={true}
 							>
 								{staticData.terms.map( (s) => 
-									<MenuItem key={s.id} value={s.id}>{s.term} {s.semester}º Semestre
+									<MenuItem key={s.id} value={s.id}>{s.term} {s.semester}{i18next.t('settings-dialog.select.value') as string}
 									</MenuItem>
 								)}
 							</Select>
@@ -214,7 +275,9 @@ class TopBar extends React.Component <{
 					</DialogContent>
 					<DialogActions>
 						<div />
-						<Button onClick={() => {this.setState({settingsDialog: false})}} color="primary">Guardar</Button>
+						<Button onClick={() => {this.setState({settingsDialog: false})}} color="primary">
+							{i18next.t('settings-dialog.actions.close-button') as string}
+						</Button>
 					</DialogActions>
 				</Dialog>
 				<Dialog open={this.state.helpDialog}
@@ -229,7 +292,9 @@ class TopBar extends React.Component <{
 					</DialogContent>
 					<DialogActions>
 						<div />
-						<Button onClick={() => {this.setState({helpDialog: false})}} color="primary">Voltar</Button>
+						<Button onClick={() => {this.setState({helpDialog: false})}} color="primary">
+							{i18next.t('help-dialog.actions.close-button') as string}
+						</Button>
 					</DialogActions>
 				</Dialog>
 			</div>

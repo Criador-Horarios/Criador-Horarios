@@ -11,7 +11,9 @@ import Schedule from './components/Schedule/Schedule'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
+import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
+
 import Avatar from '@material-ui/core/Avatar'
 import IconButton from '@material-ui/core/IconButton'
 import Tooltip from '@material-ui/core/Tooltip'
@@ -62,6 +64,7 @@ class App extends React.Component <{
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
 		loading: true as boolean,
+		lang: i18next.options.lng as string
 	}
 	cookies = new Cookies()
 	selectedDegree: Degree | null = null
@@ -79,8 +82,12 @@ class App extends React.Component <{
 		this.saveSchedule = this.saveSchedule.bind(this)
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
 		this.showAlert = this.showAlert.bind(this)
+		this.changeLanguage = this.changeLanguage.bind(this)
+
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
+
+		API.setLanguage(this.state.lang)
 	}
 
 	async componentDidMount() {
@@ -138,7 +145,7 @@ class App extends React.Component <{
 			currCourses.lastUpdate.course !== undefined) {
 			const schedule = await API.getCourseSchedules(currCourses.lastUpdate.course)
 			if (schedule === null) {
-				this.showAlert('Não foi possível obter os turnos desta UC', 'error')
+				this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
 				return
 			}
 			availableShifts = this.state.availableShifts.concat(schedule)
@@ -213,7 +220,7 @@ class App extends React.Component <{
 		}
 	}
 
-	clearSelectedShifts(): void {
+	clearSelectedShifts(alert: boolean): void {
 		if (this.state.selectedShifts.length !== 0) {
 			this.state.selectedCourses.courses.forEach( (c) => {
 				c.clearSelectedShifts()
@@ -222,7 +229,10 @@ class App extends React.Component <{
 				}
 			})
 			this.setSelectedShifts([])
-			this.showAlert('Horário limpo com sucesso', 'success')
+
+			if (alert) {
+				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
+			}
 
 			this.changeUrl(false)
 		}
@@ -301,7 +311,7 @@ class App extends React.Component <{
 		document.execCommand('copy')
 
 		document.body.removeChild(el)
-		this.showAlert('Sucesso! O link foi copiado para a sua área de transferência', 'success')
+		this.showAlert(i18next.t('alert.link-obtained'), 'success')
 	}
 
 	async changeUrl(toState: boolean): Promise<void> {
@@ -385,7 +395,7 @@ class App extends React.Component <{
 
 	saveSchedule(): void {
 		if (this.state.selectedShifts.length === 0) {
-			this.showAlert('Não tem nenhum turno selecionado, faça o seu horário primeiro', 'info')
+			this.showAlert(i18next.t('alert.no-shift-selected'), 'info')
 			return
 		}
 		exportComponentAsPNG(this.chosenSchedule, {
@@ -396,7 +406,20 @@ class App extends React.Component <{
 			}
 		})
 	
-		this.showAlert('Horário convertido em imagem', 'success')
+		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
+	}
+
+	changeLanguage(language: string): void {
+		this.setState({
+			lang: language
+		})
+		i18next.changeLanguage(language).then(() => {
+			i18next.options.lng = language
+		})
+		API.setLanguage(language)
+
+		// Clear shifts?
+		this.clearSelectedShifts(false)
 	}
 
 	render(): ReactNode {
@@ -427,6 +450,7 @@ class App extends React.Component <{
 					onClearShifts={this.clearSelectedShifts}
 					onGetLink={this.getLink}
 					showAlert={this.showAlert}
+					onChangeLanguage={this.changeLanguage}
 				>
 				</TopBar>
 				<div className="main">
@@ -444,14 +468,14 @@ class App extends React.Component <{
 					<div className={classes.body as string}>
 						<div className="schedules">
 							<Card className={classes.card as string}>
-								<CardHeader title="Turnos Disponíveis"
+								<CardHeader title={i18next.t('schedule-available.title') as string}
 									titleTypographyProps={{ variant: 'h6', align: 'center' }}
 									className={classes.cardTitle as string}
 								/>
 								<CardContent className={classes.cardContent as string}>
 									<Schedule
 										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
-										events={this.getAllLessons()}
+										events={this.getAllLessons()} lang={this.state.lang}
 									/>
 								</CardContent>
 								<CardActions>
@@ -482,14 +506,14 @@ class App extends React.Component <{
 								</CardActions>
 							</Card>
 							<Card className={classes.card as string}>
-								<CardHeader title="Turnos Selecionados"
+								<CardHeader title={i18next.t('schedule-selected.title') as string}
 									titleTypographyProps={{ variant: 'h6', align: 'center' }}
 									className={classes.cardTitle as string}
 								/>
 								<CardContent className={classes.cardContent as string}>
 									<Schedule
 										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
-										events={this.getSelectedLessons()} ref={this.chosenSchedule}
+										events={this.getSelectedLessons()} ref={this.chosenSchedule} lang={this.state.lang}
 									/>
 								</CardContent>
 								<CardActions>
@@ -515,7 +539,7 @@ class App extends React.Component <{
 										))}
 									</div>
 									<div className={classes.centered as string}>
-										<Tooltip title="Guardar como imagem">
+										<Tooltip title={i18next.t('schedule-selected.actions.save-as-image') as string}>
 											<IconButton
 												disabled={this.state.selectedShifts.length === 0}
 												color="inherit"
@@ -524,11 +548,11 @@ class App extends React.Component <{
 												<Icon>download</Icon>
 											</IconButton>
 										</Tooltip>
-										<Tooltip title="Limpar horário">
+										<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
 											<IconButton
 												disabled={this.state.selectedShifts.length === 0}
 												color="inherit"
-												onClick={this.clearSelectedShifts}
+												onClick={() => {this.clearSelectedShifts(true)}}
 												component="span">
 												<Icon>delete</Icon>
 											</IconButton>
@@ -542,17 +566,17 @@ class App extends React.Component <{
 				<div className="footer">
 					<AppBar className={classes.footer as string} color="default" position="sticky">
 						<Toolbar>
-							<Tooltip title="Ajudar na manutenção do website">
+							<Tooltip title={i18next.t('footer.support-button.tooltip') as string}>
 								<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" onClick={() => {return}} color="inherit">
 									<Button color='default' variant='outlined'
 										startIcon={<FontAwesomeIcon icon={faPaypal}/>}
 										size='small'
-									>Apoiar
+									>{i18next.t('footer.support-button.content') as string}
 									</Button>
 								</Link>
 							</Tooltip>
 							<div className={classes.grow as string} />
-							<Tooltip title="Ver código fonte">
+							<Tooltip title={i18next.t('footer.repository.tooltip') as string}>
 								<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">
 									<IconButton color="inherit" onClick={() => {return}} component="span">
 										<GitHubIcon></GitHubIcon>
