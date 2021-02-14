@@ -13,6 +13,7 @@ import Degree from './domain/Degree'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
+import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles'
 
 import Avatar from '@material-ui/core/Avatar'
 import IconButton from '@material-ui/core/IconButton'
@@ -64,12 +65,14 @@ class App extends React.Component <{
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
 		loading: true as boolean,
-		lang: i18next.options.lng as string
+		lang: i18next.options.lng as string,
+		darkMode: false
 	}
 	cookies = new Cookies()
 	selectedDegree: Degree | null = null
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
+	theme: Theme
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -83,9 +86,12 @@ class App extends React.Component <{
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
 		this.showAlert = this.showAlert.bind(this)
 		this.changeLanguage = this.changeLanguage.bind(this)
+		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
 
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
+
+		this.theme = this.getTheme(this.state.darkMode)
 
 		API.setLanguage(this.state.lang)
 	}
@@ -279,7 +285,7 @@ class App extends React.Component <{
 
 	filterShifts(state: {selectedCampi: string[], selectedShiftTypes: string[], availableShifts: Shift[]}): Shift[] {
 		return state.availableShifts.filter( (s) => {
-			const campi = state.selectedCampi.includes(s.campus)
+			const campi = state.selectedCampi.includes(s.campus) || s.campus === undefined
 			const type = state.selectedShiftTypes.includes(s.type)
 			return campi && type
 		})
@@ -422,6 +428,24 @@ class App extends React.Component <{
 		this.clearSelectedShifts(false)
 	}
 
+	onChangeDarkMode(dark: boolean): void {
+		this.theme = this.getTheme(dark)
+		this.setState({
+			darkMode: dark
+		})
+	}
+
+	getTheme(dark: boolean): Theme {
+		return createMuiTheme({
+			palette: {
+				type: (dark) ? 'dark' : 'light',
+				primary: {
+					main: (dark) ? '#fff' : '#3f51b5'
+				}
+			}
+		})
+	}
+
 	render(): ReactNode {
 		const classes = this.props.classes
 
@@ -440,167 +464,176 @@ class App extends React.Component <{
 
 
 		return (
-			<div className="App">
-				<Backdrop className={classes.backdrop as string} open={this.state.loading}>
-					<CircularProgress color="inherit" />
-				</Backdrop>
-				<TopBar
-					ref={this.topBar}
-					onSelectedCourse={this.onSelectedCourse}
-					onClearShifts={this.clearSelectedShifts}
-					onGetLink={this.getLink}
-					showAlert={this.showAlert}
-					onChangeLanguage={this.changeLanguage}
-				>
-				</TopBar>
-				<div className="main">
-					<Snackbar
-						open={this.state.hasAlert}
-						autoHideDuration={3000}
-						onClose={this.handleCloseAlert}
-						anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-						<Alert
-							action={<IconButton size='small' onClick={this.handleCloseAlert}><Icon>close</Icon></IconButton>}
-							severity={this.state.alertSeverity}>
-							{this.state.alertMessage}
-						</Alert>
-					</Snackbar>
-					<div className={classes.body as string}>
-						<div className="schedules">
-							<Card className={classes.card as string}>
-								<CardHeader title={i18next.t('schedule-available.title') as string}
-									titleTypographyProps={{ variant: 'h6', align: 'center' }}
-									className={classes.cardTitle as string}
-								/>
-								<CardContent className={classes.cardContent as string}>
-									<Schedule
-										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
-										events={this.getAllLessons()} lang={this.state.lang}
+			<ThemeProvider theme={this.theme}>
+				<div className="App">
+					<Backdrop className={classes.backdrop as string} open={this.state.loading}>
+						<CircularProgress color="inherit" />
+					</Backdrop>
+					<TopBar
+						ref={this.topBar}
+						onSelectedCourse={this.onSelectedCourse}
+						onClearShifts={this.clearSelectedShifts}
+						onGetLink={this.getLink}
+						showAlert={this.showAlert}
+						onChangeLanguage={this.changeLanguage}
+						darkMode={this.state.darkMode}
+						onChangeDarkMode={this.onChangeDarkMode}
+					>
+					</TopBar>
+					<div className="main">
+						<Snackbar
+							open={this.state.hasAlert}
+							autoHideDuration={3000}
+							onClose={this.handleCloseAlert}
+							anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+							<Alert
+								action={<IconButton size='small' onClick={this.handleCloseAlert}><Icon>close</Icon></IconButton>}
+								severity={this.state.alertSeverity}>
+								{this.state.alertMessage}
+							</Alert>
+						</Snackbar>
+						<div className={classes.body as string}>
+							<div className="schedules">
+								<Card className={classes.card as string}>
+									<CardHeader title={i18next.t('schedule-available.title') as string}
+										titleTypographyProps={{ variant: 'h6', align: 'center' }}
+										className={classes.cardTitle as string}
 									/>
-								</CardContent>
-								<CardActions>
-									<Paper elevation={0} className={`${classes.paper as string} ${classes.centered as string}`}>
-										<StyledToggleButtonGroup
-											className={classes.toggleGroup as string}
-											size="small"
-											value={this.state.selectedCampi}
-											onChange={(_, value) => this.changeCampi(value as string[])}
-											aria-label="text alignment"
+									<CardContent className={classes.cardContent as string}>
+										<Schedule
+											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
+											events={this.getAllLessons()} lang={this.state.lang}
+											darkMode={this.state.darkMode}
+										/>
+									</CardContent>
+									<CardActions>
+										<Paper elevation={0} className={`${classes.paper as string} ${classes.centered as string}`}
+											style={{ border: `1px solid ${this.theme.palette.divider}` }}
 										>
-											{campiList.map((name: string) => (
-												<ToggleButton key={name} value={name}>{name}</ToggleButton>
-											))}
-										</StyledToggleButtonGroup>
-										<Divider flexItem orientation="vertical" className={classes.divider as string}/>
-										<StyledToggleButtonGroup
-											className={classes.toggleGroup as string}
-											size="small"
-											value={this.state.selectedShiftTypes}
-											onChange={(_, value) => this.changeShiftTypes(value as string[])}
-										>
-											{Object.entries(ShiftType).map((name) => (
-												<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
-											))}       
-										</StyledToggleButtonGroup>
-									</Paper>
-								</CardActions>
-							</Card>
-							<Card className={classes.card as string}>
-								<CardHeader title={i18next.t('schedule-selected.title') as string}
-									titleTypographyProps={{ variant: 'h6', align: 'center' }}
-									className={classes.cardTitle as string}
-								/>
-								<CardContent className={classes.cardContent as string}>
-									<Schedule
-										onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
-										events={this.getSelectedLessons()} ref={this.chosenSchedule} lang={this.state.lang}
-									/>
-								</CardContent>
-								<CardActions>
-									<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
-										{this.getCoursesBySelectedShifts().map((c) => (
-											<Paper elevation={0} variant={'outlined'} key={c.hashString()}
-												style={{padding: '4px', margin: '4px', display: 'flex'}}
+											<StyledToggleButtonGroup
+												className={classes.toggleGroup as string}
+												size="small"
+												value={this.state.selectedCampi}
+												onChange={(_, value) => this.changeCampi(value as string[])}
+												aria-label="text alignment"
 											>
-												<Tooltip title={c.displayName()} key={c.hashString()}>
-													<Chip size="small" color='primary'
-														style={{backgroundColor: c.color}} label={c.acronym}
-													/>
-												</Tooltip>
-												{Array.from(c.getShiftsDisplay()).map((s) => (
-													<Paper elevation={0} key={s[0]}
-														style={{marginLeft: '4px', marginRight: '4px',
-															color: s[1] ? '#000' : 'rgba(0, 0, 0, 0.26)'}}
-													>
-														<Typography variant='body1' style={{ fontWeight: 500 }}>{s[0]}</Typography>
-													</Paper>
+												{campiList.map((name: string) => (
+													<ToggleButton key={name} value={name}>{name}</ToggleButton>
 												))}
-											</Paper>
-										))}
-									</div>
-									<div className={classes.centered as string}>
-										<Tooltip title={i18next.t('schedule-selected.actions.save-as-image') as string}>
-											<IconButton
-												disabled={this.state.selectedShifts.length === 0}
-												color="inherit"
-												onClick={this.saveSchedule}
-												component="span">
-												<Icon>download</Icon>
-											</IconButton>
-										</Tooltip>
-										<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
-											<IconButton
-												disabled={this.state.selectedShifts.length === 0}
-												color="inherit"
-												onClick={() => {this.clearSelectedShifts(true)}}
-												component="span">
-												<Icon>delete</Icon>
-											</IconButton>
-										</Tooltip>
-									</div>
-								</CardActions>
-							</Card>
+											</StyledToggleButtonGroup>
+											<Divider flexItem orientation="vertical" className={classes.divider as string}/>
+											<StyledToggleButtonGroup
+												className={classes.toggleGroup as string}
+												size="small"
+												value={this.state.selectedShiftTypes}
+												onChange={(_, value) => this.changeShiftTypes(value as string[])}
+											>
+												{Object.entries(ShiftType).map((name) => (
+													<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
+												))}       
+											</StyledToggleButtonGroup>
+										</Paper>
+									</CardActions>
+								</Card>
+								<Card className={classes.card as string}>
+									<CardHeader title={i18next.t('schedule-selected.title') as string}
+										titleTypographyProps={{ variant: 'h6', align: 'center' }}
+										className={classes.cardTitle as string}
+									/>
+									<CardContent className={classes.cardContent as string}>
+										<Schedule
+											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
+											events={this.getSelectedLessons()} ref={this.chosenSchedule} lang={this.state.lang}
+											darkMode={this.state.darkMode}
+										/>
+									</CardContent>
+									<CardActions>
+										<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
+											{this.getCoursesBySelectedShifts().map((c) => (
+												<Paper elevation={0} variant={'outlined'} key={c.hashString()}
+													style={{padding: '4px', margin: '4px', display: 'flex'}}
+												>
+													<Tooltip title={c.displayName()} key={c.hashString()}>
+														<Chip size="small" color='primary'
+															style={{backgroundColor: c.color}} label={c.acronym}
+														/>
+													</Tooltip>
+													{Array.from(c.getShiftsDisplay()).map((s) => (
+														<Paper elevation={0} key={s[0]}
+															className={ ( (s[1]) ? classes.checklistSelected : classes.checklistUnselected) as string }
+															style={{marginLeft: '4px', marginRight: '4px', color: `${(s[1]) ? this.theme.palette.text.primary : this.theme.palette.text.hint}`}}
+														>
+															<Typography variant='body1' style={{ fontWeight: 500 }}>{s[0]}</Typography>
+														</Paper>
+													))}
+												</Paper>
+											))}
+										</div>
+										<div className={classes.centered as string}>
+											<Tooltip title={i18next.t('schedule-selected.actions.save-as-image') as string}>
+												<IconButton
+													// Disabled on dark mode
+													disabled={this.state.selectedShifts.length === 0 || this.state.darkMode}
+													color="inherit"
+													onClick={this.saveSchedule}
+													component="span">
+													<Icon>download</Icon>
+												</IconButton>
+											</Tooltip>
+											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
+												<IconButton
+													disabled={this.state.selectedShifts.length === 0}
+													color="inherit"
+													onClick={() => {this.clearSelectedShifts(true)}}
+													component="span">
+													<Icon>delete</Icon>
+												</IconButton>
+											</Tooltip>
+										</div>
+									</CardActions>
+								</Card>
+							</div>
 						</div>
 					</div>
+					<div className="footer">
+						<AppBar className={classes.footer as string} color="default" position="sticky">
+							<Toolbar>
+								<Tooltip title={i18next.t('footer.support-button.tooltip') as string}>
+									<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" onClick={() => {return}} color="inherit">
+										<Button color='default' variant='outlined'
+											startIcon={<FontAwesomeIcon icon={faPaypal}/>}
+											size='small'
+										>{i18next.t('footer.support-button.content') as string}
+										</Button>
+									</Link>
+								</Tooltip>
+								<div className={classes.grow as string} />
+								<Tooltip title={i18next.t('footer.repository.tooltip') as string}>
+									<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">
+										<IconButton color="inherit" onClick={() => {return}} component="span">
+											<GitHubIcon></GitHubIcon>
+										</IconButton>
+									</Link>
+								</Tooltip>
+								<Tooltip title="João David">
+									<Link href="https://github.com/joaocmd" target="_blank" onClick={() => {return}} color="inherit">
+										<IconButton size="small" title="João David" onClick={() => {return}}>
+											<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
+										</IconButton>
+									</Link>
+								</Tooltip>
+								<Tooltip title="Daniel Gonçalves">
+									<Link href="https://dagoncalves.me" target="_blank" onClick={() => {return}} color="inherit">
+										<IconButton size="small" title="Daniel Gonçalves" onClick={() => {return}}>
+											<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
+										</IconButton>
+									</Link>
+								</Tooltip>
+							</Toolbar>													
+						</AppBar>
+					</div>
 				</div>
-				<div className="footer">
-					<AppBar className={classes.footer as string} color="default" position="sticky">
-						<Toolbar>
-							<Tooltip title={i18next.t('footer.support-button.tooltip') as string}>
-								<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" onClick={() => {return}} color="inherit">
-									<Button color='default' variant='outlined'
-										startIcon={<FontAwesomeIcon icon={faPaypal}/>}
-										size='small'
-									>{i18next.t('footer.support-button.content') as string}
-									</Button>
-								</Link>
-							</Tooltip>
-							<div className={classes.grow as string} />
-							<Tooltip title={i18next.t('footer.repository.tooltip') as string}>
-								<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">
-									<IconButton color="inherit" onClick={() => {return}} component="span">
-										<GitHubIcon></GitHubIcon>
-									</IconButton>
-								</Link>
-							</Tooltip>
-							<Tooltip title="João David">
-								<Link href="https://github.com/joaocmd" target="_blank" onClick={() => {return}} color="inherit">
-									<IconButton size="small" title="João David" onClick={() => {return}}>
-										<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
-									</IconButton>
-								</Link>
-							</Tooltip>
-							<Tooltip title="Daniel Gonçalves">
-								<Link href="https://dagoncalves.me" target="_blank" onClick={() => {return}} color="inherit">
-									<IconButton size="small" title="Daniel Gonçalves" onClick={() => {return}}>
-										<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
-									</IconButton>
-								</Link>
-							</Tooltip>
-						</Toolbar>													
-					</AppBar>
-				</div>
-			</div>
+			</ThemeProvider>
 		)
 	}
 }
@@ -616,10 +649,16 @@ const styles = (theme: any) => ({
 		zIndex: theme.zIndex.drawer + 1,
 		color: '#fff',
 	},
+	checklistSelected: {
+		// color: theme.palette.text.primary
+	},
+	checklistUnselected: {
+		// color: theme.palette.text.hint
+	},
 	paper: {
 		display: 'flex',
 		flexWrap: 'wrap' as const,
-		border: `1px solid ${theme.palette.divider}`,
+		// border: `1px solid ${theme.palette.divider}`,
 	},
 	divider: {
 		margin: theme.spacing(1, 0.5),
