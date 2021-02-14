@@ -1,6 +1,18 @@
 # Criador de Horários
 
+<p align="center">
+  <a href="https://github.com/joaocmd/Criador-Horarios/commits/master" target="_blank">
+    <img src="https://img.shields.io/github/last-commit/joaocmd/Criador-Horarios" alt="GitHub last commit">
+  </a>
+
+  <a href="https://github.com/joaocmd/Criador-Horarios/blob/master/LICENSE" target="_blank">
+    <img alt="LICENSE" src="https://img.shields.io/github/license/joaocmd/Criador-Horarios">
+  </a>
+</p>
+
 ![Demo animation](./demo/demo.gif)
+
+<hr>
 
 ## To Run
 
