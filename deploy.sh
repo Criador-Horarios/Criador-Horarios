@@ -1,5 +1,6 @@
 echo --------
 echo Pulling from git
+rm package-lock.json
 git pull
 
 echo 
