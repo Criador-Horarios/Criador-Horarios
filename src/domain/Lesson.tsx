@@ -17,7 +17,7 @@ export default class Lesson implements Comparable {
 		this.color = obj.color
 		this.type = obj.type
 		this.id = obj.shiftName
-		this.title = `${obj.acronym} - ${obj.shiftId}\n${obj.campus}`
+		this.title = `${obj.acronym} - ${obj.shiftId}\n${ (obj.campus !== undefined) ? obj.campus : '' }`
 	}
 
 	hashString(): string {

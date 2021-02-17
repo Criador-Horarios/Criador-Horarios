@@ -26,6 +26,9 @@ import MenuItem from '@material-ui/core/MenuItem'
 import DialogActions from '@material-ui/core/DialogActions'
 import Button from '@material-ui/core/Button'
 
+import Brightness2Icon from '@material-ui/icons/Brightness2'
+import Brightness5Icon from '@material-ui/icons/Brightness5'
+
 import i18next from 'i18next'
 import Menu from '@material-ui/core/Menu'
 import Avatar from '@material-ui/core/Avatar'
@@ -36,6 +39,8 @@ class TopBar extends React.Component <{
 	onClearShifts: (alert: boolean) => void
 	onGetLink: () => void
 	onChangeLanguage: (language: string) => void
+	darkMode: boolean
+	onChangeDarkMode: (dark: boolean) => void
 }, unknown>{
 	state = {
 		degrees: [] as Degree[],
@@ -45,6 +50,7 @@ class TopBar extends React.Component <{
 		hasSelectedShifts: false,
 		settingsDialog: false,
 		helpDialog: false,
+		warningDialog: false,
 		languageAnchor: null
 	}
 	selectedDegree: Degree | null = null
@@ -55,6 +61,7 @@ class TopBar extends React.Component <{
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onLanguageMenuClick = this.onLanguageMenuClick.bind(this)
+		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
 	}
 
 	async componentDidMount(): Promise<void> {
@@ -150,6 +157,15 @@ class TopBar extends React.Component <{
 		this.onSelectedCourse([])
 	}
 
+	onChangeDarkMode(): void {
+		if (!this.props.darkMode) {
+			this.setState({
+				warningDialog: true
+			})
+		}
+		this.props.onChangeDarkMode(!this.props.darkMode)
+	}
+
 	render(): React.ReactNode {
 		const maxTags = 14
 		const courseFilterOptions = createFilterOptions({
@@ -226,17 +242,22 @@ class TopBar extends React.Component <{
 							open={Boolean(this.state.languageAnchor)}
 							onClose={() => {this.onLanguageMenuClick(null, false)}}
 						>
-							<MenuItem onClick={() => {this.onLanguageSelect('en')}}>
-								<Tooltip open={false} title={i18next.t('language.english') as string} placement='left-start'>
-									<Avatar alt="English" src={`${process.env.PUBLIC_URL}/img/language/united-kingdom.png`} />
-								</Tooltip>
-							</MenuItem>
 							<MenuItem onClick={() => {this.onLanguageSelect('pt')}}>
 								<Tooltip open={false} title={i18next.t('language.portuguese') as string} placement='left-start'>
 									<Avatar alt="Portuguese" src={`${process.env.PUBLIC_URL}/img/language/portugal.png`} />
 								</Tooltip>
 							</MenuItem>
+							<MenuItem onClick={() => {this.onLanguageSelect('en')}}>
+								<Tooltip open={false} title={i18next.t('language.english') as string} placement='left-start'>
+									<Avatar alt="English" src={`${process.env.PUBLIC_URL}/img/language/united-kingdom.png`} />
+								</Tooltip>
+							</MenuItem>
 						</Menu>
+						<Tooltip title={i18next.t(this.props.darkMode ? 'darkmode-button.dark' : 'darkmode-button.light') as string}>
+							<IconButton color="inherit" onClick={this.onChangeDarkMode} component="span">
+								{ this.props.darkMode ? <Brightness5Icon/> : <Brightness2Icon/> }
+							</IconButton>
+						</Tooltip>
 						<Tooltip title={i18next.t('help-button.tooltip') as string}>
 							<IconButton disabled={this.state.helpDialog} color="inherit" onClick={() => {this.setState({helpDialog: true})}} component="span">
 								<Icon>help</Icon>
@@ -248,7 +269,7 @@ class TopBar extends React.Component <{
 					</Toolbar>
 				</AppBar>
 				<Dialog open={this.state.settingsDialog}
-					onClose={() => {this.setState({settingsDialog: false})}}
+					onClose={() => {this.setState({ settingsDialog: false })}}
 					fullWidth={true}
 				>
 					<DialogTitle>{i18next.t('settings-dialog.title')}
@@ -267,7 +288,7 @@ class TopBar extends React.Component <{
 								autoWidth={true}
 							>
 								{staticData.terms.map( (s) => 
-									<MenuItem key={s.id} value={s.id}>{s.term} {s.semester}{i18next.t('settings-dialog.select.value') as string}
+									<MenuItem key={s.id} value={s.id}>{s.term} {s.semester}{i18next.t('settings-dialog.select.value', { count: s.semester }) as string}
 									</MenuItem>
 								)}
 							</Select>
@@ -294,6 +315,16 @@ class TopBar extends React.Component <{
 						<div />
 						<Button onClick={() => {this.setState({helpDialog: false})}} color="primary">
 							{i18next.t('help-dialog.actions.close-button') as string}
+						</Button>
+					</DialogActions>
+				</Dialog>
+				<Dialog open={this.state.warningDialog}>
+					<DialogTitle>{i18next.t('warning-dialog.title') as string}</DialogTitle>
+					<DialogContent>{i18next.t('warning-dialog.content') as string}</DialogContent>
+					<DialogActions>
+						<div />
+						<Button onClick={() => {this.setState({warningDialog: false})}} color="primary">
+							{i18next.t('warning-dialog.actions.close-button') as string}
 						</Button>
 					</DialogActions>
 				</Dialog>

@@ -12,4 +12,11 @@ module.exports = function(app) {
 			}
 		})
 	)
+	app.use(
+		'/disciplinas',
+		createProxyMiddleware({
+			target: 'https://fenix.tecnico.ulisboa.pt/',
+			changeOrigin: true,
+		})
+	)
 }

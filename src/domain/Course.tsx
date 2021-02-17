@@ -10,9 +10,10 @@ export default class Course implements Comparable {
 	degreeAcronym: string
 	color = ''
 	shiftTypes: Map<string, boolean | undefined> = new Map()
-	selectedShifts = 0
+	nSelectedShifts = 0
 	isSelected = false
 	showDegree = false
+	url = ''
 
 	constructor(obj: CourseDto, degreeAcronym: string) {
 		this.id = obj.id
@@ -24,6 +25,9 @@ export default class Course implements Comparable {
 			return d === d.toUpperCase()
 		}).join('')
 		this.degreeAcronym = degreeAcronym
+		if (obj.url !== undefined) {
+			this.url = obj.url
+		}
 
 		Object.values(ShiftType).forEach( (s) => {
 			this.shiftTypes.set(s, undefined)
@@ -39,12 +43,12 @@ export default class Course implements Comparable {
 
 	addSelectedShift(shift: Shift): void {
 		this.shiftTypes.set(shift.type, true)
-		this.selectedShifts++
+		this.nSelectedShifts++
 	}
 
 	removeSelectedShift(shift: Shift): void {
 		this.shiftTypes.set(shift.type, false)
-		this.selectedShifts--
+		this.nSelectedShifts--
 	}
 
 	saveShifts(): void {
@@ -59,7 +63,7 @@ export default class Course implements Comparable {
 	}
 
 	hasShiftsSelected(): boolean {
-		return this.selectedShifts > 0
+		return this.nSelectedShifts > 0
 	}
 
 	getShiftsDisplay(): Map<string, boolean | undefined> {
@@ -121,6 +125,7 @@ export type CourseDto = {
 	credits: string
 	id: string
 	name: string
+	url: string
 	competences: {
 		degrees: {
 			id: string,

@@ -1,12 +1,13 @@
 {
   "name": "horarios",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-brands-svg-icons": "^5.15.2",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
+    "@fullcalendar/bootstrap": "^5.5.0",
     "@fullcalendar/react": "^5.5.0",
     "@fullcalendar/timegrid": "^5.5.1",
     "@material-ui/core": "^4.11.3",
@@ -14,6 +15,7 @@
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@types/randomcolor": "^0.5.5",
     "@types/react-dom": "^17.0.0",
+    "cheerio": "^1.0.0-rc.5",
     "hex-rgb": "^4.2.0",
     "http-proxy-middleware": "^1.0.6",
     "i18next": "^19.8.7",
