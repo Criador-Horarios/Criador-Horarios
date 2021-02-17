@@ -16,6 +16,8 @@
     "warning-dialog.title": "Warning - Experimental Functionality",
     "warning-dialog.content": "With dark mode, the funcionality of exporting the schedule as image is deactivated, as it is not functional.",
     "warning-dialog.actions.close-button": "Back",
+    "classes-dialog.title": "Classes for Enrolment",
+    "classes-dialog.actions.close-button": "Back",
     "schedule-available.title": "Available Shifts",
     "schedule-selected.title": "Selected Shifts",
     "schedule-selected.actions.get-classes": "Get classes for enrolments",

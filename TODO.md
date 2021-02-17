@@ -18,4 +18,4 @@
 - [X] When building, show maintenance page (downtime is almost 0)
 - [ ] Add tooltip to filter buttons 
 - [ ] Export schedule to excel
-- [ ] Webscrape classes for the selected shifts
+- [X] Webscrape classes for the selected shifts

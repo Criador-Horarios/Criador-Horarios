@@ -16,6 +16,8 @@
     "warning-dialog.title": "Aviso - Funcionalidade Experimental",
     "warning-dialog.content": "No modo noturno, a funcionalidade de exportar o horário como imagem não está ativado, visto que não está funcional.",
     "warning-dialog.actions.close-button": "Voltar",
+    "classes-dialog.title": "Turmas para as Inscrições",
+    "classes-dialog.actions.close-button": "Voltar",
     "schedule-available.title": "Turnos Disponíveis",
     "schedule-selected.title": "Turnos Selecionados",
     "schedule-selected.actions.get-classes": "Obter turmas para inscrição",

@@ -45,6 +45,10 @@ import Cookies from 'universal-cookie'
 import CardHeader from '@material-ui/core/CardHeader'
 
 import getClasses from './utils/shift-scraper'
+import Dialog from '@material-ui/core/Dialog'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
 
 type BuiltCourse = {
 	course: Course,
@@ -66,6 +70,7 @@ class App extends React.Component <{
 		alertMessage: '',
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
+		classesDialog: false,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false
@@ -75,6 +80,7 @@ class App extends React.Component <{
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 	theme: Theme
+	classes: [string, string][] = []
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -99,20 +105,23 @@ class App extends React.Component <{
 	}
 
 	async componentDidMount() {
-		staticData.terms = await API.getAcademicTerms()
-
-		const params = API.getUrlParams()
-		await this.buildState(params.s)
-
-		const darkMode = this.cookies.get('dark') ?? this.state.darkMode
-		if (darkMode !== this.state.darkMode) {
-			this.onChangeDarkMode(darkMode)
+		const darkName = this.cookies.get('dark') ?? null
+		if (darkName !== null) {
+			const darkMode = (darkName === 'true') ? true : false
+			if (darkMode !== this.state.darkMode) {
+				this.onChangeDarkMode(darkMode)
+			}
 		}
 
 		const language = this.cookies.get('language') ?? this.state.lang
 		if (language !== this.state.lang) {
 			this.changeLanguage(language)
 		}
+
+		// staticData.terms = await API.getAcademicTerms()
+
+		const params = API.getUrlParams()
+		await this.buildState(params.s)
 
 		this.setState({
 			loading: false
@@ -464,6 +473,25 @@ class App extends React.Component <{
 		})
 	}
 
+	async getClasses(): Promise<void> {
+		this.setState({loading: true})
+		const classes = await getClasses(this.state.selectedShifts)
+		const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
+
+		this.classes = value
+		this.setState({classesDialog: true, loading: false})
+
+		// TODO: download to a file
+		// const el = document.createElement('a')
+		// const file = new Blob([value], {type: 'text/plain;charset=utf-8'})
+		// el.href = URL.createObjectURL(file)
+		// el.download = 'ist-turmas.txt'
+		// document.body.appendChild(el)
+		// el.click()
+		// document.body.removeChild(el)
+		// this.showAlert(i18next.t('alert.classes-file'), 'success')
+	}
+
 	render(): ReactNode {
 		const classes = this.props.classes
 
@@ -592,7 +620,7 @@ class App extends React.Component <{
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
 													color="inherit"
-													onClick={() => getClasses(this.state.selectedShifts)}
+													onClick={() => this.getClasses()}
 													component="span">
 													<Icon>list</Icon>
 												</IconButton>
@@ -659,6 +687,27 @@ class App extends React.Component <{
 							</Toolbar>													
 						</AppBar>
 					</div>
+					<div className="dialogs">
+						<Dialog open={this.state.classesDialog}>
+							<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>
+							<DialogContent className={classes.contentCopyable as string}>{this.classes.map(c => {
+								return (
+									<div key={c[0]}>
+										<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
+										<Typography key={'class-' + c[0]} variant='body1'
+											style={{marginLeft: '8px'}}
+										>{c[1]}</Typography>
+									</div>
+								)
+							})}</DialogContent>
+							<DialogActions>
+								<div />
+								<Button onClick={() => {this.setState({classesDialog: false})}} color="primary">
+									{i18next.t('classes-dialog.actions.close-button') as string}
+								</Button>
+							</DialogActions>
+						</Dialog>					
+					</div>
 				</div>
 			</ThemeProvider>
 		)
@@ -703,6 +752,11 @@ const styles = (theme: any) => ({
 	cardContent: {
 		paddingTop: '4px',
 		paddingBottom: '0px'
+	},
+	contentCopyable: {
+		userSelect: 'text' as const,
+		webkitUserSelect: 'text' as const,
+		oUserSelected: 'text' as const
 	},
 	footer: {
 		bottom: '0px',

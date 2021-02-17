@@ -35,11 +35,10 @@ export default async function (shifts: Shift[]): Promise<Record<string, string>>
 				const shiftName = $(attrs[0]).text()
 				
 				if (shiftName.includes(shift.shiftId) && !res[shift.name]) {
-					res[shift.name] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
+					res[shift.acronym + ' - ' + shift.shiftId] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
 				}
 			}
 		})
 	})
-	console.log(res)
 	return res
 }
