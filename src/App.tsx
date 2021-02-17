@@ -44,6 +44,8 @@ import { faPaypal } from '@fortawesome/free-brands-svg-icons'
 import Cookies from 'universal-cookie'
 import CardHeader from '@material-ui/core/CardHeader'
 
+import getClasses from './utils/shift-scraper'
+
 type BuiltCourse = {
 	course: Course,
 	availableShifts: Shift[],
@@ -607,6 +609,7 @@ class App extends React.Component <{
 										</Button>
 									</Link>
 								</Tooltip>
+								<Button color='default' variant='outlined' onClick={() => {getClasses(this.state.selectedShifts)}} >test</Button>
 								<div className={classes.grow as string} />
 								<Tooltip title={i18next.t('footer.repository.tooltip') as string}>
 									<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">

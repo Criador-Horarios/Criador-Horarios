@@ -1,0 +1,21 @@
+## TODOs
+
+- [x] Set API type objects
+- [x] Add good colors
+- [X] Save state to cookies
+- [X] Shorten saved state and rebuild on reload (can add loading animation)
+- [X] Snackbar alerts
+- [X] Allow english (missing other languages)
+- [X] Add filters for L, T, PB, S
+- [X] Course chip colors match course color
+- [X] Add Github link and donation link
+- [X] Choose academic term (currently disabled)
+- [X] Center buttons
+- [X] Background Image
+- [X] Add help button/animation
+- [x] Choose colors only when selecting the course
+- [X] Disable clear and export schedule buttons when unable to use them
+- [X] When building, show maintenance page (downtime is almost 0)
+- [ ] Add tooltip to filter buttons 
+- [ ] Export schedule to excel
+- [ ] Webscrape classes for the selected shifts

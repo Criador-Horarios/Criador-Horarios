@@ -134,6 +134,17 @@ export default class API {
 	public static async getShortUrl(state: string): Promise<string> {
 		return `${API.PREFIX}?s=${state}`
 	}
+
+	public static async getPage(url: string): Promise<string | null> {
+		return fetch(`${API.PATH_PREFIX}${url}`).then(r => {
+			const contentType = r.headers.get('content-type')
+			if (contentType?.includes('text/html') && r.status === 200) {
+				return r.text()
+			} else {
+				return null
+			}
+		})
+	}
 }
 
 export const staticData = {
