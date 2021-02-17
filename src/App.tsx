@@ -572,6 +572,15 @@ class App extends React.Component <{
 											))}
 										</div>
 										<div className={classes.centered as string}>
+											<Tooltip title={i18next.t('schedule-selected.actions.get-classes') as string}>
+												<IconButton
+													disabled={this.state.selectedShifts.length === 0}
+													color="inherit"
+													onClick={() => getClasses(this.state.selectedShifts)}
+													component="span">
+													<Icon>list</Icon>
+												</IconButton>
+											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.save-as-image') as string}>
 												<IconButton
 													// Disabled on dark mode
@@ -579,7 +588,7 @@ class App extends React.Component <{
 													color="inherit"
 													onClick={this.saveSchedule}
 													component="span">
-													<Icon>download</Icon>
+													<Icon>image</Icon>
 												</IconButton>
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
@@ -609,7 +618,6 @@ class App extends React.Component <{
 										</Button>
 									</Link>
 								</Tooltip>
-								<Button color='default' variant='outlined' onClick={() => {getClasses(this.state.selectedShifts)}} >test</Button>
 								<div className={classes.grow as string} />
 								<Tooltip title={i18next.t('footer.repository.tooltip') as string}>
 									<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">

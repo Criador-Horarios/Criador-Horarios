@@ -26,7 +26,7 @@ import MenuItem from '@material-ui/core/MenuItem'
 import DialogActions from '@material-ui/core/DialogActions'
 import Button from '@material-ui/core/Button'
 
-import Brightness3Icon from '@material-ui/icons/Brightness3'
+import Brightness2Icon from '@material-ui/icons/Brightness2'
 import Brightness5Icon from '@material-ui/icons/Brightness5'
 
 import i18next from 'i18next'
@@ -255,7 +255,7 @@ class TopBar extends React.Component <{
 						</Menu>
 						<Tooltip title={i18next.t(this.props.darkMode ? 'darkmode-button.dark' : 'darkmode-button.light') as string}>
 							<IconButton color="inherit" onClick={this.onChangeDarkMode} component="span">
-								{ this.props.darkMode ? <Brightness5Icon/> : <Brightness3Icon/> }
+								{ this.props.darkMode ? <Brightness5Icon/> : <Brightness2Icon/> }
 							</IconButton>
 						</Tooltip>
 						<Tooltip title={i18next.t('help-button.tooltip') as string}>

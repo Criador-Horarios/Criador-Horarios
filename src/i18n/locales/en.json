@@ -18,6 +18,7 @@
     "warning-dialog.actions.close-button": "Back",
     "schedule-available.title": "Available Shifts",
     "schedule-selected.title": "Selected Shifts",
+    "schedule-selected.actions.get-classes": "Get classes for enrolments",
     "schedule-selected.actions.save-as-image": "Save as image",
     "schedule-selected.actions.clear-schedule": "Clear schedule",
     "footer.support-button.content": "Support",
