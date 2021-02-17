@@ -13,7 +13,7 @@
     "settings-dialog.select.value_plural": "nd Semester",
     "settings-dialog.actions.close-button": "Save",
     "help-dialog.actions.close-button": "Back",
-    "warning-dialog.title": "Warning",
+    "warning-dialog.title": "Warning - Experimental Functionality",
     "warning-dialog.content": "With dark mode, the funcionality of exporting the schedule as image is deactivated, as it is not functional.",
     "warning-dialog.actions.close-button": "Back",
     "schedule-available.title": "Available Shifts",

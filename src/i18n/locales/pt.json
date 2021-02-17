@@ -13,7 +13,7 @@
     "settings-dialog.select.value": "º Semestre",
     "settings-dialog.actions.close-button": "Guardar",
     "help-dialog.actions.close-button": "Voltar",
-    "warning-dialog.title": "Aviso",
+    "warning-dialog.title": "Aviso - Funcionalidade Experimental",
     "warning-dialog.content": "No modo noturno, a funcionalidade de exportar o horário como imagem não está ativado, visto que não está funcional.",
     "warning-dialog.actions.close-button": "Voltar",
     "schedule-available.title": "Turnos Disponíveis",

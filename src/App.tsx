@@ -104,6 +104,16 @@ class App extends React.Component <{
 		const params = API.getUrlParams()
 		await this.buildState(params.s)
 
+		const darkMode = this.cookies.get('dark') ?? this.state.darkMode
+		if (darkMode !== this.state.darkMode) {
+			this.onChangeDarkMode(darkMode)
+		}
+
+		const language = this.cookies.get('language') ?? this.state.lang
+		if (language !== this.state.lang) {
+			this.changeLanguage(language)
+		}
+
 		this.setState({
 			loading: false
 		})
@@ -428,6 +438,8 @@ class App extends React.Component <{
 
 		// Clear shifts?
 		this.clearSelectedShifts(false)
+
+		this.cookies.set('language', language, { maxAge: 60*60*24*31*3 })
 	}
 
 	onChangeDarkMode(dark: boolean): void {
@@ -435,6 +447,7 @@ class App extends React.Component <{
 		this.setState({
 			darkMode: dark
 		})
+		this.cookies.set('dark', dark, { maxAge: 60*60*24*31*3 })
 	}
 
 	getTheme(dark: boolean): Theme {
@@ -443,6 +456,9 @@ class App extends React.Component <{
 				type: (dark) ? 'dark' : 'light',
 				primary: {
 					main: (dark) ? '#fff' : '#3f51b5'
+				},
+				text: {
+					primary: (dark) ? 'rgba(255, 255, 255, 0.87)' : 'rgba(0, 0, 0, 0.87)'
 				}
 			}
 		})
@@ -659,6 +675,7 @@ const styles = (theme: any) => ({
 	backdrop: {
 		zIndex: theme.zIndex.drawer + 1,
 		color: '#fff',
+		background: 'rgba(0,0,0,0.85)',
 	},
 	checklistSelected: {
 		// color: theme.palette.text.primary
