@@ -11,6 +11,8 @@ import Schedule from './components/Schedule/Schedule'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
+import saveToExcel from './utils/excel'
+
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles'
@@ -71,6 +73,7 @@ class App extends React.Component <{
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
 		classesDialog: false,
+		warningDialog: false,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false
@@ -81,6 +84,9 @@ class App extends React.Component <{
 	topBar: React.RefObject<TopBar>
 	theme: Theme
 	classes: [string, string][] = []
+	warningTitle = ''
+	warningContent = ''
+	warningContinue: () => void = () => {return}
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -95,6 +101,7 @@ class App extends React.Component <{
 		this.showAlert = this.showAlert.bind(this)
 		this.changeLanguage = this.changeLanguage.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
+		this.exportToExcel = this.exportToExcel.bind(this)
 
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
@@ -492,6 +499,23 @@ class App extends React.Component <{
 		// this.showAlert(i18next.t('alert.classes-file'), 'success')
 	}
 
+	setWarningExcel(): void {
+		this.warningTitle = i18next.t('warning-excel.title')
+		this.warningContent = i18next.t('warning-excel.content')
+		this.warningContinue = this.exportToExcel
+		this.setState({warningDialog: true})
+	}
+
+	async exportToExcel(): Promise<void> {
+		this.setState({loading: true})
+		const classes = await getClasses(this.state.selectedShifts)
+
+		saveToExcel(this.state.selectedShifts, classes)
+
+		this.setState({loading: false})
+		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
+	}
+
 	render(): ReactNode {
 		const classes = this.props.classes
 
@@ -635,6 +659,16 @@ class App extends React.Component <{
 													<Icon>image</Icon>
 												</IconButton>
 											</Tooltip>
+											<Tooltip title={i18next.t('schedule-selected.actions.save-as-excel') as string}>
+												<IconButton
+													disabled={this.state.selectedShifts.length === 0}
+													color='inherit'
+													onClick={() => {this.setWarningExcel()}}
+													component="span"
+												>
+													<Icon>download</Icon>
+												</IconButton>
+											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
@@ -706,7 +740,16 @@ class App extends React.Component <{
 									{i18next.t('classes-dialog.actions.close-button') as string}
 								</Button>
 							</DialogActions>
-						</Dialog>					
+						</Dialog>
+						<Dialog open={this.state.warningDialog}>
+							<DialogTitle>{this.warningTitle}</DialogTitle>
+							<DialogContent>{this.warningContent}</DialogContent>
+							<DialogActions>
+								<div />
+								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
+								<Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button>
+							</DialogActions>
+						</Dialog>				
 					</div>
 				</div>
 			</ThemeProvider>

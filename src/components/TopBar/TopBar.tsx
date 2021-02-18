@@ -328,6 +328,7 @@ class TopBar extends React.Component <{
 						</Button>
 					</DialogActions>
 				</Dialog>
+				<iframe id="txtArea1" style={{ display: 'none'}}></iframe>
 			</div>
 		)
 	}
