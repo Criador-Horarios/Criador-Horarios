@@ -20,5 +20,6 @@
 - [X] Export schedule to excel
 - [ ] Add english version to schedule
 - [X] Webscrape classes for the selected shifts
+- [ ] Use sheetjs to create excel files without warning
 - [ ] Algorithm for minimum classes for enrolments
 - [ ] Increase contrast on selected and selected shifts on checklist

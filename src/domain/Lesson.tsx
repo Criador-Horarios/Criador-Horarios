@@ -2,6 +2,7 @@ import Comparable from './Comparable'
 
 export default class Lesson implements Comparable {
 	title: string
+	exportedTitle: string
 	type: string
 	startTime: string
 	endTime: string
@@ -21,6 +22,7 @@ export default class Lesson implements Comparable {
 		this.type = obj.type
 		this.id = obj.shiftName
 		this.title = `${obj.acronym} - ${obj.shiftId}\n${ (obj.campus !== undefined) ? obj.campus : '' }`
+		this.exportedTitle = `${obj.acronym} - ${obj.shiftId} @ ${obj.room}`
 	}
 
 	hashString(): string {

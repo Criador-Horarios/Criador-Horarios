@@ -121,7 +121,7 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 						const colspan = getColSpan(dayOfWeek, currHour, l.minutes, overlaps, overlapHours)
 						body += `<td style="vertical-align: middle; text-align: center; background-color: ${l.color}; color: white;" 
 						rowspan="${l.minutes / intervalUnit}" 
-						colspan="${colspan}">${l.title}</td>`
+						colspan="${colspan}">${l.exportedTitle}</td>`
 						occupied = setOccupied(l.startTime, dayOfWeek, l.minutes, intervalUnit, colspan, occupied)
 						remainingPadding -= colspan
 					})
@@ -217,7 +217,10 @@ function countOccupied(arr: number[], num: number): number {
 
 function getTableClasses(classes: Record<string, string>): string {
 	let body = ''
-	Object.entries(classes).forEach((c) => {
+	const classesOrdered = Object.entries(classes).sort( (a, b) => {
+		return a[0].localeCompare(b[0])
+	})
+	classesOrdered.forEach((c) => {
 		body += `<tr><td>${c[0]}</td>`
 		body += 
 			c[1].split(',').map(s => {
