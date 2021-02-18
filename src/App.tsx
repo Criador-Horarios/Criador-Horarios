@@ -649,7 +649,12 @@ class App extends React.Component <{
 												</IconButton>
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.save-as-excel') as string}>
-												<IconButton color='inherit' onClick={() => {this.exportToExcel()}} component="span">
+												<IconButton
+													disabled={this.state.selectedShifts.length === 0}
+													color='inherit'
+													onClick={() => {this.exportToExcel()}}
+													component="span"
+												>
 													<Icon>download</Icon>
 												</IconButton>
 											</Tooltip>

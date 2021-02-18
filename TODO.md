@@ -21,3 +21,4 @@
 - [ ] Add english version to schedule
 - [X] Webscrape classes for the selected shifts
 - [ ] Algorithm for minimum classes for enrolments
+- [ ] Increase contrast on selected and selected shifts on checklist
