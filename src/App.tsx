@@ -11,7 +11,7 @@ import Schedule from './components/Schedule/Schedule'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
-import fnExcelReport from './utils/excel'
+import saveToExcel from './utils/excel'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -97,6 +97,7 @@ class App extends React.Component <{
 		this.showAlert = this.showAlert.bind(this)
 		this.changeLanguage = this.changeLanguage.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
+		this.exportToExcel = this.exportToExcel.bind(this)
 
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
@@ -494,6 +495,17 @@ class App extends React.Component <{
 		// this.showAlert(i18next.t('alert.classes-file'), 'success')
 	}
 
+	async exportToExcel(): Promise<void> {
+		this.setState({loading: true})
+		const classes = await getClasses(this.state.selectedShifts)
+		const classesPrep = Object.entries(classes)
+
+		saveToExcel(this.state.selectedShifts, classesPrep)
+
+		this.setState({loading: false})
+		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
+	}
+
 	render(): ReactNode {
 		const classes = this.props.classes
 
@@ -638,7 +650,7 @@ class App extends React.Component <{
 												</IconButton>
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.save-as-excel') as string}>
-												<IconButton color='inherit' onClick={() => {fnExcelReport(this.state.selectedShifts)}} component="span">
+												<IconButton color='inherit' onClick={() => {this.exportToExcel()}} component="span">
 													<Icon>download</Icon>
 												</IconButton>
 											</Tooltip>

@@ -3,7 +3,7 @@ import Shift from '../domain/Shift'
 
 // FIXME: Needs refactor
 const intervalUnit = 30
-export default function fnExcelReport(shifts: Shift[]) {
+export default function saveToExcel(shifts: Shift[], classes: [string, string][]) {
 	const lessonsByHour: Record<string, Record<number, Lesson[]>> = {}
 	const overlapsLessons: Record<number, Record<string, number>> = {}
 	const overlaps: Record<number, number> = {}
@@ -48,7 +48,10 @@ export default function fnExcelReport(shifts: Shift[]) {
 		})
 	})
 
-	const table = getTable(lessonsByHour, overlaps, overlapsLessons)
+	const tableLessons = getTable(lessonsByHour, overlaps, overlapsLessons)
+	const tableClasses = getTableClasses(classes)
+	const table = `<div>${tableLessons}${tableClasses}</div>`
+	console.log(table)
 
 	const ua = window.navigator.userAgent
 	const msie = ua.indexOf('MSIE ')
@@ -70,6 +73,7 @@ export default function fnExcelReport(shifts: Shift[]) {
 		el.setAttribute('download', 'ist-horario.xls')
 		document.body.appendChild(el)
 		el.click()
+		document.body.removeChild(el)
 	}
 
 	return (sa)
@@ -209,4 +213,16 @@ function countOccupied(arr: number[], num: number): number {
 		}
 		return acc
 	}, 0)
+}
+
+function getTableClasses(classes: [string, string][]): string {
+	let body = ''
+	classes.forEach(c => {
+		body += 
+			`<tr>
+				<td>${c[0]}</td>
+				<td>${c[1]}</td>
+			</tr>`
+	})
+	return `<table border="2px" style="margin-top: 200px;">${body}</table>`
 }
