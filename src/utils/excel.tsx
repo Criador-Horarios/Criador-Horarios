@@ -3,7 +3,7 @@ import Shift from '../domain/Shift'
 
 // FIXME: Needs refactor
 const intervalUnit = 30
-export default function saveToExcel(shifts: Shift[], classes: [string, string][]) {
+export default function saveToExcel(shifts: Shift[], classes: Record<string, string>) {
 	const lessonsByHour: Record<string, Record<number, Lesson[]>> = {}
 	const overlapsLessons: Record<number, Record<string, number>> = {}
 	const overlaps: Record<number, number> = {}
@@ -86,9 +86,9 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 	cols.forEach(col => {
 		const res = ['', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
 		const width = overlaps[col] ?? 1
-		header += `<td colspan="${width}">${res[col]}</td>`
+		header += `<td bgcolor="#212121" style="text-align: center; color: white;" colspan="${width}">${res[col]}</td>`
 	})
-	header = `<thead bgcolor="#87AFC6">${header}</thead>`
+	header = `<thead>${header}</thead>`
 
 	// Get hours and set lessons by hour
 	const hours = Array.from({length:12}, (v,k) => k+8)
@@ -104,13 +104,13 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 			cols.forEach( (dayOfWeek) => {
 				// Padding for putting in the correct day
 				const colspanPad = getColSpan(dayOfWeek, currHour, intervalUnit, overlaps, overlapHours)
-				const pad = `<td colspan="${colspanPad}"></td>`
+				const pad = `<td style="border: dotted;" colspan="${colspanPad}"></td>`
 
 				if (dayOfWeek === 0 && i === 0) {
-					body += `<td>${String(hour).padStart(2, '0') + ':00'}</td>`	
+					body += `<td style="text-align: center;">${String(hour).padStart(2, '0') + ':00'}</td>`	
 					return
 				} else if (dayOfWeek === 0 && i === 1) {
-					body += pad
+					body += `<td colspan="${colspanPad}"></td>`
 					return
 				}
 
@@ -142,7 +142,7 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 	})
 	body = `<tbody>${body}</tbody>`
 
-	return `<table border="2px">${header}${body}</table>`
+	return `<table border="8px">${header}${body}</table>`
 }
 
 function setOccupied(startTime: string, dayOfWeek: number, duration: number, intervalUnit: number, colspan: number, acc: Record<string, number[]>): Record<string, number[]> {
@@ -215,14 +215,15 @@ function countOccupied(arr: number[], num: number): number {
 	}, 0)
 }
 
-function getTableClasses(classes: [string, string][]): string {
+function getTableClasses(classes: Record<string, string>): string {
 	let body = ''
-	classes.forEach(c => {
+	Object.entries(classes).forEach((c) => {
+		body += `<tr><td>${c[0]}</td>`
 		body += 
-			`<tr>
-				<td>${c[0]}</td>
-				<td>${c[1]}</td>
-			</tr>`
+			c[1].split(',').map(s => {
+				return `<td>${s}</td>`
+			}).join('')
+		body += '</tr>'
 	})
-	return `<table border="2px" style="margin-top: 200px;">${body}</table>`
+	return `<table border="8px" style="margin-top: 200px;">${body}</table>`
 }

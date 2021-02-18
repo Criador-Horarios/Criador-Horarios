@@ -498,9 +498,8 @@ class App extends React.Component <{
 	async exportToExcel(): Promise<void> {
 		this.setState({loading: true})
 		const classes = await getClasses(this.state.selectedShifts)
-		const classesPrep = Object.entries(classes)
 
-		saveToExcel(this.state.selectedShifts, classesPrep)
+		saveToExcel(this.state.selectedShifts, classes)
 
 		this.setState({loading: false})
 		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
