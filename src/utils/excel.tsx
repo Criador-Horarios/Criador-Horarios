@@ -76,7 +76,7 @@ export default function saveToExcel(shifts: Shift[], classes: Record<string, str
 		document.body.removeChild(el)
 	}
 
-	return (sa)
+	return
 }
 
 function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: Record<number, number>, overlapHours: Record<number, Record<string, number>>): string {
@@ -86,7 +86,7 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 	cols.forEach(col => {
 		const res = ['', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
 		const width = overlaps[col] ?? 1
-		header += `<td bgcolor="#212121" style="text-align: center; color: white;" colspan="${width}">${res[col]}</td>`
+		header += `<th bgcolor="#212121" style="text-align: center; color: white;" colspan="${width}">${res[col]}</th>`
 	})
 	header = `<thead>${header}</thead>`
 

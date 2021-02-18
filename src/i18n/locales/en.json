@@ -37,6 +37,10 @@
     "alert.cannot-obtain-degrees": "It was not possible to obtain the degrees",
     "alert.cannot-obtain-courses": "It was not possible to obtain the courses of this degree",
     "alert.cannot-obtain-shifts": "It was not possible to obtain the shifts of this course",
+    "warning.actions.continue": "Continue",
+    "warning.actions.back": "Back",
+    "warning-excel.title": "Export to Excel",
+    "warning-excel.content": "This functionality is experimental, it might give a warning of unsafety. Confirm to proceed.",
     "language.english": "English",
     "language.portuguese": "Portuguese"
 }

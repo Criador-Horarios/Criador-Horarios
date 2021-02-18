@@ -73,6 +73,7 @@ class App extends React.Component <{
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
 		classesDialog: false,
+		warningDialog: false,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false
@@ -83,6 +84,9 @@ class App extends React.Component <{
 	topBar: React.RefObject<TopBar>
 	theme: Theme
 	classes: [string, string][] = []
+	warningTitle = ''
+	warningContent = ''
+	warningContinue: () => void = () => {return}
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -495,6 +499,13 @@ class App extends React.Component <{
 		// this.showAlert(i18next.t('alert.classes-file'), 'success')
 	}
 
+	setWarningExcel(): void {
+		this.warningTitle = i18next.t('warning-excel.title')
+		this.warningContent = i18next.t('warning-excel.content')
+		this.warningContinue = this.exportToExcel
+		this.setState({warningDialog: true})
+	}
+
 	async exportToExcel(): Promise<void> {
 		this.setState({loading: true})
 		const classes = await getClasses(this.state.selectedShifts)
@@ -652,7 +663,7 @@ class App extends React.Component <{
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
 													color='inherit'
-													onClick={() => {this.exportToExcel()}}
+													onClick={() => {this.setWarningExcel()}}
 													component="span"
 												>
 													<Icon>download</Icon>
@@ -729,7 +740,16 @@ class App extends React.Component <{
 									{i18next.t('classes-dialog.actions.close-button') as string}
 								</Button>
 							</DialogActions>
-						</Dialog>					
+						</Dialog>
+						<Dialog open={this.state.warningDialog}>
+							<DialogTitle>{this.warningTitle}</DialogTitle>
+							<DialogContent>{this.warningContent}</DialogContent>
+							<DialogActions>
+								<div />
+								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
+								<Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button>
+							</DialogActions>
+						</Dialog>				
 					</div>
 				</div>
 			</ThemeProvider>

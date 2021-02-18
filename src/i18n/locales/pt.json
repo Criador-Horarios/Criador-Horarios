@@ -37,6 +37,10 @@
     "alert.cannot-obtain-degrees": "Não foi possível obter os cursos",
     "alert.cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
     "alert.cannot-obtain-shifts": "Não foi possível obter os turnos desta UC",
+    "warning.actions.continue": "Continuar",
+    "warning.actions.back": "Voltar",
+    "warning-excel.title": "Exportar para Excel",
+    "warning-excel.content": "Esta funcionalidade é experimental, poderá dar um aviso de segurança. Confirme para continuar.",
     "language.english": "Inglês",
     "language.portuguese": "Português"
 }
