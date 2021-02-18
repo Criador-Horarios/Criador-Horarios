@@ -11,6 +11,8 @@ import Schedule from './components/Schedule/Schedule'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
+import fnExcelReport from './utils/excel'
+
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles'
@@ -633,6 +635,11 @@ class App extends React.Component <{
 													onClick={this.saveSchedule}
 													component="span">
 													<Icon>image</Icon>
+												</IconButton>
+											</Tooltip>
+											<Tooltip title={i18next.t('schedule-selected.actions.save-as-excel') as string}>
+												<IconButton color='inherit' onClick={() => {fnExcelReport(this.state.selectedShifts)}} component="span">
+													<Icon>download</Icon>
 												</IconButton>
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>

@@ -8,12 +8,15 @@ export default class Lesson implements Comparable {
 	daysOfWeek: number[]
 	color: string
 	id: string
+	minutes: number // in minutes
 
 	// eslint-disable-next-line
 	constructor(obj: Record<string, any>) {
 		this.daysOfWeek = [obj.dayOfWeek]
 		this.startTime = obj.start
 		this.endTime = obj.end
+		const dateStart = new Date('2021/02/17 ' + obj.start), dateEnd = new Date('2021/02/17 ' + obj.end)
+		this.minutes = (dateEnd.getTime() - dateStart.getTime()) / ( 1000 * 60 )
 		this.color = obj.color
 		this.type = obj.type
 		this.id = obj.shiftName
