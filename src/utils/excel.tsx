@@ -1,11 +1,9 @@
 import Lesson from '../domain/Lesson'
 import Shift from '../domain/Shift'
 
-// TODO: Finish overlaps
+// FIXME: Needs refactor
+const intervalUnit = 30
 export default function fnExcelReport(shifts: Shift[]) {
-	let tab_text='<table border="2px"><tr bgcolor="#87AFC6">'
-	let textRange//, j=0
-
 	const lessonsByHour: Record<string, Record<number, Lesson[]>> = {}
 	const overlapsLessons: Record<number, Record<string, number>> = {}
 	const overlaps: Record<number, number> = {}
@@ -13,7 +11,7 @@ export default function fnExcelReport(shifts: Shift[]) {
 	shifts.map(s => {
 		s.lessons.forEach(l => {
 			const hour = l.startTime
-			const overlapHours = Array.from({length: l.minutes / 30}, (v,k) => addTime(l.startTime, k * 30))
+			const overlapHours = Array.from({length: l.minutes / intervalUnit}, (v,k) => addTime(l.startTime, k * intervalUnit))
 
 			// For adding the lessons
 			const dayOfWeek = l.daysOfWeek[0]
@@ -51,8 +49,6 @@ export default function fnExcelReport(shifts: Shift[]) {
 	})
 
 	const table = getTable(lessonsByHour, overlaps, overlapsLessons)
-	tab_text = table
-	console.log(table)
 
 	const ua = window.navigator.userAgent
 	const msie = ua.indexOf('MSIE ')
@@ -62,21 +58,24 @@ export default function fnExcelReport(shifts: Shift[]) {
 	// If Internet Explorer
 	if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv:11\./)) {
 		txtArea1.document.open('txt/html', 'replace')
-		txtArea1.document.write(tab_text)
+		txtArea1.document.write(table)
 		txtArea1.document.close()
 		txtArea1.focus()
 		sa = txtArea1.document.execCommand('SaveAs', true)
 	}  
 	else {
-		//other browser
-		sa = window.open('data:application/vnd.ms-excel,' + encodeURIComponent(tab_text))
+		const el = document.createElement('a')
+		const url = 'data:application/vnd.ms-excel,' + encodeURIComponent(table)
+		el.setAttribute('href', url)
+		el.setAttribute('download', 'ist-horario.xls')
+		document.body.appendChild(el)
+		el.click()
 	}
 
 	return (sa)
 }
 
 function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: Record<number, number>, overlapHours: Record<number, Record<string, number>>): string {
-
 	// Set columns
 	const cols = [0, 1, 2, 3, 4, 5]
 	let header = ''
@@ -88,12 +87,11 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 	header = `<thead bgcolor="#87AFC6">${header}</thead>`
 
 	// Get hours and set lessons by hour
-	const intervalUnit = 30
 	const hours = Array.from({length:12}, (v,k) => k+8)
 	let body = ''
 	let occupied: Record<string, number[]> = {}
 	hours.forEach(hour => {
-		// Possible hours: hour:00:00 or hour:30:00
+		// Possible hours: 'hour:00:00' or 'hour:30:00'
 		const possibleHours = [String(hour).padStart(2, '0') + ':00:00', String(hour).padStart(2, '0') + ':30:00']
 
 		const currHour = possibleHours[0]
@@ -101,7 +99,8 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 			body += '<tr>'
 			cols.forEach( (dayOfWeek) => {
 				// Padding for putting in the correct day
-				const pad = `<td colspan="${getColSpan(dayOfWeek, currHour, overlaps, overlapHours)}"></td>`
+				const colspanPad = getColSpan(dayOfWeek, currHour, intervalUnit, overlaps, overlapHours)
+				const pad = `<td colspan="${colspanPad}"></td>`
 
 				if (dayOfWeek === 0 && i === 0) {
 					body += `<td>${String(hour).padStart(2, '0') + ':00'}</td>`	
@@ -110,15 +109,27 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 					body += pad
 					return
 				}
+
+				let remainingPadding = overlaps[dayOfWeek] ?? 1
 				
 				if (lessons[currHour] && lessons[currHour][dayOfWeek]) {
 					lessons[currHour][dayOfWeek].forEach(l => {
+						const colspan = getColSpan(dayOfWeek, currHour, l.minutes, overlaps, overlapHours)
 						body += `<td style="vertical-align: middle; text-align: center; background-color: ${l.color}; color: white;" 
 						rowspan="${l.minutes / intervalUnit}" 
-						colspan="${getColSpan(dayOfWeek, currHour, overlaps, overlapHours)}">${l.title}</td>`
-						occupied = setOccupied(l.startTime, dayOfWeek, l.minutes, intervalUnit, occupied)
+						colspan="${colspan}">${l.title}</td>`
+						occupied = setOccupied(l.startTime, dayOfWeek, l.minutes, intervalUnit, colspan, occupied)
+						remainingPadding -= colspan
 					})
 				} else if (!occupied[currHour] || !occupied[currHour].includes(dayOfWeek)) {
+					body += pad
+					// As the padding was added, we don't want more padding
+					return
+				}
+				
+				const nOccupied = countOccupied(occupied[currHour], dayOfWeek)
+				if (remainingPadding > 0 && occupied[currHour] && nOccupied < overlaps[dayOfWeek]) {	
+					const pad = `<td colspan="${colspanPad - nOccupied}"></td>`
 					body += pad
 				}
 			})
@@ -130,14 +141,15 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 	return `<table border="2px">${header}${body}</table>`
 }
 
-function setOccupied(startTime: string, dayOfWeek: number, duration: number, intervalUnit: number, acc: Record<string, number[]>): Record<string, number[]> {
+function setOccupied(startTime: string, dayOfWeek: number, duration: number, intervalUnit: number, colspan: number, acc: Record<string, number[]>): Record<string, number[]> {
 	const times = Array.from({length: duration / intervalUnit}, (v,k) => addTime(startTime, k * intervalUnit))
+	const adder = Array.from({length: colspan}, (v,k) => dayOfWeek)
 	times.forEach(time => {
 		if (acc[time]) {
-			acc[time].push(dayOfWeek)
+			acc[time] = acc[time].concat(adder)
 			acc[time].sort()
 		} else {
-			acc[time] = [dayOfWeek]
+			acc[time] = adder
 		}
 	})
 	return acc
@@ -164,19 +176,37 @@ function addTime(time: string, increment: number): string {
 	return `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`
 }
 
-function getColSpan(dayOfWeek: number, hour: string, overlaps: Record<number, number>, overlapHours: Record<number, Record<string, number>>): number {
+function getColSpan(dayOfWeek: number, hour: string, duration: number, overlaps: Record<number, number>, overlapHours: Record<number, Record<string, number>>): number {
+	const times = Array.from({length: duration / intervalUnit}, (v,k) => addTime(hour, k * intervalUnit))
 	// If not on a column with overlaps
 	if (!overlaps[dayOfWeek]) {
 		return 1
 	}
-	// If on column with overlaps but not in that hour
-	else if (overlaps[dayOfWeek] && (!overlapHours[dayOfWeek] || !Object.keys(overlapHours[dayOfWeek]).includes(hour))) {
-		return overlaps[dayOfWeek]
-	}
+	let res = overlaps[dayOfWeek]
+	times.forEach(time => {
+		// If on column with overlaps but not in that hour
+		if (overlaps[dayOfWeek] && overlapHours[dayOfWeek] && overlapHours[dayOfWeek][time] === 1) {
+			res = (overlaps[dayOfWeek] < res) ? overlaps[dayOfWeek] : res
+		}
+		// If on column with overlaps in that hour
+		else if (overlaps[dayOfWeek] && overlapHours[dayOfWeek] && overlapHours[dayOfWeek][time] === overlaps[dayOfWeek]) {
+			res = (1 < res) ? 1 : res
+		}
+		// If on column with overlaps, but less overlaps than the maximum
+		else if (overlaps[dayOfWeek] && overlapHours[dayOfWeek] && overlapHours[dayOfWeek][time] < overlaps[dayOfWeek]) {
+			// TODO: maybe optimize for full column?
+			// const newVal = overlaps[dayOfWeek] - overlap
+			res = (1 < res) ? 1 : res
+		}
+	})
+	return res
+}
 
-	// If on column with overlaps in that hour
-	else if (overlaps[dayOfWeek] && (overlapHours[dayOfWeek] && Object.keys(overlapHours[dayOfWeek]).includes(hour))) {
-		return 1
-	}
-	return 1
+function countOccupied(arr: number[], num: number): number {
+	return arr.reduce( (acc, curr) => {
+		if (curr === num) {
+			acc++
+		}
+		return acc
+	}, 0)
 }
