@@ -51,7 +51,6 @@ export default function saveToExcel(shifts: Shift[], classes: Record<string, str
 	const tableLessons = getTable(lessonsByHour, overlaps, overlapsLessons)
 	const tableClasses = getTableClasses(classes)
 	const table = `<div>${tableLessons}${tableClasses}</div>`
-	console.log(table)
 
 	const ua = window.navigator.userAgent
 	const msie = ua.indexOf('MSIE ')
