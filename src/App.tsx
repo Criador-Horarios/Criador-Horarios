@@ -11,8 +11,7 @@ import Schedule from './components/Schedule/Schedule'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
-import saveToExcel from './utils/excel'
-import saveToExcel2 from './utils/excel-new'
+import saveToExcel from './utils/excel-new'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -511,9 +510,7 @@ class App extends React.Component <{
 		this.setState({loading: true})
 		const classes = await getClasses(this.state.selectedShifts)
 
-		// saveToExcel(this.state.selectedShifts, classes)
-		await saveToExcel2(this.state.selectedShifts, classes)
-
+		await saveToExcel(this.state.selectedShifts, classes)
 
 		this.setState({loading: false})
 		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
@@ -666,7 +663,7 @@ class App extends React.Component <{
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
 													color='inherit'
-													onClick={() => {this.setWarningExcel()}}
+													onClick={() => {this.exportToExcel()}}
 													component="span"
 												>
 													<Icon>download</Icon>

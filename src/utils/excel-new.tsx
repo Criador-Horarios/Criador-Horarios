@@ -37,13 +37,12 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 		const temp = setColumn(sheet, lessons, col, currCol, maxOverlaps, overlaps)
 		sheet = temp[0]
 		currCol = temp[1]
-		lastColumn = currCol - 1
+		lastColumn = currCol
 	})
-	sheet = setOuterBorders(sheet)
+	sheet = setOuterBorders(sheet, lastColumn)
 
 	// Set classes
-	// Classes on the right
-	// sheet = setClasses(sheet, classes, lastColumn + 2, (sheet.lastRow?.number ?? 0) + 2)
+	// Classes on the right -> // sheet = setClasses(sheet, classes, lastColumn + 2, (sheet.lastRow?.number ?? 0) + 2)
 	// Classes on the bottom
 	sheet = setClasses(sheet, classes, 1, (sheet.lastRow?.number ?? 0) + 2)
 
@@ -212,7 +211,7 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 	return [sheet, column + colspan]
 }
 
-function setOuterBorders(sheet: ExcelJS.Worksheet): ExcelJS.Worksheet {
+function setOuterBorders(sheet: ExcelJS.Worksheet, lastColumn: number): ExcelJS.Worksheet {
 	const row = sheet.lastRow
 	row?.eachCell((cell, colNumber) => {
 		if (cell.border) {
@@ -224,8 +223,7 @@ function setOuterBorders(sheet: ExcelJS.Worksheet): ExcelJS.Worksheet {
 		}
 	})
 
-	// FIXME: ExcelJS did not add to type definition
-	const column = (sheet as any).lastColumn as ExcelJS.Column | undefined
+	const column = sheet.getColumn(lastColumn)
 	column?.eachCell((cell, rowNumber) => {
 		if ( (rowNumber - 1) < config.schedule.rowStart) {
 			return
@@ -292,14 +290,16 @@ function getOverlapsByHour(dayOfWeek: number, lessons: Record<number, Record<str
 
 function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, startColumn: number, startRow: number): ExcelJS.Worksheet {
 	const colNumber = startColumn + config.classes.colStart
-	const lessonsKeys = Object.keys(classes)
+	const lessonsKeys = Object.keys(classes).sort()
 	const numberLessons = lessonsKeys.length
-	let i = startRow + config.classes.rowStart, lastColumn = 0
-	for (; i < (startRow + numberLessons); i++) {
+	const firstRowIndex = startRow + config.classes.rowStart
+	let i = firstRowIndex, lastColumn = 0
+
+	for (; i < (firstRowIndex + numberLessons); i++) {
 		const row = sheet.getRow(i)
 		row.alignment = { vertical: 'middle', horizontal:'center', wrapText: true }
 
-		const shiftId = lessonsKeys[i - startRow]
+		const shiftId = lessonsKeys[i - firstRowIndex]
 		// Set shift id
 		const shiftCell = row.getCell(colNumber)
 		shiftCell.value = shiftId
@@ -317,7 +317,7 @@ function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, s
 			// Set class
 			const currCel = row.getCell(currCol)
 			currCel.value = c
-			if (i === (startRow + config.classes.rowStart)) {
+			if (i === (firstRowIndex)) {
 				currCel.border = {
 					top: {style:'thin'}
 				}
@@ -331,23 +331,31 @@ function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, s
 		})
 	}
 
-	// FIXME: Add border to first row
-
-	// Add border to last row
+	// Add border to first and last row
+	const firstRow = sheet.getRow(firstRowIndex)
 	const lastRow = sheet.getRow(i - 1)
 	for (let currCol = colNumber; currCol <= lastColumn; currCol++) {
-		const currCel = lastRow.getCell(currCol)
-		if (currCel.border) {
-			currCel.border.bottom = {style:'thin'}
+		const topCell = firstRow.getCell(currCol)
+		if (topCell.border) {
+			topCell.border.top = {style:'thin'}
 		} else {
-			currCel.border = {
+			topCell.border = {
+				top: {style:'thin'}
+			}
+		}
+
+		const bottomCell = lastRow.getCell(currCol)
+		if (bottomCell.border) {
+			bottomCell.border.bottom = {style:'thin'}
+		} else {
+			bottomCell.border = {
 				bottom: {style:'thin'}
 			}
 		}
 	}
 
 	// Add border to last column
-	for (let rowIndex = startRow + config.classes.rowStart; rowIndex <= (i - 1); rowIndex++) {
+	for (let rowIndex = firstRowIndex; rowIndex <= (i - 1); rowIndex++) {
 		const currRow = sheet.getRow(rowIndex)
 		const currCel = currRow.getCell(lastColumn)
 		if (currCel.border) {
