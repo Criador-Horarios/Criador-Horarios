@@ -18,7 +18,11 @@ const config = {
 	},
 	classes: {
 		colStart: 1,
-		rowStart: 1
+		rowStart: 2
+	},
+	waterMark: {
+		colStart: 2,
+		rowStart: 28
 	},
 	emptyValue: ''
 }
@@ -54,6 +58,9 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	// Classes on the right -> // sheet = setClasses(sheet, classes, lastColumn + 2, (sheet.lastRow?.number ?? 0) + 2)
 	// Classes on the bottom
 	sheet = setClasses(sheet, classes, 1, (sheet.lastRow?.number ?? 0) + 2)
+
+	// Set link
+	sheet = setWaterMark(sheet)
 
 	workbook.xlsx.writeBuffer().then((data: any): void => {
 		const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
@@ -398,6 +405,41 @@ function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, s
 		}
 	}
 
+	return sheet
+}
+
+// TODO: Improve this function
+function setWaterMark(sheet: ExcelJS.Worksheet): ExcelJS.Worksheet {
+	const firstColumn = config.waterMark.colStart
+	const firstRow = config.waterMark.rowStart
+
+	// Text cell
+	const textCell = sheet.getRow(firstRow).getCell(firstColumn)
+	textCell.alignment = {
+		wrapText: false
+	}
+	textCell.value = i18next.t('excel.generated-by') as string
+	textCell.font = {
+		color: { argb: 'FFFFFF' }
+	}
+	textCell.fill = {
+		type: 'pattern',
+		pattern: 'solid',
+		fgColor: { argb: '17a6e3' },
+		bgColor: { argb: '17a6e3'}
+	} as ExcelJS.FillPattern
+	sheet.mergeCells(firstRow, firstColumn, firstRow, firstColumn + 1)
+
+	// Link cell
+	const linkCell = sheet.getRow(firstRow).getCell(firstColumn + 2)
+	linkCell.value = {
+		text: 'Criador-Horarios',
+		hyperlink: process.env.REACT_APP_URL ?? 'https://github.com/joaocmd/Criador-Horarios'
+	}
+	linkCell.font = {
+		color: { argb: '1769aa' }
+	}
+	sheet.mergeCells(firstRow, firstColumn + 2, firstRow, firstColumn + 3)
 	return sheet
 }
 

@@ -44,6 +44,7 @@
     "excel.filename": "ist-schedule",
     "excel.worksheet-title": "Schedule",
     "excel.weekdays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "excel.generated-by": "Generated automatically by:",
     "language.english": "English",
     "language.portuguese": "Portuguese"
 }
