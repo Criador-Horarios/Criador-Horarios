@@ -8,7 +8,13 @@ const config = {
 	schedule: {
 		colStart: 1,
 		rowStart: 1,
-		minWidth: 15
+		minWidth: 15,
+		emptyBorder: {
+			top: {style:'hair'},
+			left: {style:'hair'},
+			right: {style:'hair'},
+			bottom: {style:'hair'}
+		} as any
 	},
 	classes: {
 		colStart: 1,
@@ -91,8 +97,8 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 		if (i < 0) {
 			return
 		}
+		// Set weekday title
 		if (i === 0) {
-			// Set weekday title
 			const name = columnNames[dayOfWeek]
 			cell.value = name
 			cell.font = {
@@ -104,6 +110,12 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 				fgColor: { argb: '000000' },
 				bgColor: { argb: '000000'}
 			} as ExcelJS.FillPattern
+			cell.border = {
+				top: {style:'thin'},
+				left: {style:'thin'},
+				bottom: {style:'thin'},
+				right: {style:'thin'}
+			}
 
 			// Merge if colspan is bigger than 1
 			if (colspan > 1) {
@@ -189,6 +201,10 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 				const remainingPadding = colspan - (getOccupied(overlaps, l.startTime, config.intervalUnit) + lessonColSpan)
 				if (remainingPadding > 1) {
 					sheet.mergeCells(lessonRow, lessonCol + 1 , lessonRow, lessonCol + remainingPadding)
+					sheet.getRow(rowNumber).getCell(lessonCol + 1).border = {...config.schedule.emptyBorder}
+				} else if (remainingPadding === 1) {
+					const firstEmptyCol = getFreeCellCol(sheet, rowNumber, currColNumber, config.intervalUnit)
+					sheet.getRow(rowNumber).getCell(firstEmptyCol).border = {...config.schedule.emptyBorder}
 				}
 			})
 
@@ -199,6 +215,7 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 		else if (colspan > 1 && cell.text === config.emptyValue && nOcc === -1) {
 			// start row, start column, end row, end column
 			sheet.mergeCells(rowNumber, currColNumber, rowNumber, currColNumber + colspan - 1)
+			cell.border = {...config.schedule.emptyBorder}
 		}
 		// Padding after lessons (nOcc is nº of lessons in that hour - 1)
 		// So to know if a merge is needed, we need to be sure that there is at least a diff of 2
@@ -207,8 +224,18 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 			const firstEmptyCol = getFreeCellCol(sheet, rowNumber, currColNumber, config.intervalUnit)
 			const secondEmptyCol = getFreeCellCol(sheet, rowNumber, firstEmptyCol + 1, config.intervalUnit)
 			if (remainingPadding === (secondEmptyCol - firstEmptyCol + 1)) {
+				sheet.getRow(rowNumber).getCell(firstEmptyCol).border = {...config.schedule.emptyBorder}
 				sheet.mergeCells(rowNumber, firstEmptyCol, rowNumber, secondEmptyCol)
 			}
+		}
+		// Set border style on cells along lessons with overlap
+		else if (colspan >= 2 && nOcc >= 0 && (colspan - 1 - nOcc) === 1 ) {
+			const emptyCol = getFreeCellCol(sheet, rowNumber, currColNumber + 1, config.intervalUnit)
+			sheet.getRow(rowNumber).getCell(emptyCol).border = {...config.schedule.emptyBorder}
+		}
+		// Set empty space border
+		else if (cell.text === config.emptyValue) {
+			cell.border = {...config.schedule.emptyBorder}
 		}
 	})
 
