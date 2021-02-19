@@ -14,7 +14,8 @@ const config = {
 			left: {style:'hair'},
 			right: {style:'hair'},
 			bottom: {style:'hair'}
-		} as any
+		} as any,
+		headerBackground: '4b5761'
 	},
 	classes: {
 		colStart: 1,
@@ -114,8 +115,8 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 			cell.fill = {
 				type: 'pattern',
 				pattern: 'solid',
-				fgColor: { argb: '000000' },
-				bgColor: { argb: '000000'}
+				fgColor: { argb: config.schedule.headerBackground },
+				bgColor: { argb: config.schedule.headerBackground }
 			} as ExcelJS.FillPattern
 			cell.border = {
 				top: {style:'thin'},
@@ -425,8 +426,8 @@ function setWaterMark(sheet: ExcelJS.Worksheet): ExcelJS.Worksheet {
 	textCell.fill = {
 		type: 'pattern',
 		pattern: 'solid',
-		fgColor: { argb: '17a6e3' },
-		bgColor: { argb: '17a6e3'}
+		fgColor: { argb: config.schedule.headerBackground },
+		bgColor: { argb: config.schedule.headerBackground }
 	} as ExcelJS.FillPattern
 	sheet.mergeCells(firstRow, firstColumn, firstRow, firstColumn + 1)
 
