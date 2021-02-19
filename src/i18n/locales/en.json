@@ -41,6 +41,9 @@
     "warning.actions.back": "Back",
     "warning-excel.title": "Export to Excel",
     "warning-excel.content": "This functionality is experimental, it might give a warning of unsafety. Confirm to proceed.",
+    "excel.filename": "ist-schedule",
+    "excel.worksheet-title": "Schedule",
+    "excel.weekdays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
     "language.english": "English",
     "language.portuguese": "Portuguese"
 }

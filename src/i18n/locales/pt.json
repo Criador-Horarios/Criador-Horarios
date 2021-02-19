@@ -41,6 +41,9 @@
     "warning.actions.back": "Voltar",
     "warning-excel.title": "Exportar para Excel",
     "warning-excel.content": "Esta funcionalidade é experimental, poderá dar um aviso de segurança. Confirme para continuar.",
+    "excel.filename": "ist-horario",
+    "excel.worksheet-title": "Horário",
+    "excel.weekdays": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"],
     "language.english": "Inglês",
     "language.portuguese": "Português"
 }

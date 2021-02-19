@@ -1,12 +1,14 @@
 import Lesson from '../domain/Lesson'
 import Shift from '../domain/Shift'
 import ExcelJS from 'exceljs'
+import i18next from 'i18next'
 
 const config = {
 	intervalUnit: 30,
 	schedule: {
 		colStart: 1,
-		rowStart: 1
+		rowStart: 1,
+		minWidth: 15
 	},
 	classes: {
 		colStart: 1,
@@ -16,19 +18,17 @@ const config = {
 }
 
 const cols = [0, 1, 2, 3, 4, 5]
-const columnNames = ['', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
+let columnNames = ['', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
 const hours = Array.from({length:12}, (v,k) => k+8)
 const columnsLength = Array.from({length: hours.length * Math.floor(60/config.intervalUnit) + 1 + config.schedule.rowStart}, (v,k) => config.emptyValue)
 
-// FIXME: Add i18n
+// TODO: Needs refactor
 export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>) {
 	const workbook = new ExcelJS.Workbook()
-	let sheet = workbook.addWorksheet('Horário')
+	let sheet = workbook.addWorksheet(i18next.t('excel.worksheet-title'))
 
 	const lessons = getLessonsByDay(shifts)
-
-	// Set columns
-	const header = ''
+	columnNames = [''].concat(i18next.t('excel.weekdays', { returnObjects: true }))
 
 	// Set schedule
 	let lastColumn = 0, currCol = cols[0] + 1
@@ -52,7 +52,7 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 		const anchor = document.createElement('a')
 		document.body.appendChild(anchor)
 		anchor.href = url
-		anchor.download = 'ist-horario.xlsx'
+		anchor.download = `${i18next.t('excel.filename')}.xlsx`
 		anchor.click()
 		window.URL.revokeObjectURL(url)
 		document.body.removeChild(anchor)
@@ -89,8 +89,9 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 			return
 		}
 		if (i === 0) {
+			// Set weekday title
 			const name = columnNames[dayOfWeek]
-			cell.value = columnNames[dayOfWeek]
+			cell.value = name
 			cell.font = {
 				color: { argb: 'FFFFFF'}
 			}
@@ -107,7 +108,7 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 				sheet.mergeCells(rowNumber, currColNumber, rowNumber, currColNumber + colspan - 1)
 			}
 
-			col.width = (name.length > 0) ? name.length * 1.2 : 10
+			col.width = (name.length > config.schedule.minWidth) ? name.length * 1.2 : config.schedule.minWidth
 			return
 		}
 
