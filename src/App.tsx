@@ -12,6 +12,7 @@ import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } fr
 import Degree from './domain/Degree'
 
 import saveToExcel from './utils/excel'
+import saveToExcel2 from './utils/excel-new'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -510,7 +511,9 @@ class App extends React.Component <{
 		this.setState({loading: true})
 		const classes = await getClasses(this.state.selectedShifts)
 
-		saveToExcel(this.state.selectedShifts, classes)
+		// saveToExcel(this.state.selectedShifts, classes)
+		await saveToExcel2(this.state.selectedShifts, classes)
+
 
 		this.setState({loading: false})
 		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
