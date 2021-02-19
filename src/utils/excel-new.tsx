@@ -11,13 +11,14 @@ const config = {
 	classes: {
 		colStart: 1,
 		rowStart: 1
-	}
+	},
+	emptyValue: ''
 }
 
 const cols = [0, 1, 2, 3, 4, 5]
 const columnNames = ['', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
 const hours = Array.from({length:12}, (v,k) => k+8)
-const columnsLength = Array.from({length: hours.length * Math.floor(60/config.intervalUnit) + 1 + config.schedule.rowStart}, (v,k) => '')
+const columnsLength = Array.from({length: hours.length * Math.floor(60/config.intervalUnit) + 1 + config.schedule.rowStart}, (v,k) => config.emptyValue)
 
 // FIXME: Add i18n
 export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>) {
@@ -28,20 +29,12 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 
 	// Set columns
 	const header = ''
-	// sheet.spliceColumns(0,0, cols)
-	// sheet.columns = [
-	// 	{ key: 'idClient'},
-	// 	{ key: 'name'},
-	// 	{ key: 'tel'},
-	// 	{ key: 'adresse'}
-	// ] as ExcelJS.Column[]
 
 	// Set schedule
 	let lastColumn = 0, currCol = cols[0] + 1
 	cols.forEach(col => {
 		const [ overlaps, maxOverlaps ] = getOverlapsByHour(col, lessons)
-		// console.log(overlaps, maxOverlaps)
-		const temp = setColumn(sheet, lessons, col, currCol, maxOverlaps)
+		const temp = setColumn(sheet, lessons, col, currCol, maxOverlaps, overlaps)
 		sheet = temp[0]
 		currCol = temp[1]
 		lastColumn = currCol - 1
@@ -49,7 +42,9 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	sheet = setOuterBorders(sheet)
 
 	// Set classes
+	// Classes on the right
 	// sheet = setClasses(sheet, classes, lastColumn + 2, (sheet.lastRow?.number ?? 0) + 2)
+	// Classes on the bottom
 	sheet = setClasses(sheet, classes, 1, (sheet.lastRow?.number ?? 0) + 2)
 
 	workbook.xlsx.writeBuffer().then((data: any): void => {
@@ -66,11 +61,28 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	
 }
 
-function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<string, Lesson[]>>, dayOfWeek: number, column: number, colspan: number): [ExcelJS.Worksheet, number] {
-	const col = sheet.getColumn(config.schedule.colStart + column)
+/**
+ * 
+ * @param sheet 
+ * @param lessons 
+ * @param dayOfWeek 
+ * @param column 
+ * @param colspan 
+ * @param overlaps 
+ * @returns [sheet, nextColumn, columnWidth]
+ */
+function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<string, Lesson[]>>, dayOfWeek: number,
+	column: number, colspan: number, overlaps: Record<string, number>): [ExcelJS.Worksheet, number] {
+	const currColNumber = config.schedule.colStart + column
+	const col = sheet.getColumn(currColNumber)
+
 	// Set initial values to empty
-	col.values = columnsLength
-	col.alignment = { vertical: 'middle', horizontal:'center', wrapText: true }
+	const allColumns = Array.from({length: colspan}, (v,k) => k)
+	allColumns.forEach( colToAlter => {
+		const newCol = sheet.getColumn(currColNumber + colToAlter)
+		newCol.values = columnsLength
+		newCol.alignment = { vertical: 'middle', horizontal:'center', wrapText: true }
+	})
 
 	col.eachCell((cell, rowNumber) => {
 		const i = rowNumber - config.schedule.rowStart - 1
@@ -89,6 +101,12 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 				fgColor: { argb: '000000' },
 				bgColor: { argb: '000000'}
 			} as ExcelJS.FillPattern
+
+			// Merge if colspan is bigger than 1
+			if (colspan > 1) {
+				// start row, start column, end row, end column
+				sheet.mergeCells(rowNumber, currColNumber, rowNumber, currColNumber + colspan - 1)
+			}
 
 			col.width = (name.length > 0) ? name.length * 1.2 : 10
 			return
@@ -118,33 +136,76 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 		}
 
 		currHour += (i%2 === 1) ? ':00:00' : ':30:00'
+
+		// For padding purposes
+		let nOcc = getOccupied(overlaps, currHour, config.intervalUnit)
 		// Lessons
 		if (lessons[dayOfWeek] && lessons[dayOfWeek][currHour]) {
-			// FIXME: only works for lessons not overlapping
-			// FIXME: check if occupied
 			lessons[dayOfWeek][currHour].forEach(l => {
-				const currCellKey = cell.$col$row.replaceAll('$', '')
-				const cellToMerge = getCellToMerge(l, currCellKey)
+				const nOccupied = getOccupied(overlaps, l.startTime, l.minutes)
+				const lessonRow = rowNumber
+				let lessonCol = currColNumber
 
-				cell.value = l.exportedTitle
-				cell.font = {
+				// Verify if needs to change column
+				let usedCell = cell
+				if (nOccupied > 0) {
+					const duration = Math.floor(l.minutes / config.intervalUnit - 1)
+					lessonCol = getFreeCellCol(sheet, lessonRow, lessonCol, duration)
+					usedCell = sheet.getRow(lessonRow).getCell(lessonCol)
+				}
+				
+				// Set to max width
+				let lessonColSpan = 1
+				if (nOccupied === 0 && colspan > 1) {
+					lessonColSpan = colspan
+				}
+
+				const [mergeCol, mergeRow] = getCellToMerge(l, lessonRow, lessonCol, lessonColSpan)
+
+				usedCell.value = l.exportedTitle
+				usedCell.font = {
 					color: { argb: 'FFFFFF'}
 				}
-				cell.fill = {
+				usedCell.fill = {
 					type: 'pattern',
 					pattern: 'solid',
 					fgColor: { argb: l.color.replace('#', '') },
 					bgColor: { argb: l.color.replace('#', '')}
 				} as ExcelJS.FillPattern
-				cell.border = {
+				usedCell.border = {
 					top: {style:'thin'},
 					left: {style:'thin'},
 					bottom: {style:'thin'},
 					right: {style:'thin'}
 				}
 
-				sheet.mergeCells(`${currCellKey}:${cellToMerge}`)
+				// start row, start column, end row, end column
+				sheet.mergeCells(lessonRow, lessonCol, mergeRow, mergeCol)
+
+				// Fix remaining padding if needed
+				const remainingPadding = colspan - (getOccupied(overlaps, l.startTime, config.intervalUnit) + lessonColSpan)
+				if (remainingPadding > 1) {
+					sheet.mergeCells(lessonRow, lessonCol + 1 , lessonRow, lessonCol + remainingPadding)
+				}
 			})
+
+			// Update for padding purposes
+			nOcc = getOccupied(overlaps, currHour, config.intervalUnit)
+		}
+		// Padding with colspan > 1
+		else if (colspan > 1 && cell.text === config.emptyValue && nOcc === 0) {
+			// start row, start column, end row, end column
+			sheet.mergeCells(rowNumber, currColNumber, rowNumber, currColNumber + colspan - 1)
+		}
+		// Padding after lessons (nOcc is nº of lessons in that hour - 1)
+		// So to know if a merge is needed, we need to be sure that there is at least a diff of 2
+		else if (colspan >= 2 && nOcc >= 1 && (colspan - 1 - nOcc) >= 2 ) {
+			const remainingPadding = colspan - 1 - nOcc
+			const firstEmptyCol = getFreeCellCol(sheet, rowNumber, currColNumber, config.intervalUnit)
+			const secondEmptyCol = getFreeCellCol(sheet, rowNumber, firstEmptyCol + 1, config.intervalUnit)
+			if (remainingPadding === (secondEmptyCol - firstEmptyCol + 1)) {
+				sheet.mergeCells(rowNumber, firstEmptyCol, rowNumber, secondEmptyCol)
+			}
 		}
 	})
 
@@ -270,6 +331,8 @@ function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, s
 		})
 	}
 
+	// FIXME: Add border to first row
+
 	// Add border to last row
 	const lastRow = sheet.getRow(i - 1)
 	for (let currCol = colNumber; currCol <= lastColumn; currCol++) {
@@ -301,16 +364,17 @@ function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, s
 
 // Auxiliar
 
-function getCellToMerge(lesson: Lesson, initialCell: string): string {
-	const duration = lesson.minutes / config.intervalUnit - 1
-	const re = /([A-Z]+)(\d+)/
-	const match = initialCell.match(re)
-	if (match === null) {
-		throw 'Error getting cell to merge (Excel)'
-	}
-	const col = match[1]
-	const row = +match[2] + duration
-	return `${col}${row}`
+/**
+ * 
+ * @param lesson 
+ * @param initialRow 
+ * @param initialCol 
+ * @returns [column, row]
+ */
+function getCellToMerge(lesson: Lesson, initialRow: number, initialCol: number, colspan: number): [number, number] {
+	const duration = Math.floor(lesson.minutes / config.intervalUnit - 1)
+	// Col - Row
+	return [initialCol + colspan - 1, initialRow + duration]
 }
 
 function addTime(time: string, increment: number): string {
@@ -332,4 +396,32 @@ function addTime(time: string, increment: number): string {
 	}
 
 	return `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`
+}
+
+function getFreeCellCol(sheet: ExcelJS.Worksheet, row: number, initialCol: number, duration: number): number {
+	const checkFree = (row: number, col: number, dur: number) => {
+		for (let i = 0; i < dur; i++) {
+			const empty = sheet.getRow(row).getCell(col + i).text === config.emptyValue
+			if (!empty) {
+				return false
+			}
+		}
+		return true
+	}
+	let isEmpty = (sheet.getRow(row).getCell(initialCol).text === config.emptyValue)
+	while (!isEmpty) {
+		isEmpty = checkFree(row, ++initialCol, duration)
+	}
+	return initialCol
+}
+
+function getOccupied(overlaps: Record<string, number>, startTime: string, duration: number): number {
+	const times = Array.from({length: duration / config.intervalUnit}, (v,k) => addTime(startTime, k * config.intervalUnit))
+	let res = 0
+	times.forEach(time => {
+		if (overlaps[time]) {
+			res += overlaps[time] - 1
+		} 
+	})
+	return res
 }
