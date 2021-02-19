@@ -28,7 +28,10 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	let sheet = workbook.addWorksheet(i18next.t('excel.worksheet-title'))
 
 	const lessons = getLessonsByDay(shifts)
-	columnNames = [''].concat(i18next.t('excel.weekdays', { returnObjects: true }))
+	const newColumnNames = i18next.t('excel.weekdays', { returnObjects: true })
+	if (newColumnNames.length > 0) {
+		columnNames = [''].concat(newColumnNames)
+	}
 
 	// Set schedule
 	let lastColumn = 0, currCol = cols[0] + 1
@@ -193,13 +196,13 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 			nOcc = getOccupied(overlaps, currHour, config.intervalUnit)
 		}
 		// Padding with colspan > 1
-		else if (colspan > 1 && cell.text === config.emptyValue && nOcc === 0) {
+		else if (colspan > 1 && cell.text === config.emptyValue && nOcc === -1) {
 			// start row, start column, end row, end column
 			sheet.mergeCells(rowNumber, currColNumber, rowNumber, currColNumber + colspan - 1)
 		}
 		// Padding after lessons (nOcc is nº of lessons in that hour - 1)
 		// So to know if a merge is needed, we need to be sure that there is at least a diff of 2
-		else if (colspan >= 2 && nOcc >= 1 && (colspan - 1 - nOcc) >= 2 ) {
+		else if (colspan >= 2 && nOcc >= 0 && (colspan - 1 - nOcc) >= 2 ) {
 			const remainingPadding = colspan - 1 - nOcc
 			const firstEmptyCol = getFreeCellCol(sheet, rowNumber, currColNumber, config.intervalUnit)
 			const secondEmptyCol = getFreeCellCol(sheet, rowNumber, firstEmptyCol + 1, config.intervalUnit)
@@ -427,10 +430,12 @@ function getFreeCellCol(sheet: ExcelJS.Worksheet, row: number, initialCol: numbe
 function getOccupied(overlaps: Record<string, number>, startTime: string, duration: number): number {
 	const times = Array.from({length: duration / config.intervalUnit}, (v,k) => addTime(startTime, k * config.intervalUnit))
 	let res = 0
+	let foundAny = false
 	times.forEach(time => {
 		if (overlaps[time]) {
 			res += overlaps[time] - 1
+			foundAny = true
 		} 
 	})
-	return res
+	return foundAny ? res : -1
 }
