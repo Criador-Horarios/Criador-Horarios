@@ -11,7 +11,7 @@ import Schedule from './components/Schedule/Schedule'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
-import saveToExcel from './utils/excel-new'
+import saveToExcel from './utils/excel'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
