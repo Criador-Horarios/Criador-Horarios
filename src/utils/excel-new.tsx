@@ -37,10 +37,14 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	// ] as ExcelJS.Column[]
 
 	// Set schedule
-	let lastColumn = 0
+	let lastColumn = 0, currCol = cols[0] + 1
 	cols.forEach(col => {
-		sheet = setColumn(sheet, lessons, col)
-		lastColumn = col + config.schedule.colStart + 1
+		const [ overlaps, maxOverlaps ] = getOverlapsByHour(col, lessons)
+		// console.log(overlaps, maxOverlaps)
+		const temp = setColumn(sheet, lessons, col, currCol, maxOverlaps)
+		sheet = temp[0]
+		currCol = temp[1]
+		lastColumn = currCol - 1
 	})
 	sheet = setOuterBorders(sheet)
 
@@ -62,8 +66,8 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	
 }
 
-function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<string, Lesson[]>>, dayOfWeek: number): ExcelJS.Worksheet {
-	const col = sheet.getColumn(config.schedule.colStart + dayOfWeek + 1)
+function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<string, Lesson[]>>, dayOfWeek: number, column: number, colspan: number): [ExcelJS.Worksheet, number] {
+	const col = sheet.getColumn(config.schedule.colStart + column)
 	// Set initial values to empty
 	col.values = columnsLength
 	col.alignment = { vertical: 'middle', horizontal:'center', wrapText: true }
@@ -144,7 +148,7 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 		}
 	})
 
-	return sheet
+	return [sheet, column + colspan]
 }
 
 function setOuterBorders(sheet: ExcelJS.Worksheet): ExcelJS.Worksheet {
@@ -199,20 +203,30 @@ function getLessonsByDay(shifts: Shift[]): Record<number, Record<string, Lesson[
 	return res
 }
 
-function getOverlapsByHour(lessons: Lesson[]): Record<string, Lesson[]> {
-	return {}
-}
-
-function getCellToMerge(lesson: Lesson, initialCell: string): string {
-	const duration = lesson.minutes / config.intervalUnit - 1
-	const re = /([A-Z]+)(\d+)/
-	const match = initialCell.match(re)
-	if (match === null) {
-		throw 'Error getting cell to merge (Excel)'
+function getOverlapsByHour(dayOfWeek: number, lessons: Record<number, Record<string, Lesson[]>>): [Record<string, number>, number] {
+	const res: Record<string, number> = {}
+	let maxOverlaps = 1
+	if (!lessons[dayOfWeek]) {
+		// Ignore columns without lessons
+		return  [{}, 1]
 	}
-	const col = match[1]
-	const row = +match[2] + duration
-	return `${col}${row}`
+	Object.entries(lessons[dayOfWeek]).forEach((value) => {
+		const lessons = value[1]
+		lessons.forEach(l => {
+			const overlapHours = Array.from({length: Math.floor(l.minutes / config.intervalUnit)}, (v,k) => addTime(l.startTime, k * config.intervalUnit))
+			overlapHours.forEach(hour => {	
+				if (res[hour]) {		
+					const newVal = res[hour] + 1
+					res[hour] = newVal
+					maxOverlaps = (newVal > maxOverlaps) ? newVal : maxOverlaps
+
+				} else {
+					res[hour] = 1
+				}
+			})
+		})
+	})
+	return [res, maxOverlaps]
 }
 
 function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, startColumn: number, startRow: number): ExcelJS.Worksheet {
@@ -283,4 +297,39 @@ function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, s
 	}
 
 	return sheet
+}
+
+// Auxiliar
+
+function getCellToMerge(lesson: Lesson, initialCell: string): string {
+	const duration = lesson.minutes / config.intervalUnit - 1
+	const re = /([A-Z]+)(\d+)/
+	const match = initialCell.match(re)
+	if (match === null) {
+		throw 'Error getting cell to merge (Excel)'
+	}
+	const col = match[1]
+	const row = +match[2] + duration
+	return `${col}${row}`
+}
+
+function addTime(time: string, increment: number): string {
+	if (increment === 0) {
+		return time
+	}
+
+	const args = time.split(':')
+	let hour = +args[0], minutes = +args[1]
+	minutes += increment
+	if (minutes % 60 == 0) {
+		const plusHours = minutes/60
+		minutes = 0
+		hour += plusHours
+	} else {
+		const plusHours = Math.floor(minutes/60)
+		minutes = minutes % 60
+		hour += plusHours
+	}
+
+	return `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`
 }
