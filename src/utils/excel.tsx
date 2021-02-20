@@ -5,6 +5,7 @@ import i18next from 'i18next'
 
 const config = {
 	intervalUnit: 30,
+	margin: 3,
 	schedule: {
 		colStart: 1,
 		rowStart: 1,
@@ -32,6 +33,7 @@ const cols = [0, 1, 2, 3, 4, 5]
 let columnNames = ['', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
 const hours = Array.from({length:12}, (v,k) => k+8)
 const columnsLength = Array.from({length: hours.length * Math.floor(60/config.intervalUnit) + 1 + config.schedule.rowStart}, (v,k) => config.emptyValue)
+const excelWidthOverHeight = 1400/266 // Coefficient between column width and row height ~5.26
 
 // TODO: Needs refactor
 export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>) {
@@ -62,6 +64,10 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 
 	// Set link
 	sheet = setWaterMark(sheet)
+
+	// Set margin
+	sheet.getRow(1).height = config.margin * excelWidthOverHeight
+	sheet.getColumn(1).width = config.margin
 
 	workbook.xlsx.writeBuffer().then((data: any): void => {
 		const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
