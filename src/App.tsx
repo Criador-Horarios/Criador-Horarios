@@ -510,7 +510,7 @@ class App extends React.Component <{
 		this.setState({loading: true})
 		const classes = await getClasses(this.state.selectedShifts)
 
-		saveToExcel(this.state.selectedShifts, classes)
+		await saveToExcel(this.state.selectedShifts, classes)
 
 		this.setState({loading: false})
 		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
@@ -663,7 +663,7 @@ class App extends React.Component <{
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
 													color='inherit'
-													onClick={() => {this.setWarningExcel()}}
+													onClick={() => {this.exportToExcel()}}
 													component="span"
 												>
 													<Icon>download</Icon>

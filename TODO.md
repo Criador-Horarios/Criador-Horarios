@@ -18,8 +18,8 @@
 - [X] When building, show maintenance page (downtime is almost 0)
 - [ ] Add tooltip to filter buttons 
 - [X] Export schedule to excel
-- [ ] Add english version to schedule
+- [X] Add english version to schedule excel
 - [X] Webscrape classes for the selected shifts
-- [ ] Use sheetjs to create excel files without warning
+- [X] Use sheetjs to create excel files without warning
 - [ ] Algorithm for minimum classes for enrolments
 - [ ] Increase contrast on selected and selected shifts on checklist
