@@ -1,6 +1,7 @@
 import html2canvas from 'html2canvas'
 import Lesson from '../domain/Lesson'
 import Shift from '../domain/Shift'
+import i18next from 'i18next'
 
 export default function downloadAsImage(shifts: Shift[]): void {
 	const div = document.createElement('div')
@@ -14,7 +15,7 @@ export default function downloadAsImage(shifts: Shift[]): void {
 			useCORS: true
 		}).then(canvas => {
 			document.body.removeChild(div)
-			saveAs(canvas.toDataURL('image/png', 1.0), 'test')
+			saveAs(canvas.toDataURL('image/png', 1.0), `${i18next.t('image.filename')}`)
 		})
 	}, 10)
 }
@@ -33,8 +34,6 @@ const saveAs = (uri: string, filename: string) => {
 	}
 }
 
-// TODO: Add i18n
-// TODO: Make css options outside of functions
 // FIXME: Needs refactor
 const intervalUnit = 30
 function saveToImage(shifts: Shift[]) {
@@ -93,9 +92,14 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 	const cols = [0, 1, 2, 3, 4, 5]
 	let header = ''
 	cols.forEach(col => {
-		const res = ['', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
+		// TODO: Add i18n
+		let res = ['', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
+		const newColumnNames = i18next.t('table.weekdays', { returnObjects: true })
+		if (newColumnNames.length > 0) {
+			res = [''].concat(newColumnNames)
+		}
 		const width = overlaps[col] ?? 1
-		header += `<th bgcolor="#212121" style="text-align: center; color: white;" colspan="${width}">${res[col]}</th>`
+		header += `<th colspan="${width}">${res[col]}</th>`
 	})
 	header = `<thead>${header}</thead>`
 
@@ -130,7 +134,7 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 						const colspan = getColSpan(dayOfWeek, currHour, l.minutes, overlaps, overlapHours)
 						body += `<td style="background-color: ${l.color}; color: white;" 
 						rowspan="${l.minutes / intervalUnit}" 
-						colspan="${colspan}">${l.exportedTitle}</td>`
+						colspan="${colspan}"> ${l.exportedTitle} </td>`
 						occupied = setOccupied(l.startTime, dayOfWeek, l.minutes, intervalUnit, colspan, occupied)
 						remainingPadding -= colspan
 					})

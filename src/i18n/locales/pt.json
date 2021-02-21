@@ -24,6 +24,7 @@
     "schedule-selected.actions.save-as-image": "Guardar como imagem",
     "schedule-selected.actions.save-as-excel": "Guardar horário e turmas num ficheiro Excel",
     "schedule-selected.actions.clear-schedule": "Limpar horário",
+    "shift-scraper.classes.error": "Não foi possível obter as turmas para esta UC",
     "footer.support-button.content": "Apoiar",
     "footer.support-button.tooltip": "Ajudar na manutenção do website",
     "footer.repository.tooltip": "Ver código fonte",
@@ -43,8 +44,9 @@
     "warning-excel.content": "Esta funcionalidade é experimental, poderá dar um aviso de segurança. Confirme para continuar.",
     "excel.filename": "ist-horario",
     "excel.worksheet-title": "Horário",
-    "excel.weekdays": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"],
     "excel.generated-by": "Gerado automaticamente por:",
+    "image.filename": "ist-horario",
+    "table.weekdays": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"],
     "language.english": "Inglês",
     "language.portuguese": "Português"
 }

@@ -24,6 +24,7 @@
     "schedule-selected.actions.save-as-image": "Save as image",
     "schedule-selected.actions.save-as-excel": "Save schedule and classes as Excel file",
     "schedule-selected.actions.clear-schedule": "Clear schedule",
+    "shift-scraper.classes.error": "Could not fetch classes for this course",
     "footer.support-button.content": "Support",
     "footer.support-button.tooltip": "Help maintain the website",
     "footer.repository.tooltip": "See the source code",
@@ -43,8 +44,9 @@
     "warning-excel.content": "This functionality is experimental, it might give a warning of unsafety. Confirm to proceed.",
     "excel.filename": "ist-schedule",
     "excel.worksheet-title": "Schedule",
-    "excel.weekdays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
     "excel.generated-by": "Generated automatically by:",
+    "image.filename": "ist-schedule",
+    "table.weekdays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
     "language.english": "English",
     "language.portuguese": "Portuguese"
 }

@@ -1,14 +1,14 @@
 import Shift from '../domain/Shift'
-import Course from '../domain/Course'
 import API from './api'
 import cheerio from 'cheerio'
+import i18next from 'i18next'
 
 const prefix = 'https://fenix.tecnico.ulisboa.pt'
 
 export default async function (shifts: Shift[]): Promise<Record<string, string>> {
 	const shiftPage: Record<string, string> = {}
 	const courseUrls = Array.from(new Set(shifts.map(shift => shift.courseId)))
-	const courses = await Promise.all(courseUrls
+	await Promise.all(courseUrls
 		.map(courseId => API.getCourse(courseId)
 			.then(async c => {
 				if (!shiftPage[courseId]) {
@@ -16,7 +16,7 @@ export default async function (shifts: Shift[]): Promise<Record<string, string>>
 					let page = null
 					try {
 						page = await API.getPage(url)
-					} catch {
+					} catch (err) {
 						// Either fenix is broken or it is on a page that we don't parse
 						console.error('Can\'t get course ' + courseId)
 					}
@@ -33,6 +33,7 @@ export default async function (shifts: Shift[]): Promise<Record<string, string>>
 	shifts.forEach((shift: Shift) => {
 		const page = shiftPage[shift.courseId]
 		if (page === undefined) {
+			res[shift.acronym] = i18next.t('shift-scraper.classes.error')
 			// Couldn't get course before
 			return
 		}
