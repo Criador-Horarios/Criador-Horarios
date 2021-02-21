@@ -653,8 +653,7 @@ class App extends React.Component <{
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.save-as-image') as string}>
 												<IconButton
-													// Disabled on dark mode
-													disabled={this.state.selectedShifts.length === 0 || this.state.darkMode}
+													disabled={this.state.selectedShifts.length === 0}
 													color="inherit"
 													onClick={this.saveSchedule}
 													component="span">
