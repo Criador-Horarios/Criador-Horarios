@@ -143,3 +143,24 @@ body {
 ul {
  margin: 0;
 }
+
+.imageSaver {
+	width: fit-content;
+	position: absolute;
+	top: -9000px;
+	left: -9000px;
+	z-index: -9000;
+	
+	table {
+		border-collapse: collapse;
+		border-width: thin;
+		text-align: center;
+		vertical-align: middle;
+		word-wrap: break-word;
+
+		td {
+			border-style: dotted;
+			height: 20px;
+		}
+	}
+}
