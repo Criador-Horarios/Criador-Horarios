@@ -68,7 +68,8 @@ export default class Shift implements Comparable {
 				color: this.color,
 				start: l.start.split(' ')[1],
 				end: l.end.split(' ')[1],
-				dayOfWeek:  new Date(l.start).getDay(),
+				// Replacing space to T to allow parsing on SAFARI
+				dayOfWeek:  new Date(l.start.replace(' ', 'T')).getDay(),
 				room: l.room?.name,
 				campus: l.room?.topLevelSpace.name,
 				acronym: this.acronym,
