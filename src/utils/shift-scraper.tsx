@@ -13,11 +13,16 @@ export default async function (shifts: Shift[]): Promise<Record<string, string>>
 			.then(async c => {
 				if (!shiftPage[courseId]) {
 					const url = c!.url.replace(prefix, '') + '/turnos'
-					const page = await API.getPage(url)
-					if (page === null) {
-						throw 'Fenix fodido'
+					let page = null
+					try {
+						page = await API.getPage(url)
+					} catch {
+						// Either fenix is broken or it is on a page that we don't parse
+						console.error('Can\'t get course ' + courseId)
 					}
-					shiftPage[courseId] = page
+					if (page !== null) {
+						shiftPage[courseId] = page
+					}
 				}
 			}))
 	)
@@ -27,6 +32,10 @@ export default async function (shifts: Shift[]): Promise<Record<string, string>>
 	const res: Record<string, string> = {}
 	shifts.forEach((shift: Shift) => {
 		const page = shiftPage[shift.courseId]
+		if (page === undefined) {
+			// Couldn't get course before
+			return
+		}
 		const $ = cheerio.load(page)
 
 		$('tbody tr').each(function(i, element) {
