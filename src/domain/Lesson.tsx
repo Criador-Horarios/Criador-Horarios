@@ -22,7 +22,7 @@ export default class Lesson implements Comparable {
 		this.type = obj.type
 		this.id = obj.shiftName
 		this.title = `${obj.acronym} - ${obj.shiftId}\n${ (obj.campus !== undefined) ? obj.campus : '' }`
-		this.exportedTitle = `${obj.acronym} - ${obj.shiftId} @ ${obj.room}`
+		this.exportedTitle = `${obj.acronym} - ${obj.shiftId} @ ${obj.room !== undefined ? obj.room : '' }`
 	}
 
 	hashString(): string {

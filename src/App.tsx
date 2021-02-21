@@ -36,6 +36,7 @@ import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import { exportComponentAsPNG } from 'react-component-export-image'
+import downloadAsImage from './utils/save-as-image'
 import Snackbar from '@material-ui/core/Snackbar'
 import Link from '@material-ui/core/Link'
 import GitHubIcon from '@material-ui/icons/GitHub'
@@ -432,13 +433,14 @@ class App extends React.Component <{
 			this.showAlert(i18next.t('alert.no-shift-selected'), 'info')
 			return
 		}
-		exportComponentAsPNG(this.chosenSchedule, {
-			fileName: 'ist-horario',
-			html2CanvasOptions: {
-				backgroundColor: undefined,
-				allowTaint: true,
-			}
-		})
+		// exportComponentAsPNG(this.chosenSchedule, {
+		// 	fileName: 'ist-horario',
+		// 	html2CanvasOptions: {
+		// 		backgroundColor: undefined,
+		// 		allowTaint: true,
+		// 	}
+		// })
+		downloadAsImage(this.state.selectedShifts)
 	
 		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
@@ -651,8 +653,7 @@ class App extends React.Component <{
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.save-as-image') as string}>
 												<IconButton
-													// Disabled on dark mode
-													disabled={this.state.selectedShifts.length === 0 || this.state.darkMode}
+													disabled={this.state.selectedShifts.length === 0}
 													color="inherit"
 													onClick={this.saveSchedule}
 													component="span">

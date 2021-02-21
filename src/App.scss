@@ -143,3 +143,34 @@ body {
 ul {
  margin: 0;
 }
+
+.imageSaver {
+	width: fit-content;
+	position: absolute;
+	top: -9000px;
+	left: -9000px;
+	z-index: -9000;
+	
+	table {
+		border-collapse: collapse;
+		// border-spacing: 1px;
+		border-width: thin;
+		text-align: center;
+		vertical-align: middle;
+		word-wrap: break-word;
+
+		th {
+			padding: 0 5px;
+			color: white;
+			background-color: #212121;
+		}
+
+		td {
+			border: 1px solid gray;
+			border-top: transparent;
+			height: 20px;
+			min-width: 50px;
+			padding: 0 5px;
+		}
+	}
+}

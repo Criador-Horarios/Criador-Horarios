@@ -16,7 +16,7 @@
 - [x] Choose colors only when selecting the course
 - [X] Disable clear and export schedule buttons when unable to use them
 - [X] When building, show maintenance page (downtime is almost 0)
-- [ ] Add tooltip to filter buttons 
+- [ ] ~~Add tooltip to filter buttons~~
 - [X] Export schedule to excel
 - [X] Add english version to schedule excel
 - [X] Webscrape classes for the selected shifts
