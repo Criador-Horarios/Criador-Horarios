@@ -20,12 +20,15 @@ This project uses React with Typescript.
 Install the dependencies by running `npm i` and then run `npm start` to start the app in development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+## Changelog
+[Changelog file](./CHANGELOG.md)
+
 ## TODOs
 [List of TODOs](./TODO.md)
 
 ## Bugs
 
-- [ ] When exporting to image, lessons overlapping bugs -> Try react-use-screenshot
+- [X] When exporting to image, lessons overlapping bugs
 - [ ] Courses from another degree are not removed from courses list when a different degree is selected
 - [X] When a shift is selected, if the course is unselected and selected again, it may have a different color
 - [x] There were no 'Teórico-Práticas' type of shifts

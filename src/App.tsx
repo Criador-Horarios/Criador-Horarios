@@ -134,6 +134,13 @@ class App extends React.Component <{
 		this.setState({
 			loading: false
 		})
+
+		// Set warning of shifts with degrees that aren't the ones selected
+		const isWarned = this.cookies.get('warning-shift-degrees')
+		if (isWarned !== 'true') {
+			this.setWarningShiftDegrees()
+			this.cookies.set('warning-shift-degrees', 'true', { maxAge: 60*60*24 })
+		}
 	}
 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
@@ -433,14 +440,8 @@ class App extends React.Component <{
 			this.showAlert(i18next.t('alert.no-shift-selected'), 'info')
 			return
 		}
-		// exportComponentAsPNG(this.chosenSchedule, {
-		// 	fileName: 'ist-horario',
-		// 	html2CanvasOptions: {
-		// 		backgroundColor: undefined,
-		// 		allowTaint: true,
-		// 	}
-		// })
-		downloadAsImage(this.state.selectedShifts)
+
+		downloadAsImage(this.state.selectedShifts, this.state.darkMode)
 	
 		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
@@ -501,10 +502,10 @@ class App extends React.Component <{
 		// this.showAlert(i18next.t('alert.classes-file'), 'success')
 	}
 
-	setWarningExcel(): void {
-		this.warningTitle = i18next.t('warning-excel.title')
-		this.warningContent = i18next.t('warning-excel.content')
-		this.warningContinue = this.exportToExcel
+	setWarningShiftDegrees(): void {
+		this.warningTitle = i18next.t('warning-shift-degrees.title')
+		this.warningContent = i18next.t('warning-shift-degrees.content')
+		this.warningContinue = () => {return}
 		this.setState({warningDialog: true})
 	}
 
@@ -748,7 +749,7 @@ class App extends React.Component <{
 							<DialogActions>
 								<div />
 								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
-								<Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button>
+								{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
 							</DialogActions>
 						</Dialog>				
 					</div>
@@ -775,6 +776,7 @@ const styles = (theme: any) => ({
 	},
 	checklistUnselected: {
 		// color: theme.palette.text.hint
+		opacity: 0.8
 	},
 	paper: {
 		display: 'flex',

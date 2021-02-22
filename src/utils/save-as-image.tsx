@@ -3,12 +3,12 @@ import Lesson from '../domain/Lesson'
 import Shift from '../domain/Shift'
 import i18next from 'i18next'
 
-export default function downloadAsImage(shifts: Shift[]): void {
+export default function downloadAsImage(shifts: Shift[], darkMode: boolean): void {
 	const div = document.createElement('div')
 	div.className = 'imageSaver'
 	document.body.appendChild(div)
 	setTimeout(function(){
-		const table = saveToImage(shifts)
+		const table = saveToImage(shifts, darkMode)
 		div.innerHTML = table
 
 		html2canvas(div, {
@@ -36,7 +36,7 @@ const saveAs = (uri: string, filename: string) => {
 
 // FIXME: Needs refactor
 const intervalUnit = 30
-function saveToImage(shifts: Shift[]) {
+function saveToImage(shifts: Shift[], darkMode: boolean) {
 	const lessonsByHour: Record<string, Record<number, Lesson[]>> = {}
 	const overlapsLessons: Record<number, Record<string, number>> = {}
 	const overlaps: Record<number, number> = {}
@@ -81,25 +81,28 @@ function saveToImage(shifts: Shift[]) {
 		})
 	})
 
-	const tableLessons = getTable(lessonsByHour, overlaps, overlapsLessons)
+	const tableLessons = getTable(lessonsByHour, overlaps, overlapsLessons, darkMode)
 	const table = `${tableLessons}`
 
 	return table
 }
 
-function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: Record<number, number>, overlapHours: Record<number, Record<string, number>>): string {
+function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: Record<number, number>,
+	overlapHours: Record<number, Record<string, number>>, darkMode: boolean): string {
+	// Get class for light/dark mode
+	const colorClass = darkMode ? 'dark' : 'light'
+
 	// Set columns
 	const cols = [0, 1, 2, 3, 4, 5]
 	let header = ''
 	cols.forEach(col => {
-		// TODO: Add i18n
 		let res = ['', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
 		const newColumnNames = i18next.t('table.weekdays', { returnObjects: true })
 		if (newColumnNames.length > 0) {
 			res = [''].concat(newColumnNames)
 		}
 		const width = overlaps[col] ?? 1
-		header += `<th colspan="${width}">${res[col]}</th>`
+		header += `<th class="${colorClass}" colspan="${width}">${res[col]}</th>`
 	})
 	header = `<thead>${header}</thead>`
 
@@ -155,7 +158,7 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 	})
 	body = `<tbody>${body}</tbody>`
 
-	return `<table border="4px">${header}${body}</table>`
+	return `<table class="${colorClass}" border="4px">${header}${body}</table>`
 }
 
 function setOccupied(startTime: string, dayOfWeek: number, duration: number, intervalUnit: number, colspan: number, acc: Record<string, number[]>): Record<string, number[]> {
