@@ -12,7 +12,8 @@ export default function downloadAsImage(shifts: Shift[], darkMode: boolean): voi
 		div.innerHTML = table
 
 		html2canvas(div, {
-			useCORS: true
+			useCORS: true,
+			scrollY: -window.scrollY
 		}).then(canvas => {
 			document.body.removeChild(div)
 			saveAs(canvas.toDataURL('image/png', 1.0), `${i18next.t('image.filename')}`)

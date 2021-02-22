@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix schedule saving image with unusual scroll
+
 ## [1.3.0] - 22/02/2021
 
 ### Added 

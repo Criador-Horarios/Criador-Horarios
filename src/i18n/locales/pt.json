@@ -41,7 +41,7 @@
     "warning.actions.continue": "Continuar",
     "warning.actions.back": "Voltar",
     "warning-shift-degrees.title": "Aviso: Turnos com Cursos diferentes",
-    "warning-shift-degrees.content": "Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"Ver turmas para inscrição\"",
+    "warning-shift-degrees.content": "Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"Obter turmas para inscrição\"",
     "excel.filename": "ist-horario",
     "excel.worksheet-title": "Horário",
     "excel.generated-by": "Gerado automaticamente por:",
