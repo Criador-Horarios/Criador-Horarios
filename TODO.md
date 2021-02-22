@@ -23,4 +23,5 @@
 - [X] Use sheetjs to create excel files without warning
 - [ ] Algorithm for minimum classes for enrolments
 - [X] Increase contrast on selected and selected shifts on checklist
-- [ ] Add dialog with functionality news
+- [ ] Add button and dialog with functionality news
+- [X] Add warning telling that there maybe shifts from another degree that is not yours

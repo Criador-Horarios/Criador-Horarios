@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Save schedule and classes in an Excel file
 - New way of saving images
 - Schedule saving as image for dark mode
+- Add warning of possible shifts with unwanted degrees
 
 ### Fixed
 
