@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Date not parsed in Safari
 - Shifts without classes would stop the application
 - Image saving would give blank lessons if overlaping
+- Not enough contrast in shifts checklist
 
 ## [1.2.0] - 14/02/2021
 

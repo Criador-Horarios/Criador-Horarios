@@ -769,6 +769,7 @@ const styles = (theme: any) => ({
 	},
 	checklistUnselected: {
 		// color: theme.palette.text.hint
+		opacity: 0.8
 	},
 	paper: {
 		display: 'flex',

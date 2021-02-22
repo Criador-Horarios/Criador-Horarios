@@ -22,5 +22,5 @@
 - [X] Webscrape classes for the selected shifts
 - [X] Use sheetjs to create excel files without warning
 - [ ] Algorithm for minimum classes for enrolments
-- [ ] Increase contrast on selected and selected shifts on checklist
+- [X] Increase contrast on selected and selected shifts on checklist
 - [ ] Add dialog with functionality news

@@ -20,6 +20,9 @@ This project uses React with Typescript.
 Install the dependencies by running `npm i` and then run `npm start` to start the app in development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+## Changelog
+[Changelog file](./CHANGELOG.md)
+
 ## TODOs
 [List of TODOs](./TODO.md)
 
