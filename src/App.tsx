@@ -433,14 +433,8 @@ class App extends React.Component <{
 			this.showAlert(i18next.t('alert.no-shift-selected'), 'info')
 			return
 		}
-		// exportComponentAsPNG(this.chosenSchedule, {
-		// 	fileName: 'ist-horario',
-		// 	html2CanvasOptions: {
-		// 		backgroundColor: undefined,
-		// 		allowTaint: true,
-		// 	}
-		// })
-		downloadAsImage(this.state.selectedShifts)
+
+		downloadAsImage(this.state.selectedShifts, this.state.darkMode)
 	
 		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
