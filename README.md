@@ -43,3 +43,4 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Distinguish courses with I, II, etc. (i.e. CDI-I and CDI-II) (FenixEdu sets the same acronym)
 - [ ] Find minimum classes for enrolments
 - [ ] Give option of what to add (room, campus, etc.) in excel
+- [X] Add occupation on shift hover

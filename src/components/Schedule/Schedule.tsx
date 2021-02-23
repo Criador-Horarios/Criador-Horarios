@@ -1,12 +1,14 @@
 import React from 'react'
 import Lesson from '../../domain/Lesson'
 import styles from './Schedule.module.scss'
-import FullCalendar from '@fullcalendar/react'
+import FullCalendar, { EventApi, EventClickArg } from '@fullcalendar/react'
 import bootstrapPlugin from '@fullcalendar/bootstrap'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import Tooltip from '@material-ui/core/Tooltip'
+import Box from '@material-ui/core/Box/Box'
+import { ShiftOccupation } from '../../domain/Shift'
+import i18next from 'i18next'
 // import './_materialFullCalendar.scss'
-// import './darkly-bootstrap.min.css'
-// import './cyborg-bootstrap.min.css'
 
 class Schedule extends React.PureComponent <{
 	onSelectedEvent: (id: string) => void
@@ -14,10 +16,26 @@ class Schedule extends React.PureComponent <{
 	lang: string
 	darkMode: boolean
 }, unknown>{
-	componentDidUpdate() {
-		// require('./darkly-bootstrap.min.css')
-		if (this.props.darkMode) {
-			// require('./cyborg-bootstrap.min.css')
+	renderEventContent(eventInfo: {event: EventApi}) {
+		const occupation = Object.values(eventInfo.event.extendedProps.occupation as ShiftOccupation)
+		return (
+			<Tooltip arrow title={
+				<React.Fragment>{i18next.t('schedule.shift.occupation')}: {occupation.join('/')}</React.Fragment>
+			} placement={'top'}>
+				<Box style={{height: '100%'}}>{eventInfo.event.title}
+				</Box>
+			</Tooltip>
+		)
+	}
+
+	onEventClick(info: EventClickArg): void {
+		const withCtrl = info.jsEvent.ctrlKey
+		if (withCtrl) {
+			const url = info.event.extendedProps.courseUrl
+			const win = window.open(url)
+			win?.focus()
+		} else {
+			this.props.onSelectedEvent(info.event.id)	
 		}
 	}
 
@@ -58,7 +76,8 @@ class Schedule extends React.PureComponent <{
 					height={'auto'}
 					contentHeight={'auto'}
 					events={this.props.events}
-					eventClick={(info) => this.props.onSelectedEvent(info.event.id)}
+					eventClick={(info) => this.onEventClick(info)}
+					eventContent={this.renderEventContent}
 					locale={this.props.lang}
 					themeSystem={'default'}
 					stickyHeaderDates={false}

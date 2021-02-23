@@ -35,6 +35,8 @@ export default class Shift implements Comparable {
 	lessons: Lesson[]
 	color: string
 	campus = ''
+	occupation: ShiftOccupation
+	url: string
 	
 	constructor(obj: ShiftDto, course: Course) {
 		this.courseId = course.id
@@ -62,6 +64,12 @@ export default class Shift implements Comparable {
 			this.color = course.color
 		}
 
+		this.occupation = {
+			current: obj.occupation.current,
+			max: obj.occupation.max,
+		}
+		this.url = course.url
+
 		const lessons = obj.lessons.map((l: LessonDto) => {
 			return new Lesson({
 				shiftName: this.name,
@@ -74,7 +82,10 @@ export default class Shift implements Comparable {
 				campus: l.room?.topLevelSpace.name,
 				acronym: this.acronym,
 				shiftId: this.shiftId,
-				id: this.name
+				id: this.name,
+				occupation: this.occupation,
+				type: this.type,
+				url: this.url
 			})
 		})
 		this.lessons = Comparables.toUnique(lessons) as Lesson[]
@@ -120,10 +131,7 @@ export const shortenDescriptions = (shifts: Shift[]): string => {
 export type ShiftDto = {
 	lessons: LessonDto[]
 	name: string
-	occupation: {
-		current: number
-		max: number
-	}
+	occupation: ShiftOccupation
 	rooms: {
 		capacity: {
 			exam: number
@@ -140,4 +148,9 @@ export type ShiftDto = {
 		type: string
 	}[]
 	types: string[]
+}
+
+export type ShiftOccupation = {
+	current: number
+	max: number
 }

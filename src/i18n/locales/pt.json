@@ -18,6 +18,8 @@
     "warning-dialog.actions.close-button": "Voltar",
     "classes-dialog.title": "Turmas para as Inscrições",
     "classes-dialog.actions.close-button": "Voltar",
+    "schedule.shift.occupation": "Ocupação",
+    "schedule.shift.capacity": "Capacidade",
     "schedule-available.title": "Turnos Disponíveis",
     "schedule-selected.title": "Turnos Selecionados",
     "schedule-selected.actions.get-classes": "Obter turmas para inscrição",

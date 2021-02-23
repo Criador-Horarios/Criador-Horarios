@@ -18,6 +18,8 @@
     "warning-dialog.actions.close-button": "Back",
     "classes-dialog.title": "Classes for Enrolment",
     "classes-dialog.actions.close-button": "Back",
+    "schedule.shift.occupation": "Occupation",
+    "schedule.shift.capacity": "Capacity",
     "schedule-available.title": "Available Shifts",
     "schedule-selected.title": "Selected Shifts",
     "schedule-selected.actions.get-classes": "Get classes for enrolments",

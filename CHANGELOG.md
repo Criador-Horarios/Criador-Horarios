@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Tooltip with occupation of the shift (on event hover)
+- CTRL + Click on shift to access course page
+
 ### Fixed
 
 - Fix schedule saving image with unusual scroll
