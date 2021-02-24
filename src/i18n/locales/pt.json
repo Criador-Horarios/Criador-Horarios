@@ -13,9 +13,6 @@
     "settings-dialog.select.value": "º Semestre",
     "settings-dialog.actions.close-button": "Guardar",
     "help-dialog.actions.close-button": "Voltar",
-    "warning-dialog.title": "Aviso - Funcionalidade Experimental",
-    "warning-dialog.content": "No modo noturno, a funcionalidade de exportar o horário como imagem não está ativado, visto que não está funcional.",
-    "warning-dialog.actions.close-button": "Voltar",
     "classes-dialog.title": "Turmas para as Inscrições",
     "classes-dialog.actions.close-button": "Voltar",
     "schedule.shift.occupation": "Ocupação",
@@ -42,8 +39,11 @@
     "alert.cannot-obtain-shifts": "Não foi possível obter os turnos desta UC",
     "warning.actions.continue": "Continuar",
     "warning.actions.back": "Voltar",
-    "warning-shift-degrees.title": "Aviso: Turnos com Cursos diferentes",
-    "warning-shift-degrees.content": "Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"Obter turmas para inscrição\"",
+    "warning.title": "Avisos: Turnos com Cursos diferentes e Ocupação dos Turnos",
+    "warning.content": [
+        "Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"Obter turmas para inscrição\".",
+        "Os dados da ocupação dos turnos não são em tempo real, para tal deve recarregar a página sempre que quiser saber o valor real."
+    ],
     "excel.filename": "ist-horario",
     "excel.worksheet-title": "Horário",
     "excel.generated-by": "Gerado automaticamente por:",

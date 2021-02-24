@@ -18,9 +18,10 @@ class Schedule extends React.PureComponent <{
 }, unknown>{
 	renderEventContent(eventInfo: {event: EventApi}) {
 		const occupation = Object.values(eventInfo.event.extendedProps.occupation as ShiftOccupation)
+		const percentage = occupation[0]/occupation[1] * 100 || 0
 		return (
 			<Tooltip arrow title={
-				<React.Fragment>{i18next.t('schedule.shift.occupation')}: {occupation.join('/')}</React.Fragment>
+				<React.Fragment>{i18next.t('schedule.shift.occupation')}: {occupation.join('/')} ({percentage.toFixed(0)}%)</React.Fragment>
 			} placement={'top'}>
 				<Box style={{height: '100%'}}>{eventInfo.event.title}
 				</Box>

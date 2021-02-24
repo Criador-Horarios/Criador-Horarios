@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import API, { staticData } from './utils/api'
+import API, { defineCurrentTerm, staticData } from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
@@ -126,7 +126,7 @@ class App extends React.Component <{
 			this.changeLanguage(language)
 		}
 
-		// staticData.terms = await API.getAcademicTerms()
+		await defineCurrentTerm()
 
 		const params = API.getUrlParams()
 		await this.buildState(params.s)
@@ -503,8 +503,8 @@ class App extends React.Component <{
 	}
 
 	setWarningShiftDegrees(): void {
-		this.warningTitle = i18next.t('warning-shift-degrees.title')
-		this.warningContent = i18next.t('warning-shift-degrees.content')
+		this.warningTitle = i18next.t('warning.title')
+		this.warningContent = (i18next.t('warning.content', {returnObjects: true}) as string[]).join('\n\n')
 		this.warningContinue = () => {return}
 		this.setState({warningDialog: true})
 	}
@@ -745,7 +745,7 @@ class App extends React.Component <{
 						</Dialog>
 						<Dialog open={this.state.warningDialog}>
 							<DialogTitle>{this.warningTitle}</DialogTitle>
-							<DialogContent>{this.warningContent}</DialogContent>
+							<DialogContent style={{whiteSpace: 'pre-line'}}>{this.warningContent}</DialogContent>
 							<DialogActions>
 								<div />
 								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
