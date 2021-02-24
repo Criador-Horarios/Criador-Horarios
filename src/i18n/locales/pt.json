@@ -1,54 +1,118 @@
 {
-    "degree-selector.title": "Escolha um curso",
-    "degree-selector.noOptions": "Sem opções",
-    "course-selector.title": "Escolha as UCs",
-    "course-selector.noOptions": "Sem opções, escolha um curso primeiro",
-    "link-button.tooltip": "Obter link de partilha",
-    "language-button.tooltip": "Mudar a língua",
-    "darkmode-button.dark": "Mudar para o modo claro",
-    "darkmode-button.light": "Mudar para o modo escuro",
-    "help-button.tooltip": "Ajuda",
-    "settings-dialog.title": "Escolha o semestre",
-    "settings-dialog.select.label": "Semestre",
-    "settings-dialog.select.value": "º Semestre",
-    "settings-dialog.actions.close-button": "Guardar",
-    "help-dialog.actions.close-button": "Voltar",
-    "classes-dialog.title": "Turmas para as Inscrições",
-    "classes-dialog.actions.close-button": "Voltar",
-    "schedule.shift.occupation": "Ocupação",
-    "schedule.shift.capacity": "Capacidade",
-    "schedule-available.title": "Turnos Disponíveis",
-    "schedule-selected.title": "Turnos Selecionados",
-    "schedule-selected.actions.get-classes": "Obter turmas para inscrição",
-    "schedule-selected.actions.save-as-image": "Guardar como imagem",
-    "schedule-selected.actions.save-as-excel": "Guardar horário e turmas num ficheiro Excel",
-    "schedule-selected.actions.clear-schedule": "Limpar horário",
-    "shift-scraper.classes.error": "Não foi possível obter as turmas para esta UC",
-    "footer.support-button.content": "Apoiar",
-    "footer.support-button.tooltip": "Ajudar na manutenção do website",
-    "footer.repository.tooltip": "Ver código fonte",
-    "footer.joao-david.tooltip": "João David",
-    "footer.daniel-goncalves.tooltip": "Daniel Gonçalves",
-    "alert.link-obtained": "Sucesso! O link foi copiado para a sua área de transferência",
-    "alert.no-shift-selected": "Não tem nenhum turno selecionado, faça o seu horário primeiro",
-    "alert.schedule-to-image": "Horário convertido em imagem",
-    "alert.schedule-to-excel": "Horário e turmas convertidos num ficheiro excel",
-    "alert.cleared-schedule": "Horário limpo com sucesso",
-    "alert.cannot-obtain-degrees": "Não foi possível obter os cursos",
-    "alert.cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
-    "alert.cannot-obtain-shifts": "Não foi possível obter os turnos desta UC",
-    "warning.actions.continue": "Continuar",
-    "warning.actions.back": "Voltar",
-    "warning.title": "Avisos: Turnos com Cursos diferentes e Ocupação dos Turnos",
-    "warning.content": [
-        "Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"Obter turmas para inscrição\".",
-        "Os dados da ocupação dos turnos não são em tempo real, para tal deve recarregar a página sempre que quiser saber o valor real."
-    ],
-    "excel.filename": "ist-horario",
-    "excel.worksheet-title": "Horário",
-    "excel.generated-by": "Gerado automaticamente por:",
-    "image.filename": "ist-horario",
-    "table.weekdays": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"],
-    "language.english": "Inglês",
-    "language.portuguese": "Português"
+	"degree-selector": {
+		"title": "Escolha um curso",
+		"noOptions": "Sem opções"
+	},
+	"course-selector": {    
+		"title": "Escolha as UCs",
+		"noOptions": "Sem opções, escolha um curso primeiro"
+	},
+	"link-button": {
+		"tooltip": "Obter link de partilha"	
+	},
+	"language-button": {
+		"tooltip": "Mudar a língua"
+	},
+	"darkmode-button": {
+		"dark": "Mudar para o modo claro",
+		"light": "Mudar para o modo escuro"
+	},
+	"help-button": {
+		"tooltip": "Ajuda"
+	},
+	"settings-dialog": {
+		"title": "Escolha o semestre",
+		"select": {
+            "label": "Semestre",
+            "value": "º Semestre"
+        },
+		"actions": {
+			"close-button": "Guardar"
+		}
+	},
+	"help-dialog": {
+		"actions": {
+			"close-button": "Voltar"
+		}
+	},
+	"classes-dialog": {
+		"title": "Turmas para as Inscrições",
+		"actions": {
+			"close-button": "Voltar"
+		}
+	},
+	"schedule": {
+		"shift": {
+			"occupation": "Ocupação",
+			"capacity": "Capacidade"
+		}
+	},
+	"schedule-available": {
+		"title": "Turnos Disponíveis"
+	},
+	"schedule-selected": {
+		"title": "Turnos Selecionados",
+		"actions": {
+			"get-classes": "Obter turmas para inscrição",
+			"save-as-image": "Guardar como imagem",
+			"save-as-excel": "Guardar horário e turmas num ficheiro Excel",
+			"clear-schedule": "Limpar horário"
+		}
+	},
+	"shift-scraper": {
+		"classes": {
+			"error": "Não foi possível obter as turmas para esta UC"
+		}
+	},
+	"footer": {
+		"support-button": {
+			"content": "Apoiar",
+			"tooltip": "Ajudar na manutenção do website"
+		},
+		"repository": {
+			"tooltip": "Ver código fonte"
+		},
+		"joao-david": {
+			"tooltip": "João David"
+		},
+		"daniel-goncalves": {
+			"tooltip": "Daniel Gonçalves"
+		}
+	},
+	"alert": {
+		"link-obtained": "Sucesso! O link foi copiado para a sua área de transferência",
+		"no-shift-selected": "Não tem nenhum turno selecionado, faça o seu horário primeiro",
+		"schedule-to-image": "Horário convertido em imagem",
+		"schedule-to-excel": "Horário e turmas convertidos num ficheiro excel",
+		"cleared-schedule": "Horário limpo com sucesso",
+		"cannot-obtain-degrees": "Não foi possível obter os cursos",
+		"cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
+		"cannot-obtain-shifts": "Não foi possível obter os turnos desta UC"
+	},
+	"warning": {
+		"title": "Avisos: Turnos com Cursos diferentes e Ocupação dos Turnos",
+		"content": [
+			"Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"$t(schedule-selected.actions.get-classes)\".",
+			"Os dados da ocupação dos turnos não são em tempo real, para tal deve recarregar a página sempre que quiser saber o valor real."
+		],
+		"actions": {
+			"continue": "Continuar",
+			"back": "Voltar"
+		}
+	},
+	"excel": {
+		"filename": "",
+		"worksheet-title": "Horário",
+		"generated-by": "Gerado automaticamente por:"
+	},
+	"image": {
+		"filename": "ist-horario"
+	},
+	"table": {
+		"weekdays": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"]
+	},
+	"language": {
+		"english": "Inglês",
+		"portuguese": "Português"
+	}
 }
