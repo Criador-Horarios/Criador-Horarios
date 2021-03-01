@@ -15,6 +15,7 @@ const config = {
 			left: {style:'hair'},
 			right: {style:'hair'},
 			bottom: {style:'hair'}
+		// eslint-disable-next-line
 		} as any,
 		headerBackground: '4b5761'
 	},
@@ -32,11 +33,11 @@ const config = {
 const cols = [0, 1, 2, 3, 4, 5]
 let columnNames = ['', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
 const hours = Array.from({length:12}, (v,k) => k+8)
-const columnsLength = Array.from({length: hours.length * Math.floor(60/config.intervalUnit) + 1 + config.schedule.rowStart}, (v,k) => config.emptyValue)
+const columnsLength = Array.from({length: hours.length * Math.floor(60/config.intervalUnit) + 1 + config.schedule.rowStart}, () => config.emptyValue)
 const excelWidthOverHeight = 1400/266 // Coefficient between column width and row height ~5.26
 
 // TODO: Needs refactor
-export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>) {
+export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>): Promise<void> {
 	const workbook = new ExcelJS.Workbook()
 	let sheet = workbook.addWorksheet(i18next.t('excel.worksheet-title'))
 
@@ -69,7 +70,7 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	sheet.getRow(1).height = config.margin * excelWidthOverHeight
 	sheet.getColumn(1).width = config.margin
 
-	workbook.xlsx.writeBuffer().then((data: any): void => {
+	workbook.xlsx.writeBuffer().then((data: ExcelJS.Buffer): void => {
 		const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
 		const url = window.URL.createObjectURL(blob)
 		const anchor = document.createElement('a')
@@ -258,7 +259,7 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 
 function setOuterBorders(sheet: ExcelJS.Worksheet, lastColumn: number): ExcelJS.Worksheet {
 	const row = sheet.lastRow
-	row?.eachCell((cell, colNumber) => {
+	row?.eachCell((cell) => {
 		if (cell.border) {
 			cell.border['bottom'] = {style:'thin'}
 		} else {
