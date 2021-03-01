@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 01/03/2021
+
+### Added
+
+- Automatic academic term selection
+- Tooltip with occupation of the shift (on event hover)
+- Warning of occupation data not in real time
+- CTRL + Click on shift to access course page
+
 ### Fixed
 
 - Fix schedule saving image with unusual scroll

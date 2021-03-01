@@ -25,3 +25,6 @@
 - [X] Increase contrast on selected and selected shifts on checklist
 - [ ] Add button and dialog with functionality news
 - [X] Add warning telling that there maybe shifts from another degree that is not yours
+- [X] Define semester and current year automatically
+- [ ] Add 'real-time' shift occupation
+- [ ] Add calendar file with shifts

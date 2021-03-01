@@ -158,11 +158,6 @@ class TopBar extends React.Component <{
 	}
 
 	onChangeDarkMode(): void {
-		if (!this.props.darkMode) {
-			// this.setState({
-			// 	warningDialog: true
-			// })
-		}
 		this.props.onChangeDarkMode(!this.props.darkMode)
 	}
 

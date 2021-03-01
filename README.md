@@ -29,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## Bugs
 
 - [X] When exporting to image, lessons overlapping bugs
-- [ ] Courses from another degree are not removed from courses list when a different degree is selected
+- [ ] ~~Courses from another degree are not removed from courses list when a different degree is selected~~
 - [X] When a shift is selected, if the course is unselected and selected again, it may have a different color
 - [x] There were no 'Teórico-Práticas' type of shifts
 
@@ -43,3 +43,4 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Distinguish courses with I, II, etc. (i.e. CDI-I and CDI-II) (FenixEdu sets the same acronym)
 - [ ] Find minimum classes for enrolments
 - [ ] Give option of what to add (room, campus, etc.) in excel
+- [X] Add occupation on shift hover

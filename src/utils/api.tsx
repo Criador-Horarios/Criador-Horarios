@@ -151,6 +151,28 @@ export const staticData = {
 	terms: [] as AcademicTerm[]
 }
 
+export async function defineCurrentTerm(): Promise<void> {
+	const today = new Date()
+	const currentYear = today.getFullYear(), currentMonth = today.getMonth() + 1 // Month starts at 0
+
+	let currentTerm = '', semester = 0
+	// First semester (After August)
+	if (currentMonth >= 8 ) {
+		currentTerm = `${currentYear}/${currentYear+1}`
+		semester = 1
+	} 
+	// Second semester
+	else {
+		currentTerm = `${currentYear-1}/${currentYear}`
+		semester = 2
+	}
+
+	API.ACADEMIC_TERM = currentTerm
+	API.SEMESTER = semester
+
+	API.getAcademicTerms().then(r => staticData.terms = r)
+}
+
 const languages = new Map([
 	['en', 'en-GB'],
 	['pt', 'pt-PT']

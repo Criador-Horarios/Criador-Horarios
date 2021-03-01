@@ -25,10 +25,10 @@ i18n
 			'default': ['en']
 		},
 		supportedLngs: ['pt', 'en'],
-		keySeparator: false,
+		// keySeparator: false,
 
 		interpolation: {
-			escapeValue: false
+			// escapeValue: false
 		},
 		debug: false
 	})

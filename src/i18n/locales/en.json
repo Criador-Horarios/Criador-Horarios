@@ -1,52 +1,119 @@
 {
-    "degree-selector.title": "Choose a degree",
-    "degree-selector.noOptions": "No options available",
-    "course-selector.title": "Choose the courses",
-    "course-selector.noOptions": "No options, select a degree first",
-    "link-button.tooltip": "Get shareable link",
-    "language-button.tooltip": "Change the language",
-    "darkmode-button.dark": "Set to light mode",
-    "darkmode-button.light": "Set to dark mode",
-    "help-button.tooltip": "Help",
-    "settings-dialog.title": "Choose the semester",
-    "settings-dialog.select.value": "st Semester",
-    "settings-dialog.select.value_plural": "nd Semester",
-    "settings-dialog.actions.close-button": "Save",
-    "help-dialog.actions.close-button": "Back",
-    "warning-dialog.title": "Warning - Experimental Functionality",
-    "warning-dialog.content": "With dark mode, the funcionality of exporting the schedule as image is deactivated, as it is not functional.",
-    "warning-dialog.actions.close-button": "Back",
-    "classes-dialog.title": "Classes for Enrolment",
-    "classes-dialog.actions.close-button": "Back",
-    "schedule-available.title": "Available Shifts",
-    "schedule-selected.title": "Selected Shifts",
-    "schedule-selected.actions.get-classes": "Get classes for enrolments",
-    "schedule-selected.actions.save-as-image": "Save as image",
-    "schedule-selected.actions.save-as-excel": "Save schedule and classes as Excel file",
-    "schedule-selected.actions.clear-schedule": "Clear schedule",
-    "shift-scraper.classes.error": "Could not fetch classes for this course",
-    "footer.support-button.content": "Support",
-    "footer.support-button.tooltip": "Help maintain the website",
-    "footer.repository.tooltip": "See the source code",
-    "footer.joao-david.tooltip": "João David",
-    "footer.daniel-goncalves.tooltip": "Daniel Gonçalves",
-    "alert.link-obtained": "Success! The link was copied to your clipboard",
-    "alert.no-shift-selected": "You haven't selected any shift, do your schedule first",
-    "alert.schedule-to-image": "Schedule converted into a image",
-    "alert.schedule-to-excel": "Schedule and classes converted into a excel file",
-    "alert.cleared-schedule": "Schedule cleared with success",
-    "alert.cannot-obtain-degrees": "It was not possible to obtain the degrees",
-    "alert.cannot-obtain-courses": "It was not possible to obtain the courses of this degree",
-    "alert.cannot-obtain-shifts": "It was not possible to obtain the shifts of this course",
-    "warning.actions.continue": "Continue",
-    "warning.actions.back": "Back",
-    "warning-shift-degrees.title": "Warning: Shifts with different Degrees",
-    "warning-shift-degrees.content": "Some shifts from Fenix belong to degrees that do not correspond to the one selected, make sure that the class belongs to the degree that you are going to enrol using the functionality \"Get classes for enrolments\"",
-    "excel.filename": "ist-schedule",
-    "excel.worksheet-title": "Schedule",
-    "excel.generated-by": "Generated automatically by:",
-    "image.filename": "ist-schedule",
-    "table.weekdays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    "language.english": "English",
-    "language.portuguese": "Portuguese"
+    "degree-selector": {
+		"title": "Choose a degree",
+		"noOptions": "No options available"
+	},
+	"course-selector": {    
+		"title": "Choose the courses",
+		"noOptions": "No options, select a degree first"
+	},
+	"link-button": {
+		"tooltip": "Get shareable link"	
+	},
+	"language-button": {
+		"tooltip": "Change the language"
+	},
+	"darkmode-button": {
+		"dark": "Set to light mode",
+		"light": "Set to dark mode"
+	},
+	"help-button": {
+		"tooltip": "Help"
+	},
+	"settings-dialog": {
+		"title": "Choose the semester",
+		"select": {
+            "label": "Semester",
+            "value": "st Semester",
+            "value_plural": "nd Semester"
+        },
+		"actions": {
+            "close-button": "Save"
+        }
+	},
+	"help-dialog": {
+		"actions": {
+			"close-button": "Back"
+		}
+	},
+	"classes-dialog": {
+		"title": "Classes for Enrolment",
+		"actions": {
+			"close-button": "Back"
+		}
+	},
+	"schedule": {
+		"shift": {
+			"occupation": "Occupation",
+			"capacity": "Capacity"
+		}
+	},
+	"schedule-available": {
+		"title": "Available Shifts"
+	},
+	"schedule-selected": {
+		"title": "Selected Shifts",
+		"actions": {
+			"get-classes": "Get classes for enrolments",
+			"save-as-image": "Save as image",
+			"save-as-excel": "Save schedule and classes as Excel file",
+			"clear-schedule": "Clear schedule"
+		}
+	},
+	"shift-scraper": {
+		"classes": {
+			"error": "Could not fetch classes for this course"
+		}
+	},
+	"footer": {
+		"support-button": {
+			"content": "Support",
+			"tooltip": "Help maintain the website"
+		},
+		"repository": {
+			"tooltip": "See the source code"
+		},
+		"joao-david": {
+			"tooltip": "João David"
+		},
+		"daniel-goncalves": {
+			"tooltip": "Daniel Gonçalves"
+		}
+	},
+	"alert": {
+		"link-obtained": "Success! The link was copied to your clipboard",
+		"no-shift-selected": "You haven't selected any shift, do your schedule first",
+		"schedule-to-image": "Schedule converted into a image",
+		"schedule-to-excel": "Schedule and classes converted into a excel file",
+		"cleared-schedule": "Schedule cleared with success",
+		"cannot-obtain-degrees": "It was not possible to obtain the degrees",
+		"cannot-obtain-courses": "It was not possible to obtain the courses of this degree",
+		"cannot-obtain-shifts": "It was not possible to obtain the shifts of this course"
+	},
+	"warning": {
+		"title": "Warnings: Shifts with different Degrees and Occupation Data",
+		"content": [
+            "Some shifts from Fenix belong to degrees that do not correspond to the one selected, make sure that the class belongs to the degree that you are going to enrol using the functionality \"$t(schedule-selected.actions.get-classes)\".",
+            "The shift's occupation data is not obtained in real time, so whenever you want to know the real value you need to reload the page."
+        ],
+		"actions": {
+			"continue": "Continue",
+			"back": "Back"
+		}
+	},
+	"excel": {
+		"filename": "ist-schedule",
+		"worksheet-title": "Schedule",
+		"generated-by": "Generated automatically by:"
+	},
+	"image": {
+		"filename": "ist-schedule"
+	},
+	"table": {
+		"weekdays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+	},
+	"language": {
+		"english": "English",
+		"portuguese": "Portuguese"
+	}
 }

@@ -1,6 +1,8 @@
 import Comparable from './Comparable'
+import { ShiftOccupation } from './Shift'
 
 export default class Lesson implements Comparable {
+	// Attention, as this is used by FullCalendar as EventApi, if you use the URL property it will add it to the event
 	title: string
 	exportedTitle: string
 	type: string
@@ -10,6 +12,8 @@ export default class Lesson implements Comparable {
 	color: string
 	id: string
 	minutes: number // in minutes
+	occupation: ShiftOccupation
+	courseUrl: string
 
 	// eslint-disable-next-line
 	constructor(obj: Record<string, any>) {
@@ -21,6 +25,8 @@ export default class Lesson implements Comparable {
 		this.color = obj.color
 		this.type = obj.type
 		this.id = obj.shiftName
+		this.occupation = obj.occupation
+		this.courseUrl = obj.url
 		this.title = `${obj.acronym} - ${obj.shiftId}\n${ (obj.campus !== undefined) ? obj.campus : '' }`
 		this.exportedTitle = `${obj.acronym} - ${obj.shiftId} @ ${obj.room !== undefined ? obj.room : '' }`
 	}
