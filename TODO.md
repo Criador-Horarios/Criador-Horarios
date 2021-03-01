@@ -27,4 +27,4 @@
 - [X] Add warning telling that there maybe shifts from another degree that is not yours
 - [X] Define semester and current year automatically
 - [ ] Add 'real-time' shift occupation
-- [ ] Add calendar file with shifts
+- [X] Add calendar file with shifts

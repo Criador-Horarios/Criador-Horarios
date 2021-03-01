@@ -56,7 +56,8 @@
 			"get-classes": "Obter turmas para inscrição",
 			"save-as-image": "Guardar como imagem",
 			"save-as-excel": "Guardar horário e turmas num ficheiro Excel",
-			"clear-schedule": "Limpar horário"
+			"clear-schedule": "Limpar horário",
+			"get-calendar": "Obter ficheiro do calendário com as aulas"
 		}
 	},
 	"shift-scraper": {
@@ -84,16 +85,19 @@
 		"no-shift-selected": "Não tem nenhum turno selecionado, faça o seu horário primeiro",
 		"schedule-to-image": "Horário convertido em imagem",
 		"schedule-to-excel": "Horário e turmas convertidos num ficheiro excel",
+		"calendar-obtained": "Calendário convertido em ficheiro",
 		"cleared-schedule": "Horário limpo com sucesso",
 		"cannot-obtain-degrees": "Não foi possível obter os cursos",
 		"cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
 		"cannot-obtain-shifts": "Não foi possível obter os turnos desta UC"
 	},
 	"warning": {
-		"title": "Avisos: Turnos com Cursos diferentes e Ocupação dos Turnos",
+		"title": "Avisos: Calendário, Ocupação e Turnos com Cursos diferentes",
 		"content": [
-			"Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"$t(schedule-selected.actions.get-classes)\".",
-			"Os dados da ocupação dos turnos não são em tempo real, para tal deve recarregar a página sempre que quiser saber o valor real."
+			"O ficheiro do calendário com as aulas não é atualizado automaticamente, deve verificar de tempo em tempo no Fénix se alguma aula mudou.",
+			"Os dados da ocupação dos turnos não são em tempo real, para tal deve recarregar a página sempre que quiser saber o valor real.",
+			"Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"$t(schedule-selected.actions.get-classes)\"."
+			
 		],
 		"actions": {
 			"continue": "Continuar",
@@ -110,6 +114,16 @@
 	},
 	"table": {
 		"weekdays": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"]
+	},
+	"calendar": {
+		"filename": "ist-horario"
+	},
+	"classType": {
+		"T": "Teórica",
+		"TP": "Teórico-Prática",
+		"L": "Laboratorial",
+		"PB": "Problemas",
+		"S": "Seminário"
 	},
 	"language": {
 		"english": "Inglês",

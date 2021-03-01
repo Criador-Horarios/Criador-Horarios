@@ -57,7 +57,8 @@
 			"get-classes": "Get classes for enrolments",
 			"save-as-image": "Save as image",
 			"save-as-excel": "Save schedule and classes as Excel file",
-			"clear-schedule": "Clear schedule"
+			"clear-schedule": "Clear schedule",
+			"get-calendar": "Obtain calendar file with the classes"
 		}
 	},
 	"shift-scraper": {
@@ -85,16 +86,19 @@
 		"no-shift-selected": "You haven't selected any shift, do your schedule first",
 		"schedule-to-image": "Schedule converted into a image",
 		"schedule-to-excel": "Schedule and classes converted into a excel file",
+		"calendar-obtained": "Calendar downloaded to a file",
 		"cleared-schedule": "Schedule cleared with success",
 		"cannot-obtain-degrees": "It was not possible to obtain the degrees",
 		"cannot-obtain-courses": "It was not possible to obtain the courses of this degree",
 		"cannot-obtain-shifts": "It was not possible to obtain the shifts of this course"
 	},
 	"warning": {
-		"title": "Warnings: Shifts with different Degrees and Occupation Data",
+		"title": "Warnings: Calendar, Occupation and Shifts with different Degrees",
 		"content": [
-            "Some shifts from Fenix belong to degrees that do not correspond to the one selected, make sure that the class belongs to the degree that you are going to enrol using the functionality \"$t(schedule-selected.actions.get-classes)\".",
-            "The shift's occupation data is not obtained in real time, so whenever you want to know the real value you need to reload the page."
+			"The file of the calendar with the classes is not updated automatically, make sure to verify every now and then on Fenix if any class has changed.",
+            "The shift's occupation data is not obtained in real time, so whenever you want to know the real value you need to reload the page.",
+			"Some shifts from Fenix belong to degrees that do not correspond to the one selected, make sure that the class belongs to the degree that you are going to enrol using the functionality \"$t(schedule-selected.actions.get-classes)\"."
+			
         ],
 		"actions": {
 			"continue": "Continue",
@@ -111,6 +115,16 @@
 	},
 	"table": {
 		"weekdays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+	},
+	"calendar": {
+		"filename": "ist-schedule"
+	},
+	"classType": {
+		"T": "Theoretical",
+		"TP": "Theoretical and Practical",
+		"L": "Laboratory",
+		"PB": "Problems",
+		"S": "Seminars"
 	},
 	"language": {
 		"english": "English",

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Allow download of calendar with the selected shifts
+
 ### Fixed
 
 - React-scripts (immer) vulnerability

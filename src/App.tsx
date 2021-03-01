@@ -12,6 +12,7 @@ import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } fr
 import Degree from './domain/Degree'
 
 import saveToExcel from './utils/excel'
+import getCalendar from './utils/calendar-generator'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -35,7 +36,6 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
-import { exportComponentAsPNG } from 'react-component-export-image'
 import downloadAsImage from './utils/save-as-image'
 import Snackbar from '@material-ui/core/Snackbar'
 import Link from '@material-ui/core/Link'
@@ -135,11 +135,11 @@ class App extends React.Component <{
 			loading: false
 		})
 
-		// Set warning of shifts with degrees that aren't the ones selected
-		const isWarned = this.cookies.get('warning-shift-degrees')
+		// Set warning with all notices
+		const isWarned = this.cookies.get('warning')
 		if (isWarned !== 'true') {
 			this.setWarningShiftDegrees()
-			this.cookies.set('warning-shift-degrees', 'true', { maxAge: 60*60*24 })
+			this.cookies.set('warning', 'true', { maxAge: 60*60*24 })
 		}
 	}
 
@@ -519,6 +519,12 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
 	}
 
+	downloadCalendar(): void {
+		getCalendar(this.state.selectedShifts)
+
+		this.showAlert(i18next.t('alert.calendar-obtained'), 'success')
+	}
+
 	render(): ReactNode {
 		const classes = this.props.classes
 
@@ -669,6 +675,16 @@ class App extends React.Component <{
 													component="span"
 												>
 													<Icon>download</Icon>
+												</IconButton>
+											</Tooltip>
+											<Tooltip title={i18next.t('schedule-selected.actions.get-calendar') as string}>
+												<IconButton
+													disabled={this.state.selectedShifts.length === 0}
+													color='inherit'
+													onClick={() => {this.downloadCalendar()}}
+													component="span"
+												>
+													<Icon>event</Icon>
 												</IconButton>
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
