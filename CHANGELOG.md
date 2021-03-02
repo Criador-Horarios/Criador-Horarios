@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Add temporary favicon.ico
+
 ## [1.5.0] - 02/03/2021
 
 ### Added
