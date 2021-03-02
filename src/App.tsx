@@ -75,6 +75,7 @@ class App extends React.Component <{
 		hasAlert: false as boolean,
 		classesDialog: false,
 		warningDialog: false,
+		changelogDialog: false,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false
@@ -714,6 +715,14 @@ class App extends React.Component <{
 										</Button>
 									</Link>
 								</Tooltip>
+								<Tooltip title={i18next.t('footer.changelog-button.tooltip') as string} style={{marginLeft: '8px'}}>
+									<Button color='default' variant='outlined'
+										startIcon={<Icon>new_releases</Icon>}
+										size='small'
+										onClick={() => {this.setState({changelogDialog: true})}}
+									>{i18next.t('footer.changelog-button.content') as string}
+									</Button>
+								</Tooltip>
 								<div className={classes.grow as string} />
 								<Tooltip title={i18next.t('footer.repository.tooltip') as string}>
 									<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">
@@ -767,7 +776,15 @@ class App extends React.Component <{
 								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
 								{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
 							</DialogActions>
-						</Dialog>				
+						</Dialog>	
+						<Dialog open={this.state.changelogDialog}>
+							<DialogTitle>{i18next.t('changelog-dialog.title') as string}</DialogTitle>
+							<DialogContent style={{whiteSpace: 'pre-line'}}>{(i18next.t('changelog-dialog.content', {returnObjects: true}) as string[]).join('\n\n')}</DialogContent>
+							<DialogActions>
+								<div />
+								<Button onClick={() => {this.setState({changelogDialog: false})}} color="primary">{i18next.t('changelog-dialog.actions.back') as string}</Button>
+							</DialogActions>
+						</Dialog>			
 					</div>
 				</div>
 			</ThemeProvider>

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Allow download of calendar with the selected shifts
+- Add dialog with changelog
 
 ### Fixed
 

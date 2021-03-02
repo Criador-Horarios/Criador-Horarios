@@ -41,6 +41,17 @@
 			"close-button": "Voltar"
 		}
 	},
+	"changelog-dialog": {
+		"title": "Novidades",
+		"content": [
+			"- Download de um ficheiro iCalendar com as aulas",
+			"- Dados da ocupação dos turnos (não atualizados automaticamente)",
+			"- CTRL+Clique num turno para aceder à página da cadeira"
+		],
+		"actions": {
+			"back": "Voltar"
+		}
+	},
 	"schedule": {
 		"shift": {
 			"occupation": "Ocupação",
@@ -69,6 +80,10 @@
 		"support-button": {
 			"content": "Apoiar",
 			"tooltip": "Ajudar na manutenção do website"
+		},
+		"changelog-button": {
+			"content": "Novidades",
+			"tooltip": "Novidades do website"
 		},
 		"repository": {
 			"tooltip": "Ver código fonte"

@@ -42,6 +42,17 @@
 			"close-button": "Back"
 		}
 	},
+	"changelog-dialog": {
+		"title": "Changelog",
+		"content": [
+			"- Download of calendar with the selected shifts",
+			"- Occupation of the shift (not updated automatically)",
+			"- CTRL+Click on a shift to access course page"
+		],
+		"actions": {
+			"back": "Back"
+		}
+	},
 	"schedule": {
 		"shift": {
 			"occupation": "Occupation",
@@ -70,6 +81,10 @@
 		"support-button": {
 			"content": "Support",
 			"tooltip": "Help maintain the website"
+		},
+		"changelog-button": {
+			"content": "Changelog",
+			"tooltip": "Website changelog"
 		},
 		"repository": {
 			"tooltip": "See the source code"
