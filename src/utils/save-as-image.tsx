@@ -115,7 +115,6 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 		// Possible hours: 'hour:00:00' or 'hour:30:00'
 		const possibleHours = [String(hour).padStart(2, '0') + ':00:00', String(hour).padStart(2, '0') + ':30:00']
 
-		const currHour = possibleHours[0]
 		possibleHours.forEach( (currHour, i) => {
 			body += '<tr>'
 			cols.forEach( (dayOfWeek) => {
@@ -163,8 +162,9 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 }
 
 function setOccupied(startTime: string, dayOfWeek: number, duration: number, intervalUnit: number, colspan: number, acc: Record<string, number[]>): Record<string, number[]> {
-	const times = Array.from({length: duration / intervalUnit}, (v,k) => addTime(startTime, k * intervalUnit))
-	const adder = Array.from({length: colspan}, (v,k) => dayOfWeek)
+	// eslint-disable-next-line
+	const times = Array.from({length: duration / intervalUnit}, (v, k) => addTime(startTime, k * intervalUnit))
+	const adder = Array.from({length: colspan}, () => dayOfWeek)
 	times.forEach(time => {
 		if (acc[time]) {
 			acc[time] = acc[time].concat(adder)

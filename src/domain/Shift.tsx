@@ -33,6 +33,7 @@ export default class Shift implements Comparable {
 	shiftId: string
 	courseName: string
 	lessons: Lesson[]
+	allLessons: Lesson[]
 	color: string
 	campus = ''
 	occupation: ShiftOccupation
@@ -76,6 +77,7 @@ export default class Shift implements Comparable {
 				color: this.color,
 				start: l.start.split(' ')[1],
 				end: l.end.split(' ')[1],
+				date: l.start.split(' ')[0],
 				// Replacing space to T to allow parsing on SAFARI
 				dayOfWeek:  new Date(l.start.replace(' ', 'T')).getDay(),
 				room: l.room?.name,
@@ -85,9 +87,12 @@ export default class Shift implements Comparable {
 				id: this.name,
 				occupation: this.occupation,
 				type: this.type,
-				url: this.url
+				url: this.url,
+				courseName: course.name
 			})
 		})
+
+		this.allLessons = lessons
 		this.lessons = Comparables.toUnique(lessons) as Lesson[]
 	}
 

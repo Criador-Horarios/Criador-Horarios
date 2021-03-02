@@ -16,7 +16,7 @@ class Schedule extends React.PureComponent <{
 	lang: string
 	darkMode: boolean
 }, unknown>{
-	renderEventContent(eventInfo: {event: EventApi}) {
+	renderEventContent(eventInfo: {event: EventApi}): JSX.Element {
 		const occupation = Object.values(eventInfo.event.extendedProps.occupation as ShiftOccupation)
 		const percentage = occupation[0]/occupation[1] * 100 || 0
 		return (

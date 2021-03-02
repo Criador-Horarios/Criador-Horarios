@@ -11,8 +11,8 @@ export default async function (shifts: Shift[]): Promise<Record<string, string>>
 	await Promise.all(courseUrls
 		.map(courseId => API.getCourse(courseId)
 			.then(async c => {
-				if (!shiftPage[courseId]) {
-					const url = c!.url.replace(prefix, '') + '/turnos'
+				if (!shiftPage[courseId] && c !== null) {
+					const url = c.url.replace(prefix, '') + '/turnos'
 					let page = null
 					try {
 						page = await API.getPage(url)

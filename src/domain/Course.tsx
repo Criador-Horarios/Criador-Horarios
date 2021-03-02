@@ -144,7 +144,7 @@ function getCourseAcronym(acronym: string, name: string): string {
 	return newAcronym
 }
 
-export const trimTrailingNumbers = (id: string) => {
+export const trimTrailingNumbers = (id: string): string => {
 	let i: number
 	for (i = id.length-1; i >= 0; i--) {
 		if (!(id[i] >= '0' && id[i] <= '9')) {
