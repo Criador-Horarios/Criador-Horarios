@@ -1,7 +1,7 @@
 # Criador de Horários
 
 <p align="center">
-  <a href="https://github.com/joaocmd/Criador-Horarios/commits/master" target="_blank">
+  <a href="https://github.com/joaocmd/Criador-Horarios/commits/develop" target="_blank">
     <img src="https://img.shields.io/github/last-commit/joaocmd/Criador-Horarios" alt="GitHub last commit">
   </a>
 
