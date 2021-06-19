@@ -103,7 +103,8 @@ export default class Course implements Comparable {
 	}
 
 	searchableName(): string {
-		return this.abbrev + this.name + this.acronym
+		return this.abbrev + this.name + this.acronym +
+			(this.showDegree ? this.degreeAcronym : '') // Add degree to be able to only show by degree
 	}
 
 	displayName() : string {

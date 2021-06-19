@@ -287,7 +287,7 @@ function setOuterBorders(sheet: ExcelJS.Worksheet, lastColumn: number): ExcelJS.
 
 function getLessonsByDay(shifts: Shift[]): Record<number, Record<string, Lesson[]>> {
 	const res: Record<number, Record<string, Lesson[]>> = {}
-	shifts.map(s => {
+	shifts.forEach(s => {
 		s.lessons.forEach(l => {
 			const hour = l.startTime
 

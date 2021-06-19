@@ -53,7 +53,7 @@ class TopBar extends React.Component <{
 		warningDialog: false,
 		languageAnchor: null
 	}
-	selectedDegree: Degree | null = null
+	selectedDegrees: Degree[] = []
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -74,13 +74,18 @@ class TopBar extends React.Component <{
 		}
 	}
 
-	async onSelectedDegree(degree: Degree | null): Promise<void> {
-		this.selectedDegree = degree
-		if (degree !== null) {
-			const degreeCourses = await API.getCourses(degree) 
-			if (degreeCourses === null) {
-				this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
-				return
+	async onSelectedDegree(degrees: Degree[]): Promise<void> {
+		this.selectedDegrees = degrees
+		if (degrees.length > 0) {
+			let degreeCourses: Course[] = []
+			for (const degree of degrees) {
+				const tempCourses = await API.getCourses(degree) 
+				if (tempCourses === null) {
+					// TODO: Test when this cannot be obtained
+					this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
+					return
+				}
+				degreeCourses = degreeCourses.concat(tempCourses)
 			}
 			const selected = this.state.selectedCourses.courses
 			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
@@ -124,7 +129,7 @@ class TopBar extends React.Component <{
 		}
 
 		this.onSelectedCourse([])
-		this.onSelectedDegree(this.selectedDegree)
+		this.onSelectedDegree(this.selectedDegrees)
 		this.props.onClearShifts(false)
 		this.setState({
 			selectedAcademicTerm: s
@@ -153,7 +158,7 @@ class TopBar extends React.Component <{
 			degrees: degrees ?? []
 		})
 
-		this.selectedDegree = null
+		this.selectedDegrees = []
 		this.onSelectedCourse([])
 	}
 
@@ -176,10 +181,11 @@ class TopBar extends React.Component <{
 				>
 					<Toolbar className={styles.ToolBar}>
 						<Autocomplete
-							value={this.selectedDegree}
+							value={this.selectedDegrees}
 							color="inherit"
 							size="small"
 							className={styles.degreeSelector}
+							multiple
 							selectOnFocus
 							clearOnBlur
 							handleHomeEndKeys={false}
@@ -188,6 +194,14 @@ class TopBar extends React.Component <{
 							options={this.state.degrees}
 							getOptionLabel={(option) => option.displayName()}
 							renderInput={(params) => <TextField {...params} label={i18next.t('degree-selector.title') as string} variant="outlined" />}
+							renderTags={(tagValue, getTagProps) => {
+								// TODO: Fix chip color
+								return tagValue.map((option, index) => (
+									<Tooltip title={option.displayName()} key={option.hashString()}>
+										<Chip {...getTagProps({ index })} size="small" color='secondary' label={option.acronym} />
+									</Tooltip>
+								))
+							}}
 						/>
 						<Autocomplete
 							value={this.state.selectedCourses.courses}
@@ -207,7 +221,11 @@ class TopBar extends React.Component <{
 									this.state.selectedCourses.courses.length === maxSelectedCourses
 							}}
 							noOptionsText={i18next.t('course-selector.noOptions') as string}
-							getOptionLabel={(option) => option.displayName()}
+							getOptionLabel={(option) => {
+								// Make course show degree when multiple are chosen
+								option.showDegree = this.selectedDegrees.length > 1
+								return option.displayName()
+							}}
 							renderInput={(params) => <TextField  {...params} label={i18next.t('course-selector.title') as string} variant="outlined" />}
 							renderTags={(tagValue, getTagProps) => {
 								return tagValue.map((option, index) => (
