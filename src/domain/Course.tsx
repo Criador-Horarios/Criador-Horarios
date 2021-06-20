@@ -107,7 +107,7 @@ export default class Course implements Comparable {
 			(this.showDegree ? this.degreeAcronym : '') // Add degree to be able to only show by degree
 	}
 
-	displayName() : string {
+	displayName(): string {
 		let display = this.name
 		if (this.showDegree) {
 			if (this.degreeAcronym !== '') {
@@ -117,6 +117,21 @@ export default class Course implements Comparable {
 			}
 		}
 		return display
+	}
+
+	updateDegree(degreesAcronyms: string[]): void {
+		if (this.degreeAcronym.length === 0 || degreesAcronyms.length === 0) {
+			// How did this happen???
+		} else {
+			if (degreesAcronyms.length > 1) {
+				this.showDegree = true
+			}
+			// Filter out unselected degrees when coming from previous sessions
+			const possibleDegrees = this.degreeAcronym.split('/').filter((a) => degreesAcronyms.includes(a))
+			if (possibleDegrees.length > 0) { // Only change if has a possible degree
+				this.degreeAcronym = possibleDegrees.join('/')
+			}
+		}
 	}
 }
 

@@ -55,6 +55,8 @@ class TopBar extends React.Component <{
 		languageAnchor: null
 	}
 	selectedDegrees: Degree[] = []
+	tempSelectedDegrees: string[] = []
+	hasPreviousDegrees = false
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -73,6 +75,10 @@ class TopBar extends React.Component <{
 		if (degrees === null) {
 			this.props.showAlert(i18next.t('alert.cannot-obtain-degrees'), 'error')
 		}
+		if (this.tempSelectedDegrees.length > 0) {
+			this.setSelectedDegrees(this.tempSelectedDegrees)
+			this.tempSelectedDegrees = []
+		}
 	}
 
 	async onSelectedDegree(degrees: Degree[]): Promise<void> {
@@ -90,6 +96,12 @@ class TopBar extends React.Component <{
 			}
 			const selected = this.state.selectedCourses.courses
 			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
+
+			if (this.hasPreviousDegrees) {
+				// If degrees were loaded, update courses to have the right degree
+				availableCourses.forEach((c) => c.updateDegree(this.selectedDegrees.map(d => d.acronym)))
+				this.hasPreviousDegrees = false
+			}
 			this.setState({
 				availableCourses: availableCourses.sort(Course.compare)
 			})
@@ -110,6 +122,17 @@ class TopBar extends React.Component <{
 	//FIXME: Available courses not updating when a course from another degree is removed 
 	private async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		this.props.onSelectedCourse(selectedCourses)
+	}
+
+	setSelectedDegrees(selectedDegreesAcronyms: string[]): void {
+		// Store temporarily the degrees for the degrees to be loaded
+		if (this.state.degrees.length === 0) {
+			this.hasPreviousDegrees = true
+			this.tempSelectedDegrees = selectedDegreesAcronyms
+		} else { // When degrees are loaded, select them
+			this.selectedDegrees = this.state.degrees.filter( (d) => selectedDegreesAcronyms.includes(d.acronym))
+			this.onSelectedDegree(this.selectedDegrees)
+		}
 	}
 
 	setSelectedCourses(selectedCourses: CourseUpdates): void {

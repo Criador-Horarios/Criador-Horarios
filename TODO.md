@@ -28,6 +28,6 @@
 - [X] Add calendar file with shifts
 - [X] Allow selection of multiple degrees to have all the courses in the selection list
 - [ ] Algorithm for minimum classes for enrolments
-- [ ] Fetch courses of selected shifts when coming from cookies
+- [X] Fetch degrees of selected courses and shifts when coming from cookies
 - [ ] Add 'real-time' shift occupation
 - [ ] Refactor methods to decrease complexity

@@ -78,7 +78,7 @@ async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Pr
 			allClasses[shift] = filteredClasses.join(', ')
 		})
 	}
-	console.log(allClasses)
+	
 	return allClasses
 }
 

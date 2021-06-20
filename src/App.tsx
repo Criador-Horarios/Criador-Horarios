@@ -1,10 +1,10 @@
 import React, { ReactNode } from 'react'
-import API, { defineCurrentTerm, staticData } from './utils/api'
+import API, { defineCurrentTerm } from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
 import Course from './domain/Course'
-import Shift, { ShiftType, shortenDescriptions } from './domain/Shift'
+import Shift, { getDegreesAcronyms, ShiftType, shortenDescriptions } from './domain/Shift'
 import Lesson from './domain/Lesson'
 import { Comparables } from './domain/Comparable'
 import Schedule from './components/Schedule/Schedule'
@@ -131,7 +131,7 @@ class App extends React.Component <{
 		await defineCurrentTerm()
 
 		const params = API.getUrlParams()
-		await this.buildState(params.s)
+		await this.buildState(params.s, params.d)
 
 		this.setState({
 			loading: false
@@ -232,9 +232,12 @@ class App extends React.Component <{
 		this.topBar.current?.setHasSelectedShifts(shifts)
 		if (shifts.length === 0) {
 			this.cookies.remove('s')
+			this.cookies.remove('d')
 		} else {
 			const state = shortenDescriptions(shifts)
 			this.cookies.set('s', state, { maxAge: 60*60*24*31*3 })
+			const degrees = getDegreesAcronyms(shifts)
+			this.cookies.set('d', degrees, { maxAge: 60*60*24*31*3 })
 		}
 	}
 
@@ -349,7 +352,9 @@ class App extends React.Component <{
 
 	async getLink(): Promise<void> {
 		const state = shortenDescriptions(this.state.selectedShifts)
-		const shortLink = await API.getShortUrl(state)
+		const degrees = getDegreesAcronyms(this.state.selectedShifts)
+		const params = [`s=${state}`, `d=${degrees}`]
+		const shortLink = await API.getShortUrl(params)
 		const el = document.createElement('textarea')
 		el.value = shortLink
 		el.setAttribute('readonly', '')
@@ -366,8 +371,10 @@ class App extends React.Component <{
 		const title: string = document.title
 		let path = API.PATH_PREFIX + '/'
 		const state = shortenDescriptions(this.state.selectedShifts)
+		const degrees = getDegreesAcronyms(this.state.selectedShifts)
 		if (state !== '' && toState) {
 			path += `?s=${state}`
+			path += `&d=${degrees}`
 		}
 
 		if (window.history.replaceState) {
@@ -404,40 +411,53 @@ class App extends React.Component <{
 		return { course, availableShifts, selectedShifts }
 	}
 
-	async buildState(param: string | undefined): Promise<void> {
-		param = param ?? this.cookies.get('s')
-		if (!param) {
-			return
+	async buildState(paramShift: string | undefined, paramDegree: string | undefined): Promise<void> {
+
+		// Build degree
+		paramDegree = paramDegree ?? this.cookies.get('d')
+		if (paramDegree) {
+			try {
+				const degreeAcronyms = paramDegree.split(';')
+				this.topBar.current?.setSelectedDegrees(degreeAcronyms)
+			} catch (err) {
+				console.error(err)
+				// ignored, bad URL/cookie state
+			}
 		}
 
-		try {
-			const shifts = param.split(';')
-				.map((shift: string) => shift.split('~'))
 
-			const courseUpdates = new CourseUpdates()
-			const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
-			// eslint-disable-next-line
-			const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
-				acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
-				acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
-				return acc
-			}, { availableShifts: [], selectedShifts: [] })
+		// Build shifts
+		paramShift = paramShift ?? this.cookies.get('s')
+		if (paramShift) {
+			try {
+				const shifts = paramShift.split(';')
+					.map((shift: string) => shift.split('~'))
 
-			this.topBar.current?.setSelectedCourses(courseUpdates)
-			this.setState({
-				...state,
-				selectedCourses: courseUpdates,
-				shownShifts: this.filterShifts({
-					selectedCampi: this.state.selectedCampi,
-					selectedShiftTypes: this.state.selectedShiftTypes,
-					availableShifts: state.availableShifts
+				const courseUpdates = new CourseUpdates()
+				const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
+				// eslint-disable-next-line
+				const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
+					acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
+					acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
+					return acc
+				}, { availableShifts: [], selectedShifts: [] })
+
+				this.topBar.current?.setSelectedCourses(courseUpdates)
+				this.setState({
+					...state,
+					selectedCourses: courseUpdates,
+					shownShifts: this.filterShifts({
+						selectedCampi: this.state.selectedCampi,
+						selectedShiftTypes: this.state.selectedShiftTypes,
+						availableShifts: state.availableShifts
+					})
 				})
-			})
-			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-			this.changeUrl(false)
-		} catch (err) {
-			console.error(err)
-			// ignored, bad URL
+				this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
+				this.changeUrl(false)
+			} catch (err) {
+				console.error(err)
+				// ignored, bad URL/cookie state
+			}
 		}
 	}
 
@@ -491,10 +511,10 @@ class App extends React.Component <{
 
 	async getClasses(): Promise<void> {
 		this.setState({loading: true})
-		const classes = await getClasses(this.state.selectedShifts)
+		// const classes = await getClasses(this.state.selectedShifts)
 		const minimalClasses = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
-		const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
-		// const value = Object.entries(minimalClasses) // TODO: Use this when implemented
+		// const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
+		const value = Object.entries(minimalClasses)
 
 		this.classes = value
 		this.setState({classesDialog: true, loading: false})

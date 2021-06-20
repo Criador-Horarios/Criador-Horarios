@@ -43,7 +43,7 @@ export default class API {
 	public static getUrlParams(): Record<string, string> {
 		const params = window.location.href.slice(API.PREFIX.length)
 		if (params.startsWith('?')) {
-			const re = /(&|\?)([A-Za-z]\w*)=(.*)(&|$)/g
+			const re = /(\?|&)([^=]+)=([^&]+)/g
 			const matches = params.matchAll(re)
 			return Array.from(matches).reduce((acc: Record<string, string>, match) => {
 				acc[match[2]] = match[3]
@@ -131,8 +131,8 @@ export default class API {
 			.map((s) => new AcademicTerm(s as string))
 	}
 
-	public static async getShortUrl(state: string): Promise<string> {
-		return `${API.PREFIX}?s=${state}`
+	public static async getShortUrl(params: string[]): Promise<string> {
+		return `${API.PREFIX}?${params.join('&')}`
 	}
 
 	public static async getPage(url: string): Promise<string | null> {
