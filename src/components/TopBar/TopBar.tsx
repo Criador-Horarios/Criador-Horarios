@@ -36,6 +36,7 @@ import Avatar from '@material-ui/core/Avatar'
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
+	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
 	onClearShifts: (alert: boolean) => void
 	onGetLink: () => void
 	onChangeLanguage: (language: string) => void
@@ -97,6 +98,7 @@ class TopBar extends React.Component <{
 				availableCourses: this.state.selectedCourses.courses
 			})
 		}
+		this.props.onSelectedDegree(this.selectedDegrees)
 	}
 
 	setHasSelectedShifts(shifts: Shift[]): void {

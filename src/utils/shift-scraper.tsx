@@ -2,10 +2,11 @@ import Shift from '../domain/Shift'
 import API from './api'
 import cheerio from 'cheerio'
 import i18next from 'i18next'
+import Degree from '../domain/Degree'
 
 const prefix = 'https://fenix.tecnico.ulisboa.pt'
 
-export default async function (shifts: Shift[]): Promise<Record<string, string>> {
+export default async function getClasses(shifts: Shift[]): Promise<Record<string, string>> {
 	const shiftPage: Record<string, string> = {}
 	const courseUrls = Array.from(new Set(shifts.map(shift => shift.courseId)))
 	await Promise.all(courseUrls
@@ -52,3 +53,33 @@ export default async function (shifts: Shift[]): Promise<Record<string, string>>
 	})
 	return res
 }
+
+async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Promise<Record<string, string>> {
+	const allClasses = await getClasses(shifts)
+
+	// Filter all shifts that are from degrees not selected
+	if (selectedDegrees.length > 0) { // If no selected Degrees, ignore this step
+		const re = /([a-zA-Z-]+)[0-9]+$/
+		const degreeAcronyms = selectedDegrees.map(d => d.acronym)
+
+		Object.keys(allClasses).forEach((shift) => {
+			const filteredClasses: string[] = []
+			allClasses[shift].split(', ').forEach( (c) => {
+				const match = c.match(re)
+				if (match === null) {
+					throw 'Unexpected class name'
+				}
+
+				const currDegree = match[1]
+				if (degreeAcronyms.indexOf(currDegree) != -1) {
+					filteredClasses.push(c)
+				}
+			})
+			allClasses[shift] = filteredClasses.join(', ')
+		})
+	}
+	console.log(allClasses)
+	return allClasses
+}
+
+export { getMinimalClasses }

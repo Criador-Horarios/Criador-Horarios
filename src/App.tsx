@@ -47,7 +47,7 @@ import { faPaypal } from '@fortawesome/free-brands-svg-icons'
 import Cookies from 'universal-cookie'
 import CardHeader from '@material-ui/core/CardHeader'
 
-import getClasses from './utils/shift-scraper'
+import getClasses, { getMinimalClasses } from './utils/shift-scraper'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
@@ -81,7 +81,7 @@ class App extends React.Component <{
 		darkMode: false
 	}
 	cookies = new Cookies()
-	selectedDegree: Degree | null = null
+	selectedDegrees: Degree[] = []
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 	theme: Theme
@@ -93,6 +93,7 @@ class App extends React.Component <{
 	// eslint-disable-next-line
 	constructor(props: any) {
 		super(props)
+		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
@@ -144,11 +145,15 @@ class App extends React.Component <{
 		}
 	}
 
+	async onSelectedDegree(selectedDegree: Degree[]): Promise<void> {
+		this.selectedDegrees = selectedDegree
+	}
+
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		if (selectedCourses.length === 0) {
 			const currCourses = this.state.selectedCourses as CourseUpdates
 			currCourses.removeAllCourses()
-			if (this.selectedDegree === null) {
+			if (this.selectedDegrees === []) {
 				this.setState({
 					availableCourses: [],
 					selectedCourses: currCourses,
@@ -487,7 +492,9 @@ class App extends React.Component <{
 	async getClasses(): Promise<void> {
 		this.setState({loading: true})
 		const classes = await getClasses(this.state.selectedShifts)
+		const minimalClasses = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
 		const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
+		// const value = Object.entries(minimalClasses) // TODO: Use this when implemented
 
 		this.classes = value
 		this.setState({classesDialog: true, loading: false})
@@ -552,6 +559,7 @@ class App extends React.Component <{
 					<TopBar
 						ref={this.topBar}
 						onSelectedCourse={this.onSelectedCourse}
+						onSelectedDegree={this.onSelectedDegree}
 						onClearShifts={this.clearSelectedShifts}
 						onGetLink={this.getLink}
 						showAlert={this.showAlert}
