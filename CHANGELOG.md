@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Add temporary favicon.ico
+- When unselecting a course that has one or more shifts selected and then selecting again, the chips do not mark as selected the corresponding shifts
 
 ## [1.5.0] - 02/03/2021
 
