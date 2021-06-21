@@ -38,6 +38,8 @@
 	},
 	"classes-dialog": {
 		"title": "Classes for Enrolment",
+		"minimal-classes": "Minimum Set of Classes",
+		"no-class": "No classes available for the chosen degrees",
 		"actions": {
 			"close-button": "Back"
 		}

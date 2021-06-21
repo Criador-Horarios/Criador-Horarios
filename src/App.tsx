@@ -52,6 +52,7 @@ import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
+import Box from '@material-ui/core/Box'
 
 type BuiltCourse = {
 	course: Course,
@@ -85,7 +86,8 @@ class App extends React.Component <{
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 	theme: Theme
-	classes: [string, string][] = []
+	classesByShift: [string, string][] = []
+	minimalClasses: string[] = []
 	warningTitle = ''
 	warningContent = ''
 	warningContinue: () => void = () => {return}
@@ -512,16 +514,17 @@ class App extends React.Component <{
 	async getClasses(): Promise<void> {
 		this.setState({loading: true})
 		// const classes = await getClasses(this.state.selectedShifts)
-		const minimalClasses = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
+		const [classesByShift, minimalClasses] = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
 		// const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
-		const value = Object.entries(minimalClasses)
+		const value = Object.entries(classesByShift)
 
-		this.classes = value
+		this.classesByShift = value
+		this.minimalClasses = minimalClasses
 		this.setState({classesDialog: true, loading: false})
 
 		// TODO: download to a file
 		// const el = document.createElement('a')
-		// const file = new Blob([value], {type: 'text/plain;charset=utf-8'})
+		// const file = new Blob([classesByShift], {type: 'text/plain;charset=utf-8'})
 		// el.href = URL.createObjectURL(file)
 		// el.download = 'ist-turmas.txt'
 		// document.body.appendChild(el)
@@ -779,16 +782,22 @@ class App extends React.Component <{
 					<div className="dialogs">
 						<Dialog open={this.state.classesDialog}>
 							<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>
-							<DialogContent className={classes.contentCopyable as string}>{this.classes.map(c => {
-								return (
-									<div key={c[0]}>
-										<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
-										<Typography key={'class-' + c[0]} variant='body1'
-											style={{marginLeft: '8px'}}
-										>{c[1]}</Typography>
-									</div>
-								)
-							})}</DialogContent>
+							<DialogContent className={classes.contentCopyable as string}>
+								<Box>{
+									this.classesByShift.map(c => {
+										return (
+											<div key={c[0]}>
+												<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
+												<Typography key={'class-' + c[0]} variant='body1'
+													style={{marginLeft: '8px'}}
+												>{c[1]}</Typography>
+											</div>
+										)})
+								}
+								</Box>
+								<br/>
+								<Typography variant='h6'>{i18next.t('classes-dialog.minimal-classes')}: {this.minimalClasses.join(', ')}</Typography>
+							</DialogContent>
 							<DialogActions>
 								<div />
 								<Button onClick={() => {this.setState({classesDialog: false})}} color="primary">

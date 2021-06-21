@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Allow selection of multiple degrees to have all the courses in the selection list
 - Allow storing degrees in cookies and urls for sharing and showing proper classes
+- Add minimal classes functionality when getting the classes
 
 ### Fixed
 

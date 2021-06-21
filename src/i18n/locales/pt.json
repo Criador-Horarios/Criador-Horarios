@@ -37,6 +37,8 @@
 	},
 	"classes-dialog": {
 		"title": "Turmas para as Inscrições",
+		"minimal-classes": "Conjunto mínimo de turmas",
+		"no-class": "Não há turmas disponíveis para os cursos selecionados",
 		"actions": {
 			"close-button": "Voltar"
 		}

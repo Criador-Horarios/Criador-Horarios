@@ -32,6 +32,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [ ] ~~Courses from another degree are not removed from courses list when a different degree is selected~~
 - [X] When a shift is selected, if the course is unselected and selected again, it may have a different color
 - [x] There were no 'Teórico-Práticas' type of shifts
+- [ ] When removing a course (while a shift is selected) and adding again, the chip in the timetable does not recognize the shifts selected
 
 ## Suggestions
 

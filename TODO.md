@@ -27,7 +27,8 @@
 - [X] Define semester and current year automatically
 - [X] Add calendar file with shifts
 - [X] Allow selection of multiple degrees to have all the courses in the selection list
-- [ ] Algorithm for minimum classes for enrolments
+- [X] Algorithm for minimum classes for enrolments
+- [ ] Watch out for a possible problem with the degree acronyms
 - [X] Fetch degrees of selected courses and shifts when coming from cookies
 - [ ] Add 'real-time' shift occupation
 - [ ] Refactor methods to decrease complexity

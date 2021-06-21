@@ -54,9 +54,10 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 	return res
 }
 
-async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Promise<Record<string, string>> {
+async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Promise<[Record<string, string>, string[]]> {
 	const allClasses = await getClasses(shifts)
-
+	const currClasses: Record<string, string[]> = {}
+	
 	// Filter all shifts that are from degrees not selected
 	if (selectedDegrees.length > 0) { // If no selected Degrees, ignore this step
 		const re = /([a-zA-Z-]+)[0-9]+$/
@@ -75,11 +76,88 @@ async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Pr
 					filteredClasses.push(c)
 				}
 			})
-			allClasses[shift] = filteredClasses.join(', ')
+			currClasses[shift] = filteredClasses
 		})
 	}
+
+	// Find minimal set of classes
+	const minimalClasses = findMinimalSetOfClasses(currClasses)
+
+	// Format for showing
+	const res: Record<string, string> = {}
+	Object.keys(currClasses).forEach((shift) => {
+		let shownClasses = currClasses[shift].join(', ')
+		if (shownClasses == '') {
+			shownClasses = i18next.t('classes-dialog.no-class')
+		}
+		res[shift] = shownClasses
+	})
+
+	return [res, minimalClasses]
+}
+
+// TODO: Decrease complexity
+function findMinimalSetOfClasses(allClassesByShift: Record<string, string[]>): string[] {
+	// Start the final set
+	let nTotalShifts = 0
+
+	// Gets all classes sorted by the most amount of shifts
+	const classByNShifts: Record<string, string[]> = {}
+	Object.entries(allClassesByShift).forEach((shift) => {
+		nTotalShifts += shift[1].length > 0 ? 1 : 0
+		shift[1].forEach((c) => {
+			if (Object.keys(classByNShifts).includes(c)) {
+				classByNShifts[c].push(shift[0])
+			} else {
+				classByNShifts[c] = [shift[0]]
+			}
+		})
+	})
+
+	let tempClassByNShifts = classByNShifts
+	let nTakenShifts = 0
+	let takenShifts: string[] = [] // TODO: Move to a set?
+	const takenClasses: string[] = [] // TODO: Move to a set?
+
+	// While to get a class each loop until every shift is taken
+	while (nTakenShifts < nTotalShifts) {
+		if (nTakenShifts != 0) {
+			// Calculate the new shifts without the chosen ones
+			tempClassByNShifts = {}
+			Object.entries(allClassesByShift).forEach((shift) => {
+				if (takenShifts.includes(shift[0])) {
+					return
+				}
+
+				shift[1].forEach((c) => {
+					if (takenClasses.includes(c)) { // Ignore chosen classes
+						return
+					}
+					else if (Object.keys(tempClassByNShifts).includes(c)) {
+						tempClassByNShifts[c].push(shift[0])
+					} else {
+						tempClassByNShifts[c] = [shift[0]]
+					}
+				})
+			})
+		}
+
+		// Get array of the classes sorted by number of shifts
+		const arrClassesSorted = Object.keys(tempClassByNShifts)
+			.map((v) => {
+				return [v, tempClassByNShifts[v].length] as [string, number]
+			})
+			.sort((a,b) => b[1] - a[1]) // Decreasing order
+
+		// Choose one and add it to the set
+		const chosenClass = arrClassesSorted[0]
+		nTakenShifts += chosenClass[1]
+		takenShifts = takenShifts.concat(tempClassByNShifts[chosenClass[0]])
+		takenClasses.push(chosenClass[0])
+	}
 	
-	return allClasses
+	takenClasses.sort((a, b) => a.localeCompare(b))
+	return takenClasses
 }
 
 export { getMinimalClasses }
