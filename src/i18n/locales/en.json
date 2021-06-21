@@ -47,6 +47,7 @@
 	"changelog-dialog": {
 		"title": "Changelog",
 		"content": [
+			"- When obtaining the classes, find the smallest set of classes possible",
 			"- Download of calendar with the selected shifts",
 			"- Occupation of the shift (not updated automatically)",
 			"- CTRL+Click on a shift to access course page"
