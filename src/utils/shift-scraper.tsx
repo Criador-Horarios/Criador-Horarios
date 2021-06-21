@@ -116,8 +116,8 @@ function findMinimalSetOfClasses(allClassesByShift: Record<string, string[]>): s
 
 	let tempClassByNShifts = classByNShifts
 	let nTakenShifts = 0
-	let takenShifts: string[] = [] // TODO: Move to a set?
-	const takenClasses: string[] = [] // TODO: Move to a set?
+	const takenShifts: Set<string> = new Set()
+	const takenClasses: Set<string> = new Set()
 
 	// While to get a class each loop until every shift is taken
 	while (nTakenShifts < nTotalShifts) {
@@ -125,12 +125,12 @@ function findMinimalSetOfClasses(allClassesByShift: Record<string, string[]>): s
 			// Calculate the new shifts without the chosen ones
 			tempClassByNShifts = {}
 			Object.entries(allClassesByShift).forEach((shift) => {
-				if (takenShifts.includes(shift[0])) {
+				if (takenShifts.has(shift[0])) {
 					return
 				}
 
 				shift[1].forEach((c) => {
-					if (takenClasses.includes(c)) { // Ignore chosen classes
+					if (takenClasses.has(c)) { // Ignore chosen classes
 						return
 					}
 					else if (Object.keys(tempClassByNShifts).includes(c)) {
@@ -152,12 +152,13 @@ function findMinimalSetOfClasses(allClassesByShift: Record<string, string[]>): s
 		// Choose one and add it to the set
 		const chosenClass = arrClassesSorted[0]
 		nTakenShifts += chosenClass[1]
-		takenShifts = takenShifts.concat(tempClassByNShifts[chosenClass[0]])
-		takenClasses.push(chosenClass[0])
+		tempClassByNShifts[chosenClass[0]].forEach(takenShifts.add, takenShifts)
+		takenClasses.add(chosenClass[0])
 	}
 	
-	takenClasses.sort((a, b) => a.localeCompare(b))
-	return takenClasses
+	const arrTakenClasses = Array.from(takenClasses)
+	arrTakenClasses.sort((a, b) => a.localeCompare(b))
+	return arrTakenClasses
 }
 
 export { getMinimalClasses }
