@@ -14,6 +14,10 @@ export default class Degree {
 		return this.acronym + ' - ' + this.name
 	}
 
+	hashString(): string {
+		return this.name + this.id
+	}
+
 	static compare(a: Degree, b: Degree): number {
 		return a.displayName().localeCompare(b.displayName())
 	}

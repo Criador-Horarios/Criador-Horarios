@@ -37,6 +37,8 @@
 	},
 	"classes-dialog": {
 		"title": "Turmas para as Inscrições",
+		"minimal-classes": "Conjunto mínimo de turmas",
+		"no-class": "Não há turmas disponíveis para os cursos selecionados",
 		"actions": {
 			"close-button": "Voltar"
 		}
@@ -44,6 +46,7 @@
 	"changelog-dialog": {
 		"title": "Novidades",
 		"content": [
+			"- Ao obter as turmas para as inscrições, encontra o menor conjunto de turmas possível",
 			"- Download de um ficheiro iCalendar com as aulas",
 			"- Dados da ocupação dos turnos (não atualizados automaticamente)",
 			"- CTRL+Clique num turno para aceder à página da cadeira"

@@ -21,10 +21,14 @@
 - [X] Add english version to schedule excel
 - [X] Webscrape classes for the selected shifts
 - [X] Use sheetjs to create excel files without warning
-- [ ] Algorithm for minimum classes for enrolments
 - [X] Increase contrast on selected and selected shifts on checklist
 - [X] Add button and dialog with functionality news
 - [X] Add warning telling that there maybe shifts from another degree that is not yours
 - [X] Define semester and current year automatically
-- [ ] Add 'real-time' shift occupation
 - [X] Add calendar file with shifts
+- [X] Allow selection of multiple degrees to have all the courses in the selection list
+- [X] Algorithm for minimum classes for enrolments
+- [ ] Watch out for a possible problem with the degree acronyms
+- [X] Fetch degrees of selected courses and shifts when coming from cookies
+- [ ] Add 'real-time' shift occupation
+- [ ] Refactor methods to decrease complexity

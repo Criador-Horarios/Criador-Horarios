@@ -38,6 +38,8 @@
 	},
 	"classes-dialog": {
 		"title": "Classes for Enrolment",
+		"minimal-classes": "Minimum Set of Classes",
+		"no-class": "No classes available for the chosen degrees",
 		"actions": {
 			"close-button": "Back"
 		}
@@ -45,6 +47,7 @@
 	"changelog-dialog": {
 		"title": "Changelog",
 		"content": [
+			"- When obtaining the classes, find the smallest set of classes possible",
 			"- Download of calendar with the selected shifts",
 			"- Occupation of the shift (not updated automatically)",
 			"- CTRL+Click on a shift to access course page"

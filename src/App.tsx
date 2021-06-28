@@ -1,10 +1,10 @@
 import React, { ReactNode } from 'react'
-import API, { defineCurrentTerm, staticData } from './utils/api'
+import API, { defineCurrentTerm } from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
 import Course from './domain/Course'
-import Shift, { ShiftType, shortenDescriptions } from './domain/Shift'
+import Shift, { getDegreesAcronyms, ShiftType, shortenDescriptions } from './domain/Shift'
 import Lesson from './domain/Lesson'
 import { Comparables } from './domain/Comparable'
 import Schedule from './components/Schedule/Schedule'
@@ -47,11 +47,12 @@ import { faPaypal } from '@fortawesome/free-brands-svg-icons'
 import Cookies from 'universal-cookie'
 import CardHeader from '@material-ui/core/CardHeader'
 
-import getClasses from './utils/shift-scraper'
+import getClasses, { getMinimalClasses } from './utils/shift-scraper'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
+import Box from '@material-ui/core/Box'
 
 type BuiltCourse = {
 	course: Course,
@@ -81,11 +82,12 @@ class App extends React.Component <{
 		darkMode: false
 	}
 	cookies = new Cookies()
-	selectedDegree: Degree | null = null
+	selectedDegrees: Degree[] = []
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 	theme: Theme
-	classes: [string, string][] = []
+	classesByShift: [string, string][] = []
+	minimalClasses: string[] = []
 	warningTitle = ''
 	warningContent = ''
 	warningContinue: () => void = () => {return}
@@ -93,6 +95,7 @@ class App extends React.Component <{
 	// eslint-disable-next-line
 	constructor(props: any) {
 		super(props)
+		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
@@ -130,7 +133,7 @@ class App extends React.Component <{
 		await defineCurrentTerm()
 
 		const params = API.getUrlParams()
-		await this.buildState(params.s)
+		await this.buildState(params.s, params.d)
 
 		this.setState({
 			loading: false
@@ -144,11 +147,15 @@ class App extends React.Component <{
 		}
 	}
 
+	async onSelectedDegree(selectedDegree: Degree[]): Promise<void> {
+		this.selectedDegrees = selectedDegree
+	}
+
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		if (selectedCourses.length === 0) {
 			const currCourses = this.state.selectedCourses as CourseUpdates
 			currCourses.removeAllCourses()
-			if (this.selectedDegree === null) {
+			if (this.selectedDegrees === []) {
 				this.setState({
 					availableCourses: [],
 					selectedCourses: currCourses,
@@ -227,9 +234,12 @@ class App extends React.Component <{
 		this.topBar.current?.setHasSelectedShifts(shifts)
 		if (shifts.length === 0) {
 			this.cookies.remove('s')
+			this.cookies.remove('d')
 		} else {
 			const state = shortenDescriptions(shifts)
 			this.cookies.set('s', state, { maxAge: 60*60*24*31*3 })
+			const degrees = getDegreesAcronyms(shifts)
+			this.cookies.set('d', degrees, { maxAge: 60*60*24*31*3 })
 		}
 	}
 
@@ -283,13 +293,15 @@ class App extends React.Component <{
 
 	getCoursesBySelectedShifts(): Course[] {
 		const finalCourses = [...this.state.selectedCourses.courses]
-		// let courses: Record<string, Course> = {}
+
 		this.state.selectedShifts.forEach( (s) => {
 			// FIXME: Includes? hmmmm
 			// finalCourses = Comparables.addToSet(finalCourses, s.course) as Record<string, Course>
 			if (!finalCourses.includes(s.course)) {
 				finalCourses.push(s.course)
 			}
+			// Update course shift types (if selected or not) when the course is added and there was already shifts selected
+			s.course.addSelectedShift(s)
 		})
 		return finalCourses.sort(Course.compare)
 	}
@@ -344,7 +356,9 @@ class App extends React.Component <{
 
 	async getLink(): Promise<void> {
 		const state = shortenDescriptions(this.state.selectedShifts)
-		const shortLink = await API.getShortUrl(state)
+		const degrees = getDegreesAcronyms(this.state.selectedShifts)
+		const params = [`s=${state}`, `d=${degrees}`]
+		const shortLink = await API.getShortUrl(params)
 		const el = document.createElement('textarea')
 		el.value = shortLink
 		el.setAttribute('readonly', '')
@@ -361,8 +375,10 @@ class App extends React.Component <{
 		const title: string = document.title
 		let path = API.PATH_PREFIX + '/'
 		const state = shortenDescriptions(this.state.selectedShifts)
+		const degrees = getDegreesAcronyms(this.state.selectedShifts)
 		if (state !== '' && toState) {
 			path += `?s=${state}`
+			path += `&d=${degrees}`
 		}
 
 		if (window.history.replaceState) {
@@ -399,40 +415,53 @@ class App extends React.Component <{
 		return { course, availableShifts, selectedShifts }
 	}
 
-	async buildState(param: string | undefined): Promise<void> {
-		param = param ?? this.cookies.get('s')
-		if (!param) {
-			return
+	async buildState(paramShift: string | undefined, paramDegree: string | undefined): Promise<void> {
+
+		// Build degree
+		paramDegree = paramDegree ?? this.cookies.get('d')
+		if (paramDegree) {
+			try {
+				const degreeAcronyms = paramDegree.split(';')
+				this.topBar.current?.setSelectedDegrees(degreeAcronyms)
+			} catch (err) {
+				console.error(err)
+				// ignored, bad URL/cookie state
+			}
 		}
 
-		try {
-			const shifts = param.split(';')
-				.map((shift: string) => shift.split('~'))
 
-			const courseUpdates = new CourseUpdates()
-			const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
-			// eslint-disable-next-line
-			const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
-				acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
-				acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
-				return acc
-			}, { availableShifts: [], selectedShifts: [] })
+		// Build shifts
+		paramShift = paramShift ?? this.cookies.get('s')
+		if (paramShift) {
+			try {
+				const shifts = paramShift.split(';')
+					.map((shift: string) => shift.split('~'))
 
-			this.topBar.current?.setSelectedCourses(courseUpdates)
-			this.setState({
-				...state,
-				selectedCourses: courseUpdates,
-				shownShifts: this.filterShifts({
-					selectedCampi: this.state.selectedCampi,
-					selectedShiftTypes: this.state.selectedShiftTypes,
-					availableShifts: state.availableShifts
+				const courseUpdates = new CourseUpdates()
+				const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
+				// eslint-disable-next-line
+				const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
+					acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
+					acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
+					return acc
+				}, { availableShifts: [], selectedShifts: [] })
+
+				this.topBar.current?.setSelectedCourses(courseUpdates)
+				this.setState({
+					...state,
+					selectedCourses: courseUpdates,
+					shownShifts: this.filterShifts({
+						selectedCampi: this.state.selectedCampi,
+						selectedShiftTypes: this.state.selectedShiftTypes,
+						availableShifts: state.availableShifts
+					})
 				})
-			})
-			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-			this.changeUrl(false)
-		} catch (err) {
-			console.error(err)
-			// ignored, bad URL
+				this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
+				this.changeUrl(false)
+			} catch (err) {
+				console.error(err)
+				// ignored, bad URL/cookie state
+			}
 		}
 	}
 
@@ -486,15 +515,18 @@ class App extends React.Component <{
 
 	async getClasses(): Promise<void> {
 		this.setState({loading: true})
-		const classes = await getClasses(this.state.selectedShifts)
-		const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
+		// const classes = await getClasses(this.state.selectedShifts)
+		const [classesByShift, minimalClasses] = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
+		// const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
+		const value = Object.entries(classesByShift)
 
-		this.classes = value
+		this.classesByShift = value
+		this.minimalClasses = minimalClasses
 		this.setState({classesDialog: true, loading: false})
 
 		// TODO: download to a file
 		// const el = document.createElement('a')
-		// const file = new Blob([value], {type: 'text/plain;charset=utf-8'})
+		// const file = new Blob([classesByShift], {type: 'text/plain;charset=utf-8'})
 		// el.href = URL.createObjectURL(file)
 		// el.download = 'ist-turmas.txt'
 		// document.body.appendChild(el)
@@ -552,6 +584,7 @@ class App extends React.Component <{
 					<TopBar
 						ref={this.topBar}
 						onSelectedCourse={this.onSelectedCourse}
+						onSelectedDegree={this.onSelectedDegree}
 						onClearShifts={this.clearSelectedShifts}
 						onGetLink={this.getLink}
 						showAlert={this.showAlert}
@@ -751,16 +784,22 @@ class App extends React.Component <{
 					<div className="dialogs">
 						<Dialog open={this.state.classesDialog}>
 							<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>
-							<DialogContent className={classes.contentCopyable as string}>{this.classes.map(c => {
-								return (
-									<div key={c[0]}>
-										<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
-										<Typography key={'class-' + c[0]} variant='body1'
-											style={{marginLeft: '8px'}}
-										>{c[1]}</Typography>
-									</div>
-								)
-							})}</DialogContent>
+							<DialogContent className={classes.contentCopyable as string}>
+								<Box>{
+									this.classesByShift.map(c => {
+										return (
+											<div key={c[0]}>
+												<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
+												<Typography key={'class-' + c[0]} variant='body1'
+													style={{marginLeft: '8px'}}
+												>{c[1]}</Typography>
+											</div>
+										)})
+								}
+								</Box>
+								<br/>
+								<Typography variant='h6'>{i18next.t('classes-dialog.minimal-classes')}: {this.minimalClasses.join(', ')}</Typography>
+							</DialogContent>
 							<DialogActions>
 								<div />
 								<Button onClick={() => {this.setState({classesDialog: false})}} color="primary">

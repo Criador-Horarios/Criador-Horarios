@@ -133,6 +133,14 @@ export const shortenDescriptions = (shifts: Shift[]): string => {
 	return Object.keys(res).map((course) => course + '~' + res[course].join('~')).join(';')
 }
 
+export const getDegreesAcronyms = (shifts: Shift[]): string | undefined => {
+	let res = shifts
+		.map((s) => s.course.degreeAcronym)
+	res = Array.from(new Set(res)) // Remove duplicates
+	if (res.length == 0) return undefined
+	return res.reduce((a, b) => `${a};${b}`)
+}
+
 export type ShiftDto = {
 	lessons: LessonDto[]
 	name: string
