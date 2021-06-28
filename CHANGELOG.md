@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 28/06/2021
+
 ### Added
 
 - Allow selection of multiple degrees to have all the courses in the selection list
