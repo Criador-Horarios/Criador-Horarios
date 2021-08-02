@@ -33,7 +33,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] When a shift is selected, if the course is unselected and selected again, it may have a different color
 - [x] There were no 'Teórico-Práticas' type of shifts
 - [X] When removing a course (while a shift is selected) and adding again, the chip in the timetable does not recognize the shifts selected
-- [ ] When a course is broken, the chip still shows and can't be removed
+- [X] When a course is broken, the chip still shows and can't be removed
 
 ## Suggestions
 

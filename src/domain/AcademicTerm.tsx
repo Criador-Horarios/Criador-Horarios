@@ -8,7 +8,7 @@ export default class AcademicTerm {
 		const re = /^([12]{1})[º ]*([sS][a-zA-Z]*)[ ]*([0-9/]+)$/
 		const match = obj.match(re)
 		if (match === null) {
-			throw 'Unexpected academic term name'
+			throw `Unexpected academic term name: ${match}`
 		}
 		this.semester = +match[1]
 		this.term = match[3]

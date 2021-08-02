@@ -196,6 +196,11 @@ class App extends React.Component <{
 			const schedule = await API.getCourseSchedules(currCourses.lastUpdate.course)
 			if (schedule === null) {
 				this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
+				// Remove course if it can't get the schedules
+				currCourses.toggleCourse(currCourses.lastUpdate.course)
+				this.setState({
+					selectedCourses: currCourses
+				})
 				return
 			}
 			availableShifts = this.state.availableShifts.concat(schedule)
@@ -669,6 +674,7 @@ class App extends React.Component <{
 													<Tooltip title={c.displayName()} key={c.hashString()}>
 														<Chip size="small" color='primary'
 															style={{backgroundColor: c.color}} label={c.acronym}
+															// TODO: Add onClick to go to course page?
 														/>
 													</Tooltip>
 													{Array.from(c.getShiftsDisplay()).map((s) => (

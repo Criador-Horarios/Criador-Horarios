@@ -93,6 +93,7 @@ export default class API {
 	public static async getCourseSchedules(course: Course): Promise<Shift[] | null> {
 		const res = await this.getRequest(`/api/courses/${course.id}/schedule`) as ScheduleDto | null
 		if (res === null) {
+			console.error('can\'t get course schedule')
 			return null
 		}
 		// course might be unselected because of async

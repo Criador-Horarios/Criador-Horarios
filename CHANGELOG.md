@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+### Fixed
+
+- Remove courses that can't be obtained
+
+### Removed
+
 ## [1.6.0] - 28/06/2021
 
 ### Added
