@@ -12,13 +12,4 @@ services:
     volumes:
       - .:/app
       # - node_modules:/app/node_modules
-    networks:
-      - nginx_network
     command: bash -c "cd app; npm run run-prod"
-
-# volumes:
-#   node_modules:
-
-networks:
-  nginx_network:
-    external: true
