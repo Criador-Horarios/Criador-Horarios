@@ -32,7 +32,6 @@ import Brightness5Icon from '@material-ui/icons/Brightness5'
 import i18next from 'i18next'
 import Menu from '@material-ui/core/Menu'
 import Avatar from '@material-ui/core/Avatar'
-import Typography from '@material-ui/core/Typography'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
@@ -302,9 +301,9 @@ class TopBar extends React.Component <{
 								<Icon>help</Icon>
 							</IconButton>
 						</Tooltip>
-						<IconButton color='inherit' onClick={() => {this.setState({settingsDialog: true})}} component="span">
+						{/* <IconButton color='inherit' onClick={() => {this.setState({settingsDialog: true})}} component="span">
 							<Icon>settings</Icon>
-						</IconButton>
+						</IconButton> */}
 					</Toolbar>
 				</AppBar>
 				<Dialog open={this.state.settingsDialog}
@@ -332,9 +331,6 @@ class TopBar extends React.Component <{
 								)}
 							</Select>
 						</FormControl>
-						<Typography variant="caption" gutterBottom style={{marginTop: '8px'}}>
-							Isto irá apagar todos as disciplinas e turnos selecionados.
-						</Typography>
 					</DialogContent>
 					<DialogActions>
 						<div />

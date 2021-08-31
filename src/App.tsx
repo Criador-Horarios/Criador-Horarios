@@ -130,8 +130,7 @@ class App extends React.Component <{
 			this.changeLanguage(language)
 		}
 
-		const currTermId = await defineCurrentTerm()
-		this.topBar.current?.onSelectedAcademicTerm(currTermId)
+		await defineCurrentTerm()
 
 		const params = API.getUrlParams()
 		await this.buildState(params.s, params.d)
