@@ -33,7 +33,6 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 	const res: Record<string, string> = {}
 	shifts.forEach((shift: Shift) => {
 		const page = shiftPage[shift.courseId]
-		console.log(shift.courseId)
 		if (page === undefined) {
 			res[shift.acronym] = i18next.t('shift-scraper.classes.error')
 			// Couldn't get course before
