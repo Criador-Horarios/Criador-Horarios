@@ -16,8 +16,10 @@
 
 ## To Run
 
+### On Development
+
 This project uses React with Typescript.
-Install the dependencies by running `npm i` and then run `npm start` to start the app in development mode.\
+Install the dependencies by running `yarn i` and then run `yarn start` to start the app in development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## Changelog
