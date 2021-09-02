@@ -1,13 +1,14 @@
 echo --------
 echo Pulling from git
-rm package-lock.json
+rm package-lock.json yarn.lock
+git checkout .
 git pull
 
 echo 
 echo --------
 echo Install dependencies and build
-npm i --prod
-npm run build
+yarn install --prod
+yarn build
 
 echo 
 echo --------
