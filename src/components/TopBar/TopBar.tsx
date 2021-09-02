@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './TopBar.module.scss'
 
-import API, { staticData } from '../../utils/api'
+import API, { staticData, defineCurrentTerm } from '../../utils/api'
 import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
@@ -69,6 +69,10 @@ class TopBar extends React.Component <{
 	}
 
 	async componentDidMount(): Promise<void> {
+		// Update term
+		const currTermId = await defineCurrentTerm()
+		this.onSelectedAcademicTerm(currTermId)
+
 		const degrees = await API.getDegrees()
 		this.setState({
 			degrees: degrees ?? []

@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Remove courses that can't be obtained
+- Degrees had not been fetched with the updated academic term
 
 ### Removed
 

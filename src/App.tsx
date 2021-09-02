@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import API, { defineCurrentTerm } from './utils/api'
+import API from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
@@ -130,8 +130,8 @@ class App extends React.Component <{
 			this.changeLanguage(language)
 		}
 
-		const currTermId = await defineCurrentTerm()
-		this.topBar.current?.onSelectedAcademicTerm(currTermId)
+		// const currTermId = await defineCurrentTerm()
+		// this.topBar.current?.onSelectedAcademicTerm(currTermId)
 
 		const params = API.getUrlParams()
 		await this.buildState(params.s, params.d)
