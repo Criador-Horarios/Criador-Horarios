@@ -57,6 +57,9 @@
 	},
 	"color-picker-dialog": {
 		"title": "Mudar cor de {{course}}",
+		"content": {
+			"preview": "Pré-visualizar:"
+		},
 		"actions": {
 			"cancel": "Cancelar",
 			"save": "Guardar"

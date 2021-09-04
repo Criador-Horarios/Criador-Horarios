@@ -1,0 +1,31 @@
+.ColorPicker {
+
+	input {
+		display: block;
+		box-sizing: border-box;
+		width: 90px;
+		margin: 20px 55px 0;
+		padding: 6px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		background: #eee;
+		outline: none;
+		font: inherit;
+		text-transform: uppercase;
+		text-align: center;
+	}
+	  
+	input:focus {
+		border-color: #4298ef;
+	}
+}
+
+.Chip {
+	margin-right: 2px;
+}
+
+.ReactColorful {
+	margin: 0 auto;
+	padding-top: 15px;
+}
+

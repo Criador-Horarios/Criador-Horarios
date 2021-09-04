@@ -57,7 +57,10 @@
 		}
 	},
 	"color-picker-dialog": {
-		"title": "Change color of {{course}}",
+		"title": "Change {{course}} color",
+		"content": {
+			"preview": "Preview:"
+		},
 		"actions": {
 			"cancel": "Cancel",
 			"save": "Save"

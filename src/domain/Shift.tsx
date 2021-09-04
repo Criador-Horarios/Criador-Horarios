@@ -1,20 +1,7 @@
 import Comparable, { Comparables } from './Comparable'
 import Lesson, { LessonDto } from './Lesson'
 import Course from './Course'
-import hexRgb from 'hex-rgb'
-import rgbHex from 'rgb-hex'
-
-const shadeColor = (color: string, amount: number) => {
-	if (color === '') {
-		return ''
-	}
-	const newColor = hexRgb(color)
-	Object.keys(newColor).forEach((key: string) => {
-		newColor[key as keyof hexRgb.RgbaObject] *= amount
-		newColor[key as keyof hexRgb.RgbaObject] = Math.min(Math.max(0, newColor[key as keyof hexRgb.RgbaObject]), 255)
-	})
-	return '#' + rgbHex(newColor.red, newColor.green, newColor.blue)
-}
+import { getColor1, getColor2 } from '../utils/colors'
 
 export enum ShiftType {
 	'Teo' = 'T',
@@ -114,11 +101,10 @@ export default class Shift implements Comparable {
 
 	updateColorFromCourse(): void {
 		let newColor = this.color
-		// TODO: Maybe avoid recalculating color if course color is the same
 		if (this.type === ShiftType['Teo']) {
-			newColor = shadeColor(this.course.color, 1.30)
+			newColor = getColor1(this.course.color)
 		} else if (this.type === ShiftType['PB']) {
-			newColor = shadeColor(this.course.color, 1.15)
+			newColor = getColor2(this.course.color)
 		} else {
 			newColor = this.course.color
 		}
