@@ -47,6 +47,7 @@
 	"changelog-dialog": {
 		"title": "Changelog",
 		"content": [
+			"- You can now change the color of a course (not stored yet), by clicking in the corresponding course, below the selected shifts",
 			"- When obtaining the classes, find the smallest set of classes possible",
 			"- Download of calendar with the selected shifts",
 			"- Occupation of the shift (not updated automatically)",
@@ -54,6 +55,16 @@
 		],
 		"actions": {
 			"back": "Back"
+		}
+	},
+	"color-picker-dialog": {
+		"title": "Change {{course}} color",
+		"content": {
+			"preview": "Preview:"
+		},
+		"actions": {
+			"cancel": "Cancel",
+			"save": "Save"
 		}
 	},
 	"schedule": {

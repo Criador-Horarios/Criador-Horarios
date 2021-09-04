@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+### Fixed
+
+### Removed
+
+## [1.8.0] - 04/09/2021
+
+### Added
+
+- Add color picker (with its own component) in schedule chip to change course color
+
+### Fixed
+
+### Removed
+
 ## [1.7.0] - 02/09/2021
 
 ### Added

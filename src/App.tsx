@@ -8,6 +8,7 @@ import Shift, { getDegreesAcronyms, ShiftType, shortenDescriptions } from './dom
 import Lesson from './domain/Lesson'
 import { Comparables } from './domain/Comparable'
 import Schedule from './components/Schedule/Schedule'
+import ColorPicker from './components/ColorPicker/ColorPicker'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
@@ -79,12 +80,14 @@ class App extends React.Component <{
 		changelogDialog: false,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
-		darkMode: false
+		darkMode: false,
+		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  }
 	}
 	cookies = new Cookies()
 	selectedDegrees: Degree[] = []
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
+	colorPicker: React.RefObject<ColorPicker>
 	theme: Theme
 	classesByShift: [string, string][] = []
 	minimalClasses: string[] = []
@@ -110,6 +113,7 @@ class App extends React.Component <{
 
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
+		this.colorPicker = React.createRef()
 
 		this.theme = this.getTheme(this.state.darkMode)
 
@@ -435,7 +439,7 @@ class App extends React.Component <{
 			}
 		}
 
-
+		
 		// Build shifts
 		paramShift = paramShift ?? this.cookies.get('s')
 		if (paramShift) {
@@ -675,7 +679,7 @@ class App extends React.Component <{
 													<Tooltip title={c.displayName()} key={c.hashString()}>
 														<Chip size="small" color='primary'
 															style={{backgroundColor: c.color}} label={c.acronym}
-															// TODO: Add onClick to go to course page?
+															onClick={() => this.colorPicker.current?.show(c)} // Toggle colorPicker on click
 														/>
 													</Tooltip>
 													{Array.from(c.getShiftsDisplay()).map((s) => (
@@ -830,7 +834,15 @@ class App extends React.Component <{
 								<div />
 								<Button onClick={() => {this.setState({changelogDialog: false})}} color="primary">{i18next.t('changelog-dialog.actions.back') as string}</Button>
 							</DialogActions>
-						</Dialog>			
+						</Dialog>
+						<ColorPicker ref={this.colorPicker} onUpdatedColor={(course: Course) => {
+							this.state.availableShifts.forEach(shift => {
+								if (shift.courseId === course.id) {
+									shift.updateColorFromCourse()
+								}
+							})
+							this.setState({ availableShifts: this.state.availableShifts })
+						}}/>
 					</div>
 				</div>
 			</ThemeProvider>

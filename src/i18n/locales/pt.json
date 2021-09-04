@@ -46,6 +46,7 @@
 	"changelog-dialog": {
 		"title": "Novidades",
 		"content": [
+			"- Pode alterar a cor duma cadeira (ainda não é guardado), ao clicar na cadeira correspondente, em baixo dos turnos selecionados",
 			"- Ao obter as turmas para as inscrições, encontra o menor conjunto de turmas possível",
 			"- Download de um ficheiro iCalendar com as aulas",
 			"- Dados da ocupação dos turnos (não atualizados automaticamente)",
@@ -53,6 +54,16 @@
 		],
 		"actions": {
 			"back": "Voltar"
+		}
+	},
+	"color-picker-dialog": {
+		"title": "Mudar cor de {{course}}",
+		"content": {
+			"preview": "Pré-visualizar:"
+		},
+		"actions": {
+			"cancel": "Cancelar",
+			"save": "Guardar"
 		}
 	},
 	"schedule": {

@@ -33,3 +33,6 @@
 - [ ] ~~Add 'real-time' shift occupation~~ Not done for now, since it can break fenix?
 - [ ] Give option of what to add (room, campus, etc.) in excel
 - [ ] Refactor methods to decrease complexity
+- [ ] AGISIT has shifts with different names -> As we store T01 only and there are 2, we show them both :(
+- [ ] Store picked color of courses (cookies)
+- [ ] Change font color according to background color [help](https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color)

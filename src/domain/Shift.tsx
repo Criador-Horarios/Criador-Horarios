@@ -1,20 +1,7 @@
 import Comparable, { Comparables } from './Comparable'
 import Lesson, { LessonDto } from './Lesson'
 import Course from './Course'
-import hexRgb from 'hex-rgb'
-import rgbHex from 'rgb-hex'
-
-const shadeColor = (color: string, amount: number) => {
-	if (color === '') {
-		return ''
-	}
-	const newColor = hexRgb(color)
-	Object.keys(newColor).forEach((key: string) => {
-		newColor[key as keyof hexRgb.RgbaObject] *= amount
-		newColor[key as keyof hexRgb.RgbaObject] = Math.min(Math.max(0, newColor[key as keyof hexRgb.RgbaObject]), 255)
-	})
-	return '#' + rgbHex(newColor.red, newColor.green, newColor.blue)
-}
+import { getColor1, getColor2 } from '../utils/colors'
 
 export enum ShiftType {
 	'Teo' = 'T',
@@ -34,7 +21,7 @@ export default class Shift implements Comparable {
 	courseName: string
 	lessons: Lesson[]
 	allLessons: Lesson[]
-	color: string
+	color = ''
 	campus = ''
 	occupation: ShiftOccupation
 	url: string
@@ -57,13 +44,7 @@ export default class Shift implements Comparable {
 			this.campus = obj.rooms[0]?.topLevelSpace.name
 		}
 
-		if (this.type === ShiftType['Teo']) {
-			this.color = shadeColor(course.color, 1.30)
-		} else if (this.type === ShiftType['PB']) {
-			this.color = shadeColor(course.color, 1.15)
-		} else {
-			this.color = course.color
-		}
+		this.updateColorFromCourse()
 
 		this.occupation = {
 			current: obj.occupation.current,
@@ -116,6 +97,24 @@ export default class Shift implements Comparable {
 
 	getFullId(): string[] {
 		return [this.courseId, this.shiftId]
+	}
+
+	updateColorFromCourse(): void {
+		let newColor = this.color
+		if (this.type === ShiftType['Teo']) {
+			newColor = getColor1(this.course.color)
+		} else if (this.type === ShiftType['PB']) {
+			newColor = getColor2(this.course.color)
+		} else {
+			newColor = this.course.color
+		}
+
+		// If has lessons, update their color
+		if (this.color != newColor) {
+			this.lessons?.forEach(lesson => lesson.color = newColor)
+		}
+
+		this.color = newColor
 	}
 }
 
