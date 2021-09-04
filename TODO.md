@@ -33,4 +33,5 @@
 - [ ] ~~Add 'real-time' shift occupation~~ Not done for now, since it can break fenix?
 - [ ] Give option of what to add (room, campus, etc.) in excel
 - [ ] Refactor methods to decrease complexity
-- [ ] AGISIT has shifts with different names
+- [ ] AGISIT has shifts with different names -> As we store T01 only and there are 2, we show them both :(
+- [ ] Store picked color of courses (cookies)
