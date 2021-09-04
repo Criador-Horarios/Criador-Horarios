@@ -131,3 +131,15 @@ ul {
 		}
 	}
 }
+
+.react-colorful {
+    position: fixed !important;
+    z-index: 1000;
+    // top: 560px;
+    // left: 650px;
+	transform: translate(-40%, -110%);
+
+	@media (max-width: 700px) {
+		transform: translate(0, -110%)
+	}
+}

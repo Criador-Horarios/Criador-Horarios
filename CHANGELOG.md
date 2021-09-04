@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add color picker in schedule chip to change course color
+
 ### Fixed
 
 ### Removed

@@ -34,7 +34,7 @@ export default class Shift implements Comparable {
 	courseName: string
 	lessons: Lesson[]
 	allLessons: Lesson[]
-	color: string
+	color = ''
 	campus = ''
 	occupation: ShiftOccupation
 	url: string
@@ -57,13 +57,7 @@ export default class Shift implements Comparable {
 			this.campus = obj.rooms[0]?.topLevelSpace.name
 		}
 
-		if (this.type === ShiftType['Teo']) {
-			this.color = shadeColor(course.color, 1.30)
-		} else if (this.type === ShiftType['PB']) {
-			this.color = shadeColor(course.color, 1.15)
-		} else {
-			this.color = course.color
-		}
+		this.updateColorFromCourse()
 
 		this.occupation = {
 			current: obj.occupation.current,
@@ -116,6 +110,25 @@ export default class Shift implements Comparable {
 
 	getFullId(): string[] {
 		return [this.courseId, this.shiftId]
+	}
+
+	updateColorFromCourse(): void {
+		let newColor = this.color
+		// TODO: Maybe avoid recalculating color if course color is the same
+		if (this.type === ShiftType['Teo']) {
+			newColor = shadeColor(this.course.color, 1.30)
+		} else if (this.type === ShiftType['PB']) {
+			newColor = shadeColor(this.course.color, 1.15)
+		} else {
+			newColor = this.course.color
+		}
+
+		// If has lessons, update their color
+		if (this.color != newColor) {
+			this.lessons?.forEach(lesson => lesson.color = newColor)
+		}
+
+		this.color = newColor
 	}
 }
 

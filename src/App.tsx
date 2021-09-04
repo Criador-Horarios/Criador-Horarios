@@ -53,6 +53,7 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import Box from '@material-ui/core/Box'
+import { HexColorPicker } from 'react-colorful'
 
 type BuiltCourse = {
 	course: Course,
@@ -79,7 +80,8 @@ class App extends React.Component <{
 		changelogDialog: false,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
-		darkMode: false
+		darkMode: false,
+		colorPickerShow: undefined as undefined | {course: Course, event: Event}
 	}
 	cookies = new Cookies()
 	selectedDegrees: Degree[] = []
@@ -435,7 +437,7 @@ class App extends React.Component <{
 			}
 		}
 
-
+		
 		// Build shifts
 		paramShift = paramShift ?? this.cookies.get('s')
 		if (paramShift) {
@@ -444,7 +446,7 @@ class App extends React.Component <{
 					.map((shift: string) => shift.split('~'))
 
 				const courseUpdates = new CourseUpdates()
-				const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
+				const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))				
 				// eslint-disable-next-line
 				const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
 					acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
@@ -675,6 +677,21 @@ class App extends React.Component <{
 													<Tooltip title={c.displayName()} key={c.hashString()}>
 														<Chip size="small" color='primary'
 															style={{backgroundColor: c.color}} label={c.acronym}
+															// Toggle colorPicker on click
+															onClick={e => {
+																// TODO: Move this to a method
+																if(this.state.colorPickerShow) {
+																	this.state.availableShifts.forEach(shift => {
+																		if (shift.courseId === c.id) {
+																			shift.updateColorFromCourse()
+																		}
+																	})
+																	this.setState({colorPickerShow: false, availableShifts: this.state.availableShifts})
+																	this.chosenSchedule.current?.forceUpdate()
+																} else {
+																	this.setState({colorPickerShow: { course: c, event: e}})
+																}
+															}}
 															// TODO: Add onClick to go to course page?
 														/>
 													</Tooltip>
@@ -830,9 +847,20 @@ class App extends React.Component <{
 								<div />
 								<Button onClick={() => {this.setState({changelogDialog: false})}} color="primary">{i18next.t('changelog-dialog.actions.back') as string}</Button>
 							</DialogActions>
-						</Dialog>			
+						</Dialog>
 					</div>
 				</div>
+				{this.state.colorPickerShow ? (<HexColorPicker
+					// colorPickerShow will never be null (otherwise this would not be rendered)
+					color={this.state.colorPickerShow?.course.color}
+					onChange={(color) => {
+						console.log(this.state.colorPickerShow?.event.target)
+						const currCourse = this.state.colorPickerShow?.course as Course
+						currCourse.setColor(color)
+					}}
+					style={{top: `${(this.state.colorPickerShow?.event.target as Element).getBoundingClientRect().top}px`,
+						left: `${(this.state.colorPickerShow?.event.target as Element).getBoundingClientRect().left}px`}}
+				/>): <div></div>}
 			</ThemeProvider>
 		)
 	}

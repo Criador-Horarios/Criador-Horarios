@@ -33,3 +33,4 @@
 - [ ] ~~Add 'real-time' shift occupation~~ Not done for now, since it can break fenix?
 - [ ] Give option of what to add (room, campus, etc.) in excel
 - [ ] Refactor methods to decrease complexity
+- [ ] AGISIT has shifts with different names
