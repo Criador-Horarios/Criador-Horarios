@@ -837,7 +837,7 @@ class App extends React.Component <{
 							</DialogActions>
 						</Dialog>
 						<Dialog open={this.state.colorPicker.show} fullWidth={true} maxWidth='xs'>
-							<DialogTitle>Mudar cor de {this.state.colorPicker.course?.acronym}</DialogTitle>
+							<DialogTitle>{i18next.t('color-picker-dialog.title', { course: this.state.colorPicker.course?.acronym})}</DialogTitle>
 							<DialogContent>
 								
 								<HexColorPicker
@@ -848,7 +848,7 @@ class App extends React.Component <{
 							<DialogActions>
 								<Button onClick={() => this.setState({colorPicker: { show: false, course: undefined }})}
 									color="secondary"
-								>CANCELAR
+								>{i18next.t('color-picker-dialog.actions.cancel')}
 								</Button>
 								
 								<Button color="primary"
@@ -862,16 +862,11 @@ class App extends React.Component <{
 											}
 										})
 										this.setState({
-											colorPicker: {
-												show: false,
-												course: undefined
-											},
+											colorPicker: { show: false, course: undefined },
 											availableShifts: this.state.availableShifts
 										})
 									}}
-								>
-									{/* FIXME: Missing i18n */}
-									APLICAR
+								>{i18next.t('color-picker-dialog.actions.save')}
 								</Button>
 							</DialogActions>
 						</Dialog>

@@ -55,6 +55,13 @@
 			"back": "Voltar"
 		}
 	},
+	"color-picker-dialog": {
+		"title": "Mudar cor de {{course}}",
+		"actions": {
+			"cancel": "Cancelar",
+			"save": "Guardar"
+		}
+	},
 	"schedule": {
 		"shift": {
 			"occupation": "Ocupação",
