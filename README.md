@@ -1,4 +1,3 @@
-# Criador de Horários
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -12,6 +11,8 @@
     <img alt="LICENSE" src="https://img.shields.io/github/license/joaocmd/Criador-Horarios">
   </a>
 </p>
+
+# Criador de Horários
 
 ![Demo animation](./demo/demo.gif)
 
