@@ -1,4 +1,7 @@
 # Criador de Horários
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 <p align="center">
   <a href="https://github.com/joaocmd/Criador-Horarios/commits/develop" target="_blank">
@@ -48,3 +51,23 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Find minimum classes for enrolments
 - [ ] Give option of what to add (room, campus, etc.) in excel
 - [X] Add occupation on shift hover
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://www.linkedin.com/in/afonsocrg/"><img src="https://avatars.githubusercontent.com/u/37017397?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Afonso Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=afonsocrg" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
