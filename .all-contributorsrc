@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "afonsocrg",
+      "name": "Afonso Gonçalves",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37017397?v=4",
+      "profile": "https://www.linkedin.com/in/afonsocrg/",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "Criador-Horarios",
+  "projectOwner": "joaocmd",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
