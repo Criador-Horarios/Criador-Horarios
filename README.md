@@ -1,6 +1,6 @@
 # Criador de Horários
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 <p align="center">
@@ -61,6 +61,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
+    <td align="center"><a href="https://github.com/joaocmd"><img src="https://avatars.githubusercontent.com/u/5345834?v=4?s=100" width="100px;" alt=""/><br /><sub><b>João David</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=joaocmd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/masterzeus05"><img src="https://avatars.githubusercontent.com/u/35273853?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniel Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=masterzeus05" title="Code">💻</a></td>
     <td align="center"><a href="https://www.linkedin.com/in/afonsocrg/"><img src="https://avatars.githubusercontent.com/u/37017397?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Afonso Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=afonsocrg" title="Code">💻</a></td>
   </tr>
 </table>

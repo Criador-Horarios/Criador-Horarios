@@ -6,6 +6,24 @@
   "commit": false,
   "contributors": [
     {
+      "login": "joaocmd",
+      "name": "João David",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5345834?v=4",
+      "profile": "https://github.com/joaocmd",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "masterzeus05",
+      "name": "Daniel Gonçalves",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35273853?v=4",
+      "profile": "https://github.com/masterzeus05",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "afonsocrg",
       "name": "Afonso Gonçalves",
       "avatar_url": "https://avatars.githubusercontent.com/u/37017397?v=4",
@@ -20,5 +38,6 @@
   "projectOwner": "joaocmd",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "none"
 }
