@@ -15,7 +15,8 @@ WORKDIR $APP_PATH
 COPY ./docker/bin/install-system-dependencies $APP_BIN_PATH/install-system-dependencies
 RUN install-system-dependencies
 
-# USER criador
+# TODO: Container should use this user and not root
+# USER criador 
 
 ENTRYPOINT [ "docker/development/entrypoint" ]
 
