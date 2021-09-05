@@ -1,0 +1,44 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "badgeTemplate": "<a href='#contributors' target='_blank'><img alt='All Contributors' src='https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg?style=flat-square'></a>",
+  "contributors": [
+    {
+      "login": "joaocmd",
+      "name": "João David",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5345834?v=4",
+      "profile": "https://github.com/joaocmd",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "masterzeus05",
+      "name": "Daniel Gonçalves",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35273853?v=4",
+      "profile": "https://github.com/masterzeus05",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "afonsocrg",
+      "name": "Afonso Gonçalves",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37017397?v=4",
+      "profile": "https://www.linkedin.com/in/afonsocrg/",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "Criador-Horarios",
+  "projectOwner": "joaocmd",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true,
+  "commitConvention": "none"
+}

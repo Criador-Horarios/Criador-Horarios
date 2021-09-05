@@ -1,6 +1,8 @@
-# Criador de Horários
-
 <p align="center">
+  <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+  <a href='#contributors' target='_blank'><img alt='All Contributors' src='https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square'></a>
+  <!-- ALL-CONTRIBUTORS-BADGE:END -->
+
   <a href="https://github.com/joaocmd/Criador-Horarios/commits/develop" target="_blank">
     <img src="https://img.shields.io/github/last-commit/joaocmd/Criador-Horarios" alt="GitHub last commit">
   </a>
@@ -9,6 +11,8 @@
     <img alt="LICENSE" src="https://img.shields.io/github/license/joaocmd/Criador-Horarios">
   </a>
 </p>
+
+# Criador de Horários
 
 ![Demo animation](./demo/demo.gif)
 
@@ -48,3 +52,25 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Find minimum classes for enrolments
 - [ ] Give option of what to add (room, campus, etc.) in excel
 - [X] Add occupation on shift hover
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/joaocmd"><img src="https://avatars.githubusercontent.com/u/5345834?v=4?s=100" width="100px;" alt=""/><br /><sub><b>João David</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=joaocmd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/masterzeus05"><img src="https://avatars.githubusercontent.com/u/35273853?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniel Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=masterzeus05" title="Code">💻</a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/afonsocrg/"><img src="https://avatars.githubusercontent.com/u/37017397?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Afonso Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=afonsocrg" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
