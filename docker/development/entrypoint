@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+echo "=== PREPARING CACHE FOLDERS ==="
+mkdir -p $APP_PATH/node_modules $APP_PATH/public
+
+echo "=== PREPARING HOME FOLDER ==="
+sudo chown criador:users $HOME
+
+echo "=== INSTALLING DEPENDENCIES ==="
+yarn install
+
+if [ ! -f "$HOME/.setup_complete" ]; then
+  echo "=== SETTING UP PROJECT ==="
+
+  echo "=== INSTALLING OHMYZSH ==="
+  if [ ! -d "$HOME/.oh-my-zsh" ]; then sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"; fi
+
+  touch "$HOME/.setup_complete"
+fi
+
+echo "=== STARTING WEB SERVER ==="
+yarn start

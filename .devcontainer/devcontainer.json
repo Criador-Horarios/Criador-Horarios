@@ -1,0 +1,7 @@
+{
+  "name": "Criador Horarios",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "criador-horarios",
+  "workspaceFolder": "/project",
+  "remoteUser": "criador"
+}
