@@ -1,0 +1,11 @@
+# GENERAL #
+.vscode/
+
+# DOCKER #
+.devcontainer/
+docker/development/
+docker/production/Dockerfile
+
+# GIT #
+.git/
+git/

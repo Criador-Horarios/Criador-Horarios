@@ -150,7 +150,7 @@ class TopBar extends React.Component <{
 		})
 	}
 
-	onSelectedAcademicTerm(s: string): void {
+	async onSelectedAcademicTerm(s: string): Promise<void> {
 		const foundArr = staticData.terms.filter( (at) => at.id === s)
 		if (foundArr.length > 0) {
 			const chosenAT = foundArr[0]
@@ -159,10 +159,12 @@ class TopBar extends React.Component <{
 		}
 
 		this.onSelectedCourse([])
-		this.onSelectedDegree(this.selectedDegrees)
+		this.onSelectedDegree([])
 		this.props.onClearShifts(false)
+		const degrees = await API.getDegrees()
 		this.setState({
-			selectedAcademicTerm: s
+			selectedAcademicTerm: s,
+			degrees: degrees ?? []
 		})
 	}
 

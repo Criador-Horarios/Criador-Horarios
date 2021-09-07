@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+# General dependencies #
+apk add --update bash zsh sudo git openssh nano make g++ git-crypt
+
+# App dependencies #
+apk add --update python2 g++
+
+# User setup #
+echo "$USER:x:1000:1000::$HOME:/bin/zsh" >> /etc/passwd
+echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
+chmod 0440 /etc/sudoers.d/$USER

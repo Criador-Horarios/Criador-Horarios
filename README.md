@@ -22,7 +22,16 @@
 
 ### On Development
 
-This project uses React with Typescript.
+#### With Docker
+
+If you have docker installed, you only need to run `docker compose up` (you might want to add `-d` to have it run detached)
+
+#### Locally
+
+- Requirements:
+  - Node >= 14
+
+This project uses React with Typescript.\
 Install the dependencies by running `yarn i` and then run `yarn start` to start the app in development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
