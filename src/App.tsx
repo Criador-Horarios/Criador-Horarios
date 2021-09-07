@@ -17,7 +17,7 @@ import getCalendar from './utils/calendar-generator'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
-import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles'
+import { createTheme, ThemeProvider, Theme } from '@material-ui/core/styles'
 
 import Avatar from '@material-ui/core/Avatar'
 import IconButton from '@material-ui/core/IconButton'
@@ -54,6 +54,7 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import Box from '@material-ui/core/Box'
+import { APP_STYLES } from './styles/styles'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -372,7 +373,6 @@ class App extends React.Component <{
 			console.error(err)
 			// ignored, bad URL/cookie state
 		}
-
 		
 		// Build shifts
 		try {
@@ -404,17 +404,12 @@ class App extends React.Component <{
 		}
 
 		downloadAsImage(this.state.selectedShifts, this.state.darkMode)
-	
 		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
 
 	changeLanguage(language: string): void {
-		this.setState({
-			lang: language
-		})
-		i18next.changeLanguage(language).then(() => {
-			i18next.options.lng = language
-		})
+		this.setState({ lang: language })
+		i18next.changeLanguage(language).then(() => i18next.options.lng = language)
 		API.setLanguage(language)
 
 		// Clear shifts?
@@ -432,7 +427,7 @@ class App extends React.Component <{
 	}
 
 	getTheme(dark: boolean): Theme {
-		return createMuiTheme({
+		return createTheme({
 			palette: {
 				type: (dark) ? 'dark' : 'light',
 				primary: {
@@ -492,7 +487,6 @@ class App extends React.Component <{
 				},
 			}
 		}))(ToggleButtonGroup)
-
 
 		return (
 			<ThemeProvider theme={this.theme}>
@@ -759,85 +753,4 @@ class App extends React.Component <{
 	}
 }
 
-const cssVariables = {
-	blur: '5px',
-	brightness: 1
-}
-
-// eslint-disable-next-line
-const styles = (theme: any) => ({
-	backdrop: {
-		zIndex: theme.zIndex.drawer + 1,
-		color: '#fff',
-		background: 'rgba(0,0,0,0.85)',
-	},
-	checklistSelected: {
-		// color: theme.palette.text.primary
-	},
-	checklistUnselected: {
-		// color: theme.palette.text.hint
-		opacity: 0.8
-	},
-	paper: {
-		display: 'flex',
-		flexWrap: 'wrap' as const,
-		// border: `1px solid ${theme.palette.divider}`,
-	},
-	divider: {
-		margin: theme.spacing(1, 0.5),
-	},
-	toggleGroup: {
-		flexWrap: 'wrap' as const
-	},
-	card: {
-		margin: '1% 1% 2% 1%'
-	},
-	cardTitle: {
-		padding: '8px 16px 2px 16px'
-	},
-	cardContent: {
-		paddingTop: '4px',
-		paddingBottom: '0px'
-	},
-	contentCopyable: {
-		userSelect: 'text' as const,
-		webkitUserSelect: 'text' as const,
-		oUserSelected: 'text' as const
-	},
-	footer: {
-		bottom: '0px',
-		top: 'auto',
-	},
-	grow: {
-		flexGrow: 1,
-	},
-	centered: {
-		margin: 'auto'
-	},
-	body: {
-		height: '100%',
-		'&::before': {
-			content: '""',
-			position: 'fixed',
-			top: '-5%',
-			left: '-5%',
-			right: 0,
-			zIndex: -1,
-
-			display: 'block',
-			backgroundImage: `url(${process.env.PUBLIC_URL}/img/background.jpg)`,
-			backgroundSize: 'cover',
-			width: '110%',
-			height: '110%',
-
-			webkitFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
-			mozFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
-			oFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
-			msFilter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
-			filter: `blur(${cssVariables.blur}) brightness(${cssVariables.brightness})`,
-		}
-	}
-})
-
-export default withStyles(styles)(App)
-
+export default withStyles(APP_STYLES)(App)
