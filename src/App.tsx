@@ -213,10 +213,7 @@ class App extends React.Component <{
 		})
 
 		this.topBar.current?.setSelectedCourses(currCourses)
-		this.setState({
-			availableShifts,
-			shownShifts
-		})
+		this.setState({ availableShifts, shownShifts })
 	}
 
 	getAllLessons(): Lesson[] {
@@ -228,9 +225,7 @@ class App extends React.Component <{
 	}
 
 	setSelectedShifts(shifts: Shift[]) {
-		this.setState({
-			selectedShifts: shifts
-		})
+		this.setState({ selectedShifts: shifts })
 		this.topBar.current?.setHasSelectedShifts(shifts)
 		this.savedStateHandler.setShifts(shifts)
 	}
@@ -305,10 +300,7 @@ class App extends React.Component <{
 			availableShifts: this.state.availableShifts
 		})
 
-		this.setState({
-			selectedCampi: campi,
-			shownShifts
-		})
+		this.setState({ selectedCampi: campi, shownShifts })
 	}
 
 	changeShiftTypes(types: string[]): void {
@@ -318,10 +310,7 @@ class App extends React.Component <{
 			availableShifts: this.state.availableShifts
 		})
 
-		this.setState({
-			selectedShiftTypes: types,
-			shownShifts
-		})
+		this.setState({ selectedShiftTypes: types, shownShifts })
 	}
 
 	filterShifts(state: {selectedCampi: string[], selectedShiftTypes: string[], availableShifts: Shift[]}): Shift[] {
@@ -341,9 +330,7 @@ class App extends React.Component <{
 	}
 
 	handleCloseAlert(): void {
-		this.setState({
-			hasAlert: false
-		})
+		this.setState({ hasAlert: false })
 	}
 
 	async getLink(): Promise<void> {
