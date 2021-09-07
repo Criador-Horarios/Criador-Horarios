@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Stop fetching degrees twice
+
 ### Removed
 
 ## [1.9.0] - 07/09/2021
