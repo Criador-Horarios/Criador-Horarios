@@ -40,7 +40,7 @@ class TopBar extends React.Component <{
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
 	onClearShifts: (alert: boolean) => void
 	onGetLink: () => void
-	onChangeLanguage: (language: string, afterChange: () => void) => void
+	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
 }, unknown>{

@@ -38,7 +38,8 @@ export default class Shift implements Comparable {
 		// Use course acronym
 		this.acronym = course.acronym
 		this.type = match[2] as ShiftType
-		this.shiftId = match[2] + match[3]
+		// this.shiftId = match[2] + match[3]
+		this.shiftId = obj.name
 		this.courseName = course.name
 		if (obj.rooms !== null || (obj.rooms as string[]).length > 0) {
 			this.campus = obj.rooms[0]?.topLevelSpace.name
@@ -119,6 +120,7 @@ export default class Shift implements Comparable {
 }
 
 export const shortenDescriptions = (shifts: Shift[]): string => {
+	// TODO: This can now be a dictionary or something
 	const res = shifts
 		.map((s) => s.getFullId())
 		.reduce((acc, [course, shift]) => {

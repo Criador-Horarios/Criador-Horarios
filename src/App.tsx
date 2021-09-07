@@ -124,7 +124,7 @@ class App extends React.Component <{
 
 		const language = this.savedStateHandler.getLanguage() ?? this.state.lang
 		if (language !== this.state.lang) {
-			this.changeLanguage(language, () => { return })
+			this.changeLanguage(language, async () => { return })
 		}
 
 		// Build state from cookies or url
@@ -398,9 +398,10 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
 
-	async changeLanguage(language: string, afterChange: () => void): Promise<void> {
+	async changeLanguage(language: string, afterChange: () => Promise<void>): Promise<void> {
 		if (language !== this.state.lang) {
-			this.setState({ lang: language })
+			// TODO: Add loader
+			this.setState({loading: true, lang: language })
 			i18next.changeLanguage(language).then(() => i18next.options.lng = language)
 			API.setLanguage(language)
 
@@ -410,6 +411,7 @@ class App extends React.Component <{
 
 			await afterChange()
 			this.buildState(true)
+			this.setState({ loading: false })
 		}
 	}
 

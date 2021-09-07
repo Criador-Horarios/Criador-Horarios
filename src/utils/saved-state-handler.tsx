@@ -24,7 +24,7 @@ export default class SavedStateHandler {
 	private cookies = new Cookies()
 
 	constructor(urlParams: Record<string, string>) {
-		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getCookie(SavedStateHandler.SHIFTS)
+		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
 		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getCookie(SavedStateHandler.DEGREES)
 	}
 
@@ -63,7 +63,8 @@ export default class SavedStateHandler {
 			this.cookies.remove(SavedStateHandler.DEGREES)
 		} else {
 			this.shifts = shortenDescriptions(selectedShifts)
-			this.cookies.set(SavedStateHandler.SHIFTS, this.shifts, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
+			// this.cookies.set(SavedStateHandler.SHIFTS, this.shifts, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
+			this.setLocalStorage(SavedStateHandler.SHIFTS, this.shifts)
 
 			this.degrees = getDegreesAcronyms(selectedShifts) || ''
 			this.cookies.set(SavedStateHandler.DEGREES, this.degrees, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
@@ -154,6 +155,14 @@ export default class SavedStateHandler {
 
 	private setCookie(accessor: string, value: string | boolean, maxAge: number) {
 		this.cookies.set(accessor, value, { maxAge })
+	}
+
+	private getLocalStorage(accessor: string): string {
+		return localStorage.getItem(accessor) ?? ''
+	}
+
+	private setLocalStorage(accessor: string, value: string): void {
+		localStorage.setItem(accessor, value)
 	}
 }
 
