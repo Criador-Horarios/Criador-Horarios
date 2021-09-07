@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Stop fetching degrees twice
+- Keep courses and shifts on language change
 
 ### Removed
 

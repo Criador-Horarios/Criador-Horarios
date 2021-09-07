@@ -406,11 +406,10 @@ class App extends React.Component <{
 
 			// Clear shifts?
 			// this.clearSelectedShifts(false)
-			this.buildState(true)
-
 			this.savedStateHandler.setLanguage(language)
 
 			await afterChange()
+			this.buildState(true)
 		}
 	}
 
