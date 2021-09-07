@@ -54,11 +54,13 @@ export default class API {
 	}
 
 	public static async getDegrees(): Promise<Degree[] | null> {
-		const res = (await this.getRequest('/api/degrees') as DegreeDto[] | null)
+		// This should use the endpoint /api/degrees, but using this one because the other is too large
+		const res = (await this.getRequest('/api/degrees/all') as DegreeDto[] | null)
 		if (res === null) {
 			return null
 		}
 		const degrees = res.map((d: DegreeDto) => new Degree(d))
+			.filter((d: Degree) => d.academicTerms.includes(API.ACADEMIC_TERM))
 		return degrees.sort(Degree.compare)
 	}
 

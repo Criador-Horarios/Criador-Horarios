@@ -3,11 +3,13 @@ export default class Degree {
 	acronym: string
 	name: string
 	isSelected = false
+	academicTerms: string[]
 
 	constructor(obj: DegreeDto) {
 		this.id = obj.id
 		this.acronym = obj.acronym
 		this.name = obj.name
+		this.academicTerms = obj.academicTerms
 	}
 
 	displayName(): string {
@@ -23,6 +25,7 @@ export default class Degree {
 	}
 }
 
+// This DTO is incorrect, as we are now using the /degrees/all endpoint
 export type DegreeDto = {
 	academicTerm: string
 	academicTerms: string[]
