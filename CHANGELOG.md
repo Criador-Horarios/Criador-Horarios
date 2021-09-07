@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Use /degrees/all endpoint
+- Update degrees on academicTerm change
+
 ### Removed
 
 ## [1.8.0] - 04/09/2021
