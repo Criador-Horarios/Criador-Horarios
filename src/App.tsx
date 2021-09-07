@@ -45,7 +45,7 @@ import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaypal } from '@fortawesome/free-brands-svg-icons'
-import Cookies from 'universal-cookie'
+import SavedStateHandler from './utils/saved-state-handler'
 import CardHeader from '@material-ui/core/CardHeader'
 
 import getClasses, { getMinimalClasses } from './utils/shift-scraper'
@@ -54,13 +54,6 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import Box from '@material-ui/core/Box'
-
-type BuiltCourse = {
-	course: Course,
-	availableShifts: Shift[],
-	selectedShifts: Shift[]
-}
-
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -83,7 +76,7 @@ class App extends React.Component <{
 		darkMode: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  }
 	}
-	cookies = new Cookies()
+	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
@@ -117,35 +110,34 @@ class App extends React.Component <{
 
 		this.theme = this.getTheme(this.state.darkMode)
 
+		this.savedStateHandler = new SavedStateHandler(API.getUrlParams())
+
 		API.setLanguage(this.state.lang)
 	}
 
 	async componentDidMount() {
-		const darkName = this.cookies.get('dark') ?? null
-		if (darkName !== null) {
-			const darkMode = (darkName === 'true') ? true : false
-			if (darkMode !== this.state.darkMode) {
-				this.onChangeDarkMode(darkMode)
-			}
+		const darkMode = this.savedStateHandler.getDarkMode()
+		if (darkMode !== null && darkMode !== this.state.darkMode) {
+			this.onChangeDarkMode(darkMode)
 		}
 
-		const language = this.cookies.get('language') ?? this.state.lang
+		const language = this.savedStateHandler.getLanguage() ?? this.state.lang
 		if (language !== this.state.lang) {
 			this.changeLanguage(language)
 		}
 
-		const params = API.getUrlParams()
-		await this.buildState(params.s, params.d)
+		// Build state from cookies or url
+		await this.buildState()
 
 		this.setState({
 			loading: false
 		})
 
 		// Set warning with all notices
-		const isWarned = this.cookies.get('warning')
-		if (isWarned !== 'true') {
+		const isWarned = this.savedStateHandler.getWarning()
+		if (!isWarned) {
 			this.setWarningShiftDegrees()
-			this.cookies.set('warning', 'true', { maxAge: 60*60*24 })
+			this.savedStateHandler.setWarning(true)
 		}
 	}
 
@@ -239,15 +231,7 @@ class App extends React.Component <{
 			selectedShifts: shifts
 		})
 		this.topBar.current?.setHasSelectedShifts(shifts)
-		if (shifts.length === 0) {
-			this.cookies.remove('s')
-			this.cookies.remove('d')
-		} else {
-			const state = shortenDescriptions(shifts)
-			this.cookies.set('s', state, { maxAge: 60*60*24*31*3 })
-			const degrees = getDegreesAcronyms(shifts)
-			this.cookies.set('d', degrees, { maxAge: 60*60*24*31*3 })
-		}
+		this.savedStateHandler.setShifts(shifts)
 	}
 
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
@@ -294,7 +278,7 @@ class App extends React.Component <{
 				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
 			}
 
-			this.changeUrl(false)
+			SavedStateHandler.changeUrl(false, [])
 		}
 	}
 
@@ -378,97 +362,38 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.link-obtained'), 'success')
 	}
 
-	async changeUrl(toState: boolean): Promise<void> {
-		const title: string = document.title
-		let path = API.PATH_PREFIX + '/'
-		const state = shortenDescriptions(this.state.selectedShifts)
-		const degrees = getDegreesAcronyms(this.state.selectedShifts)
-		if (state !== '' && toState) {
-			path += `?s=${state}`
-			path += `&d=${degrees}`
-		}
-
-		if (window.history.replaceState) {
-			window.history.replaceState({}, title, path)
-		} else {
-			window.history.pushState({}, title, path)
-		}
-	}
-
-	async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
-		const course = await API.getCourse(description[0])
-		if (!course) {
-			throw 'Could not build course'
-		}
-
-		if (updates.has(course)) {
-			throw 'Repeated course on URL'
-		}
-
-		updates.toggleCourse(course)
-		const availableShifts = await API.getCourseSchedules(course)
-		if (!availableShifts) {
-			throw 'Could not fetch course schedule'
-		}
-
-		const selectedShiftIds = description.slice(1)
-		const selectedShifts = availableShifts.reduce((acc: Shift[], shift: Shift) => {
-			if (selectedShiftIds.includes(shift.shiftId)) {
-				acc.push(shift)
-				course.addSelectedShift(shift)
-			}
-			return acc
-		}, [] as Shift[])
-		return { course, availableShifts, selectedShifts }
-	}
-
-	async buildState(paramShift: string | undefined, paramDegree: string | undefined): Promise<void> {
-
+	async buildState(): Promise<void> {
 		// Build degree
-		paramDegree = paramDegree ?? this.cookies.get('d')
-		if (paramDegree) {
-			try {
-				const degreeAcronyms = paramDegree.split(';')
-				this.topBar.current?.setSelectedDegrees(degreeAcronyms)
-			} catch (err) {
-				console.error(err)
-				// ignored, bad URL/cookie state
-			}
+		try {
+			// Fetch degrees from url params or cookies
+			const degreeAcronyms = this.savedStateHandler.getDegrees()
+			if (degreeAcronyms) this.topBar.current?.setSelectedDegrees(degreeAcronyms)
+		} catch (err) {
+			console.error(err)
+			// ignored, bad URL/cookie state
 		}
 
 		
 		// Build shifts
-		paramShift = paramShift ?? this.cookies.get('s')
-		if (paramShift) {
-			try {
-				const shifts = paramShift.split(';')
-					.map((shift: string) => shift.split('~'))
+		try {
+			// Fetch shifts from url params or cookies 
+			const [courseUpdates, state] = await this.savedStateHandler.getShifts()
 
-				const courseUpdates = new CourseUpdates()
-				const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdates)))
-				// eslint-disable-next-line
-				const state = parsedState.reduce((acc: any, result: BuiltCourse) => {
-					acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
-					acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
-					return acc
-				}, { availableShifts: [], selectedShifts: [] })
-
-				this.topBar.current?.setSelectedCourses(courseUpdates)
-				this.setState({
-					...state,
-					selectedCourses: courseUpdates,
-					shownShifts: this.filterShifts({
-						selectedCampi: this.state.selectedCampi,
-						selectedShiftTypes: this.state.selectedShiftTypes,
-						availableShifts: state.availableShifts
-					})
+			this.topBar.current?.setSelectedCourses(courseUpdates)
+			this.setState({
+				...state,
+				selectedCourses: courseUpdates,
+				shownShifts: this.filterShifts({
+					selectedCampi: this.state.selectedCampi,
+					selectedShiftTypes: this.state.selectedShiftTypes,
+					availableShifts: state.availableShifts
 				})
-				this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-				this.changeUrl(false)
-			} catch (err) {
-				console.error(err)
-				// ignored, bad URL/cookie state
-			}
+			})
+			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
+			SavedStateHandler.changeUrl(false, [])
+		} catch (err) {
+			console.error(err)
+			// ignored, bad URL/cookie state
 		}
 	}
 
@@ -495,7 +420,7 @@ class App extends React.Component <{
 		// Clear shifts?
 		this.clearSelectedShifts(false)
 
-		this.cookies.set('language', language, { maxAge: 60*60*24*31*3 })
+		this.savedStateHandler.setLanguage(language)
 	}
 
 	onChangeDarkMode(dark: boolean): void {
@@ -503,7 +428,7 @@ class App extends React.Component <{
 		this.setState({
 			darkMode: dark
 		})
-		this.cookies.set('dark', dark, { maxAge: 60*60*24*31*3 })
+		this.savedStateHandler.setDarkMode(dark)
 	}
 
 	getTheme(dark: boolean): Theme {
@@ -522,24 +447,11 @@ class App extends React.Component <{
 
 	async getClasses(): Promise<void> {
 		this.setState({loading: true})
-		// const classes = await getClasses(this.state.selectedShifts)
 		const [classesByShift, minimalClasses] = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
-		// const value = Object.entries(classes) //.map(arr => arr.join(': ')).flat() //.join('\r\n')
-		const value = Object.entries(classesByShift)
 
-		this.classesByShift = value
+		this.classesByShift = Object.entries(classesByShift)
 		this.minimalClasses = minimalClasses
 		this.setState({classesDialog: true, loading: false})
-
-		// TODO: download to a file
-		// const el = document.createElement('a')
-		// const file = new Blob([classesByShift], {type: 'text/plain;charset=utf-8'})
-		// el.href = URL.createObjectURL(file)
-		// el.download = 'ist-turmas.txt'
-		// document.body.appendChild(el)
-		// el.click()
-		// document.body.removeChild(el)
-		// this.showAlert(i18next.t('alert.classes-file'), 'success')
 	}
 
 	setWarningShiftDegrees(): void {
@@ -928,3 +840,4 @@ const styles = (theme: any) => ({
 })
 
 export default withStyles(styles)(App)
+
