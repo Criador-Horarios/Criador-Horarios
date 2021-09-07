@@ -3,6 +3,7 @@ import randomColor from 'randomcolor'
 import rgbHex from 'rgb-hex'
 import { Comparables } from '../domain/Comparable'
 import Course from '../domain/Course'
+import { isOkWithWhite } from './colors'
 
 export enum CourseUpdateType {
 	Add,
@@ -114,19 +115,6 @@ const getRandomDarkColor = () => {
 		}))
 	} while (!isOkWithWhite(chosenColor))
 	return chosenColor
-}
-
-const isOkWithWhite = function(hexColor: hexRgb.RgbaObject): boolean {
-	const C = [ hexColor.red/255, hexColor.green/255, hexColor.blue/255 ]
-	for ( let i = 0; i < C.length; ++i ) {
-		if ( C[i] <= 0.03928 ) {
-			C[i] = C[i] / 12.92
-		} else {
-			C[i] = Math.pow( ( C[i] + 0.055 ) / 1.055, 2.4)
-		}
-	}
-	const L = 0.2126 * C[0] + 0.7152 * C[1] + 0.0722 * C[2]
-	return L <= 0.179
 }
 
 export function getCoursesDifference(prevCourses: Course[], courses: Course[]): Update | undefined {
