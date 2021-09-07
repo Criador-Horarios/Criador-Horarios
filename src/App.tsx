@@ -124,7 +124,7 @@ class App extends React.Component <{
 
 		const language = this.savedStateHandler.getLanguage() ?? this.state.lang
 		if (language !== this.state.lang) {
-			this.changeLanguage(language)
+			this.changeLanguage(language, () => { return })
 		}
 
 		// Build state from cookies or url
@@ -350,11 +350,11 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.link-obtained'), 'success')
 	}
 
-	async buildState(): Promise<void> {
+	async buildState(forceUpdate = false): Promise<void> {
 		// Build degree
 		try {
 			// Fetch degrees from url params or cookies
-			const degreeAcronyms = this.savedStateHandler.getDegrees()
+			const degreeAcronyms = this.savedStateHandler.getDegrees(forceUpdate)
 			if (degreeAcronyms) this.topBar.current?.setSelectedDegrees(degreeAcronyms)
 		} catch (err) {
 			console.error(err)
@@ -363,8 +363,12 @@ class App extends React.Component <{
 		
 		// Build shifts
 		try {
-			// Fetch shifts from url params or cookies 
-			const [courseUpdates, state] = await this.savedStateHandler.getShifts()
+			// Fetch shifts from url params or cookies
+			const shiftState = await this.savedStateHandler.getShifts()
+			if (!shiftState) {
+				return
+			}
+			const [courseUpdates, state] = shiftState
 
 			this.topBar.current?.setSelectedCourses(courseUpdates)
 			this.setState({
@@ -394,15 +398,20 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
 
-	changeLanguage(language: string): void {
-		this.setState({ lang: language })
-		i18next.changeLanguage(language).then(() => i18next.options.lng = language)
-		API.setLanguage(language)
+	async changeLanguage(language: string, afterChange: () => void): Promise<void> {
+		if (language !== this.state.lang) {
+			this.setState({ lang: language })
+			i18next.changeLanguage(language).then(() => i18next.options.lng = language)
+			API.setLanguage(language)
 
-		// Clear shifts?
-		this.clearSelectedShifts(false)
+			// Clear shifts?
+			// this.clearSelectedShifts(false)
+			this.buildState(true)
 
-		this.savedStateHandler.setLanguage(language)
+			this.savedStateHandler.setLanguage(language)
+
+			await afterChange()
+		}
 	}
 
 	onChangeDarkMode(dark: boolean): void {

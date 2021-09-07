@@ -40,7 +40,7 @@ class TopBar extends React.Component <{
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
 	onClearShifts: (alert: boolean) => void
 	onGetLink: () => void
-	onChangeLanguage: (language: string) => void
+	onChangeLanguage: (language: string, afterChange: () => void) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
 }, unknown>{
@@ -186,16 +186,18 @@ class TopBar extends React.Component <{
 
 	async onLanguageSelect(language: string): Promise<void> {
 		this.onLanguageMenuClick(null, false)
-		this.props.onChangeLanguage(language)
 
-		// Get degrees with correct language and erase courses
-		const degrees = await API.getDegrees()
-		this.setState({
-			degrees: degrees ?? []
+		// The inner function will only run if the language changes
+		await this.props.onChangeLanguage(language, async () => {
+			// Get degrees with correct language and erase courses
+			const degrees = await API.getDegrees()
+			this.setState({
+				degrees: degrees ?? []
+			})
 		})
 
-		this.selectedDegrees = []
-		this.onSelectedCourse([])
+		// this.selectedDegrees = []
+		// this.onSelectedCourse([])
 	}
 
 	onChangeDarkMode(): void {

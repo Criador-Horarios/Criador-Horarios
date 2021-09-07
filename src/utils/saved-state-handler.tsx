@@ -50,7 +50,10 @@ export default class SavedStateHandler {
 
 	// INSTANCE METHODS
 	// Returns the degrees acronyms, like MEIC-A
-	getDegrees(): string[] | undefined {
+	getDegrees(forceUpdate = false): string[] | undefined {
+		if (forceUpdate) {
+			this.degrees = this.getCookie(SavedStateHandler.DEGREES)
+		}
 		return this.degrees?.split(SavedStateHandler.PARAMS_SEP)
 	}
 
@@ -67,7 +70,10 @@ export default class SavedStateHandler {
 		}
 	}
 
-	async getShifts(): Promise<[CourseUpdates, ShiftState]> {
+	async getShifts(): Promise<[CourseUpdates, ShiftState] | undefined> {
+		if (!this.shifts) {
+			return undefined
+		}
 		const shifts = this.shifts.split(SavedStateHandler.PARAMS_SEP)
 			.map((shift: string) => shift.split(SavedStateHandler.ARGS_SEP))
 
