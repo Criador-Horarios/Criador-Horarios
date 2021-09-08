@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Store colors in LocalStorage
+
 ### Fixed
 
 - Store degrees in LocalStorage

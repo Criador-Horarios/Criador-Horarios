@@ -29,13 +29,13 @@ export default class CourseUpdates {
 		return Comparables.includes(this.courses, course)
 	}
 
-	toggleCourse(course: Course): CourseUpdateType {
+	toggleCourse(course: Course, skipColor = false): CourseUpdateType {
 		const idx = Comparables.indexOf(this.courses, course)
 
 		let type
 		if (idx !== -1) {
 			// Remove color
-			if (!course.hasShiftsSelected()) {
+			if (!course.hasShiftsSelected() && !skipColor) {
 				const color = course.removeColor()
 				returnColor(color)
 			}
@@ -46,7 +46,7 @@ export default class CourseUpdates {
 			this.courses.splice(idx, 1)
 		} else {
 			// Add color
-			if (!course.hasShiftsSelected()) {
+			if (!course.hasShiftsSelected() && !skipColor) {
 				const color = getColor()
 				course.setColor(color)
 			}

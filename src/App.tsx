@@ -739,6 +739,7 @@ class App extends React.Component <{
 							this.state.availableShifts.forEach(shift => {
 								if (shift.courseId === course.id) {
 									shift.updateColorFromCourse()
+									this.savedStateHandler.setCoursesColor([course])
 								}
 							})
 							this.setState({ availableShifts: this.state.availableShifts })
