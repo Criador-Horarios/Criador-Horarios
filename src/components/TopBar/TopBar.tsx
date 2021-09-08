@@ -40,7 +40,7 @@ class TopBar extends React.Component <{
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
 	onClearShifts: (alert: boolean) => void
 	onGetLink: () => void
-	onChangeLanguage: (language: string) => void
+	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
 }, unknown>{
@@ -71,7 +71,7 @@ class TopBar extends React.Component <{
 	async componentDidMount(): Promise<void> {
 		// Update term
 		const currTermId = await defineCurrentTerm()
-		this.onSelectedAcademicTerm(currTermId)
+		this.onSelectedAcademicTerm(currTermId, false)
 
 		const degrees = await API.getDegrees()
 		this.setState({
@@ -150,7 +150,7 @@ class TopBar extends React.Component <{
 		})
 	}
 
-	async onSelectedAcademicTerm(s: string): Promise<void> {
+	async onSelectedAcademicTerm(s: string, fetchDegrees: boolean): Promise<void> {
 		const foundArr = staticData.terms.filter( (at) => at.id === s)
 		if (foundArr.length > 0) {
 			const chosenAT = foundArr[0]
@@ -161,11 +161,15 @@ class TopBar extends React.Component <{
 		this.onSelectedCourse([])
 		this.onSelectedDegree([])
 		this.props.onClearShifts(false)
-		const degrees = await API.getDegrees()
-		this.setState({
-			selectedAcademicTerm: s,
-			degrees: degrees ?? []
-		})
+		if (fetchDegrees) {
+			const degrees = await API.getDegrees()
+			this.setState({
+				selectedAcademicTerm: s,
+				degrees: degrees ?? []
+			})
+		} else {
+			this.setState({ selectedAcademicTerm: s })
+		}
 	}
 
 	onLanguageMenuClick(event: React.MouseEvent<HTMLSpanElement, MouseEvent> | null, open: boolean): void {
@@ -182,16 +186,18 @@ class TopBar extends React.Component <{
 
 	async onLanguageSelect(language: string): Promise<void> {
 		this.onLanguageMenuClick(null, false)
-		this.props.onChangeLanguage(language)
 
-		// Get degrees with correct language and erase courses
-		const degrees = await API.getDegrees()
-		this.setState({
-			degrees: degrees ?? []
+		// The inner function will only run if the language changes
+		await this.props.onChangeLanguage(language, async () => {
+			// Get degrees with correct language and erase courses
+			const degrees = await API.getDegrees()
+			this.setState({
+				degrees: degrees ?? []
+			})
 		})
 
-		this.selectedDegrees = []
-		this.onSelectedCourse([])
+		// this.selectedDegrees = []
+		// this.onSelectedCourse([])
 	}
 
 	onChangeDarkMode(): void {
@@ -328,7 +334,7 @@ class TopBar extends React.Component <{
 							<Select
 								id="semester"
 								value={this.state.selectedAcademicTerm}
-								onChange={(e) => {this.onSelectedAcademicTerm(e.target.value as string)}}
+								onChange={(e) => {this.onSelectedAcademicTerm(e.target.value as string, true)}}
 								label={i18next.t('settings-dialog.select.label') as string}
 								// className={styles.semesterSelector}
 								autoWidth={true}

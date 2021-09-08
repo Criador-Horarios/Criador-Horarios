@@ -28,3 +28,16 @@ const shadeColor = (color: string, amount: number): string => {
 	})
 	return '#' + rgbHex(newColor.red, newColor.green, newColor.blue)
 }
+
+export const isOkWithWhite = function(hexColor: hexRgb.RgbaObject): boolean {
+	const C = [ hexColor.red/255, hexColor.green/255, hexColor.blue/255 ]
+	for ( let i = 0; i < C.length; ++i ) {
+		if ( C[i] <= 0.03928 ) {
+			C[i] = C[i] / 12.92
+		} else {
+			C[i] = Math.pow( ( C[i] + 0.055 ) / 1.055, 2.4)
+		}
+	}
+	const L = 0.2126 * C[0] + 0.7152 * C[1] + 0.0722 * C[2]
+	return L <= 0.179
+}

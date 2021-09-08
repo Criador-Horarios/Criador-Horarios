@@ -12,6 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.9.1] - 08/09/2021
+
+### Added
+
+### Fixed
+
+- Refactor saved state logic to its own module
+- Refactor react styles to its own module
+- Stop fetching degrees twice
+- Keep courses and shifts on language change
+- Duplicate shifts showing up on reload or on URL
+
+### Removed
+
 ## [1.9.0] - 07/09/2021
 
 ### Added
