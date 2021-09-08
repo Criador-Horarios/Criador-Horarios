@@ -140,7 +140,7 @@ export default class SavedStateHandler {
 		// Set selected shifts for the course
 		const selectedShiftIds = description.slice(1)
 		const selectedShifts = availableShifts.reduce((acc: Shift[], shift: Shift) => {
-			if (selectedShiftIds.includes(shift.shiftId)) {
+			if (selectedShiftIds.includes(shift.getStoredId())) {
 				acc.push(shift)
 				course.addSelectedShift(shift)
 			}

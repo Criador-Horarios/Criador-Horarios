@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.9.2] - 08/09/2021
+
+### Added
+
+### Fixed
+
+- Wrong shift id
+
+### Removed
+
 ## [1.9.1] - 08/09/2021
 
 ### Added

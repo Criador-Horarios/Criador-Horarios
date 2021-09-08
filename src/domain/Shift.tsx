@@ -38,8 +38,7 @@ export default class Shift implements Comparable {
 		// Use course acronym
 		this.acronym = course.acronym
 		this.type = match[2] as ShiftType
-		// this.shiftId = match[2] + match[3]
-		this.shiftId = obj.name
+		this.shiftId = match[2] + match[3]
 		this.courseName = course.name
 		if (obj.rooms !== null || (obj.rooms as string[]).length > 0) {
 			this.campus = obj.rooms[0]?.topLevelSpace.name
@@ -96,8 +95,12 @@ export default class Shift implements Comparable {
 		return this.name
 	}
 
+	getStoredId(): string {
+		return this.name
+	}
+
 	getFullId(): string[] {
-		return [this.courseId, this.shiftId]
+		return [this.courseId, this.getStoredId()]
 	}
 
 	updateColorFromCourse(): void {
