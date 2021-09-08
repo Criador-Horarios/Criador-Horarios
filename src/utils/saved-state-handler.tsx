@@ -24,8 +24,10 @@ export default class SavedStateHandler {
 	private cookies = new Cookies()
 
 	constructor(urlParams: Record<string, string>) {
-		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
-		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getCookie(SavedStateHandler.DEGREES)
+		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS) ??
+			this.getCookie(SavedStateHandler.SHIFTS)
+		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES) ??
+			this.getCookie(SavedStateHandler.DEGREES)
 	}
 
 	// CLASS METHODS
@@ -52,22 +54,21 @@ export default class SavedStateHandler {
 	// Returns the degrees acronyms, like MEIC-A
 	getDegrees(forceUpdate = false): string[] | undefined {
 		if (forceUpdate) {
-			this.degrees = this.getCookie(SavedStateHandler.DEGREES)
+			this.degrees = this.getLocalStorage(SavedStateHandler.DEGREES)
 		}
 		return this.degrees?.split(SavedStateHandler.PARAMS_SEP)
 	}
 
 	setShifts(selectedShifts: Shift[]): void {
 		if (selectedShifts.length === 0) {
-			this.cookies.remove(SavedStateHandler.SHIFTS)
-			this.cookies.remove(SavedStateHandler.DEGREES)
+			this.removeLocalStorage(SavedStateHandler.SHIFTS)
+			this.removeLocalStorage(SavedStateHandler.DEGREES)
 		} else {
 			this.shifts = shortenDescriptions(selectedShifts)
-			// this.cookies.set(SavedStateHandler.SHIFTS, this.shifts, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
 			this.setLocalStorage(SavedStateHandler.SHIFTS, this.shifts)
 
 			this.degrees = getDegreesAcronyms(selectedShifts) || ''
-			this.cookies.set(SavedStateHandler.DEGREES, this.degrees, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
+			this.setLocalStorage(SavedStateHandler.DEGREES, this.degrees)
 		}
 	}
 
@@ -153,7 +154,7 @@ export default class SavedStateHandler {
 		return this.cookies.get(accessor)
 	}
 
-	private setCookie(accessor: string, value: string | boolean, maxAge: number) {
+	private setCookie(accessor: string, value: string | boolean, maxAge = SavedStateHandler.MAX_AGE_NORMAL) {
 		this.cookies.set(accessor, value, { maxAge })
 	}
 
@@ -163,6 +164,10 @@ export default class SavedStateHandler {
 
 	private setLocalStorage(accessor: string, value: string): void {
 		localStorage.setItem(accessor, value)
+	}
+
+	private removeLocalStorage(accessor: string): void {
+		localStorage.removeItem(accessor)
 	}
 }
 
