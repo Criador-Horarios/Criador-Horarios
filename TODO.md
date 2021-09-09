@@ -36,3 +36,4 @@
 - [X] AGISIT has shifts with different names -> As we store T01 only and there are 2, we show them both :(
 - [X] Store picked color of courses (cookies)
 - [ ] Change font color according to background color [help](https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color)
+- [ ] Get the classes with the schedules to show only the shifts with the selected degrees

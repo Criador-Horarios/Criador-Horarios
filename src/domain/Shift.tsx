@@ -31,8 +31,11 @@ export default class Shift implements Comparable {
 		this.courseId = course.id
 		this.course = course
 		this.name = obj.name
-		const re = /^(.+)(L|PB|T|S|TP|P)([\d]{2})$/
-		const match = this.name.match(re)
+
+		const allShiftTypes = Object.values(ShiftType)
+		const pattern = new RegExp(`^(.+)(${allShiftTypes.join('|')})([\\d]{2})$`)
+		// const re = /^(.+)(L|PB|T|S|TP|P)([\d]{2})$/ // Old regex
+		const match = this.name.match(pattern)
 		if (match === null) {
 			throw `Unexpected shift name - ${this.name}`
 		}

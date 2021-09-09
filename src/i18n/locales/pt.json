@@ -46,7 +46,7 @@
 	"changelog-dialog": {
 		"title": "Novidades",
 		"content": [
-			"- Pode alterar a cor duma cadeira (ainda não é guardado), ao clicar na cadeira correspondente, em baixo dos turnos selecionados",
+			"- Pode alterar a cor duma cadeira (persistentemente), ao clicar na cadeira correspondente, em baixo dos turnos selecionados",
 			"- Ao obter as turmas para as inscrições, encontra o menor conjunto de turmas possível",
 			"- Download de um ficheiro iCalendar com as aulas",
 			"- Dados da ocupação dos turnos (não atualizados automaticamente)",
@@ -118,7 +118,8 @@
 		"cleared-schedule": "Horário limpo com sucesso",
 		"cannot-obtain-degrees": "Não foi possível obter os cursos",
 		"cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
-		"cannot-obtain-shifts": "Não foi possível obter os turnos desta UC"
+		"cannot-obtain-shifts": "Não foi possível obter os turnos desta UC",
+		"error-parsing": "Houve problemas a restaurar o estado. Por favor contacte os administradores."
 	},
 	"warning": {
 		"title": "Avisos: Calendário, Ocupação e Turnos com Cursos diferentes",
@@ -126,7 +127,6 @@
 			"O ficheiro do calendário com as aulas não é atualizado automaticamente, deve verificar de tempo em tempo no Fénix se alguma aula mudou.",
 			"Os dados da ocupação dos turnos não são em tempo real, para tal deve recarregar a página sempre que quiser saber o valor real.",
 			"Alguns turnos provenientes do Fénix pertencem a cursos que não o selecionado, verifique se a turma pertence ao curso pelo qual se pretende inscrever utilizando a funcionalidade \"$t(schedule-selected.actions.get-classes)\"."
-			
 		],
 		"actions": {
 			"continue": "Continuar",
@@ -152,6 +152,7 @@
 		"TP": "Teórico-Prática",
 		"L": "Laboratorial",
 		"PB": "Problemas",
+		"P": "Práticas",
 		"S": "Seminário"
 	},
 	"language": {

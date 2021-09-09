@@ -81,7 +81,8 @@ export default class SavedStateHandler {
 		}
 	}
 
-	async getShifts(): Promise<[CourseUpdates, ShiftState] | undefined> {
+	async getShifts(): Promise<[CourseUpdates, ShiftState, string] | undefined> {
+		const errors: string[] = []
 		if (!this.shifts) {
 			return undefined
 		}
@@ -89,15 +90,26 @@ export default class SavedStateHandler {
 			.map((shift: string) => shift.split(SavedStateHandler.ARGS_SEP))
 
 		const courseUpdate = new CourseUpdates()
-		const parsedState = await Promise.all(shifts.map(async (description: string[]) => this.buildCourse(description, courseUpdate)))
+		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
+			try {
+				return await this.buildCourse(description, courseUpdate)
+			} catch (err) {
+				// Values not well parsed, but keeps parsing the rest
+				errors.push(err as string)
+				console.error(err)
+				return undefined
+			}
+		}))
 
-		const state = parsedState.reduce((acc: ShiftState, result: BuiltCourse) => {
-			acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
-			acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
+		const state = parsedState.reduce((acc: ShiftState, result: BuiltCourse | undefined) => {
+			if (result) {
+				acc.availableShifts = acc.availableShifts.concat(result.availableShifts)
+				acc.selectedShifts = acc.selectedShifts.concat(result.selectedShifts)
+			}
 			return acc
 		}, { availableShifts: [], selectedShifts: [] } as ShiftState)
 
-		return [courseUpdate, state]
+		return [courseUpdate, state, errors.join(', ')]
 	}
 
 	getDarkMode(): boolean | null {

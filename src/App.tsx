@@ -368,7 +368,12 @@ class App extends React.Component <{
 			if (!shiftState) {
 				return
 			}
-			const [courseUpdates, state] = shiftState
+			const [courseUpdates, state, errors] = shiftState
+
+			// Show that there were parsing errors
+			if (errors !== '') {
+				this.showAlert(i18next.t('alert.error-parsing'), 'warning')
+			}
 
 			this.topBar.current?.setSelectedCourses(courseUpdates)
 			this.setState({
@@ -584,7 +589,10 @@ class App extends React.Component <{
 													{Array.from(c.getShiftsDisplay()).map((s) => (
 														<Paper elevation={0} key={s[0]}
 															className={ ( (s[1]) ? classes.checklistSelected : classes.checklistUnselected) as string }
-															style={{marginLeft: '4px', marginRight: '4px', color: `${(s[1]) ? this.theme.palette.text.primary : this.theme.palette.text.hint}`}}
+															style={{
+																marginLeft: '4px', marginRight: '4px',
+																color: `${(s[1]) ? this.theme.palette.text.primary : this.theme.palette.text.hint}`
+															}}
 														>
 															<Typography variant='body1' style={{ fontWeight: 500 }}>{s[0]}</Typography>
 														</Paper>
