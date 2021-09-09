@@ -46,9 +46,9 @@ class TopBar extends React.Component <{
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
-    multiShiftMode: boolean
-    onChangeMultiShiftMode: (multiShiftMode: boolean) => void
-    disableMultiShiftModeChange: boolean
+	multiShiftMode: boolean
+	onChangeMultiShiftMode: (multiShiftMode: boolean) => void
+	disableMultiShiftModeChange: boolean
 }, unknown>{
 	static defaultProps = {
 		disableMultiShiftModeChange: false
