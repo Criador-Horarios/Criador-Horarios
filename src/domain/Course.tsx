@@ -1,5 +1,5 @@
 import Comparable from './Comparable'
-import Shift, { ShiftType } from './Shift'
+import Shift from './Shift'
 
 export default class Course implements Comparable {
 	id: string
@@ -28,10 +28,6 @@ export default class Course implements Comparable {
 		if (obj.url !== undefined) {
 			this.url = obj.url
 		}
-
-		Object.values(ShiftType).forEach( (s) => {
-			this.shiftTypes.set(s, undefined)
-		})
 
 		// const chosenColor = getRandomDarkColor()
 		// this.color = '#' + rgbHex(chosenColor.red, chosenColor.green, chosenColor.blue)

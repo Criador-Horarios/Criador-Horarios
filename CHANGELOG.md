@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.10.1] - 09/09/2021
+
+### Added
+
+### Fixed
+
+- Errors in parsing crashed the state restoring, it now warns the user and keeps parsing
+- When a course was not well parsed, every shift type was shown, now none is shown
+- Fixed P shifts breaking TP shifts
+
+### Removed
+
 ## [1.10.0] - 09/09/2021
 
 ### Added

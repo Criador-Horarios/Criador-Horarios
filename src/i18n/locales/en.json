@@ -1,5 +1,5 @@
 {
-    "degree-selector": {
+	"degree-selector": {
 		"title": "Choose a degree",
 		"noOptions": "No options available"
 	},
@@ -47,7 +47,7 @@
 	"changelog-dialog": {
 		"title": "Changelog",
 		"content": [
-			"- You can now change the color of a course (not stored yet), by clicking in the corresponding course, below the selected shifts",
+			"- You can now change the color of a course, by clicking in the corresponding course, below the selected shifts",
 			"- When obtaining the classes, find the smallest set of classes possible",
 			"- Download of calendar with the selected shifts",
 			"- Occupation of the shift (not updated automatically)",
@@ -119,16 +119,16 @@
 		"cleared-schedule": "Schedule cleared with success",
 		"cannot-obtain-degrees": "It was not possible to obtain the degrees",
 		"cannot-obtain-courses": "It was not possible to obtain the courses of this degree",
-		"cannot-obtain-shifts": "It was not possible to obtain the shifts of this course"
+		"cannot-obtain-shifts": "It was not possible to obtain the shifts of this course",
+		"error-parsing": "There were errors in parsing. Please contact the administrators."
 	},
 	"warning": {
 		"title": "Warnings: Calendar, Occupation and Shifts with different Degrees",
 		"content": [
 			"The file of the calendar with the classes is not updated automatically, make sure to verify every now and then on Fenix if any class has changed.",
-            "The shift's occupation data is not obtained in real time, so whenever you want to know the real value you need to reload the page.",
+			"The shift's occupation data is not obtained in real time, so whenever you want to know the real value you need to reload the page.",
 			"Some shifts from Fenix belong to degrees that do not correspond to the one selected, make sure that the class belongs to the degree that you are going to enrol using the functionality \"$t(schedule-selected.actions.get-classes)\"."
-			
-        ],
+		],
 		"actions": {
 			"continue": "Continue",
 			"back": "Back"
@@ -153,6 +153,7 @@
 		"TP": "Theoretical and Practical",
 		"L": "Laboratory",
 		"PB": "Problems",
+		"P": "Pratices",
 		"S": "Seminars"
 	},
 	"language": {
