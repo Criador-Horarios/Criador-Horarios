@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.10.2] - 09/09/2021
+
+### Added
+
+### Fixed
+
+- Shift types were wrong
+
+### Removed
+
 ## [1.10.1] - 09/09/2021
 
 ### Added

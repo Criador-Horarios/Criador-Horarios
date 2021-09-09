@@ -4,21 +4,21 @@ import Course from './Course'
 import { getColor1, getColor2 } from '../utils/colors'
 
 export enum ShiftType {
-	'Teo' = 'TEORICA',
-	'TP' = 'TEORICO_PRATICA',
-	'PB' = 'PROBLEMS',
-	'Prat' = 'PRATICA',
-	'Lab' = 'LABORATORIAL',
-	'Sem' = 'SEMINARY',
-}
-
-export enum ShiftTypeDesc {
 	'Teo' = 'T',
 	'TP' = 'TP',
 	'PB' = 'PB',
 	'Prat' = 'P',
 	'Lab' = 'L',
 	'Sem' = 'S',
+}
+
+export enum ShiftTypeFenix {
+	'Teo' = 'TEORICA',
+	'TP' = 'TEORICO_PRATICA',
+	'PB' = 'PROBLEMS',
+	'Prat' = 'PRATICA',
+	'Lab' = 'LABORATORIAL',
+	'Sem' = 'SEMINARY',
 }
 
 export default class Shift implements Comparable {
@@ -41,16 +41,17 @@ export default class Shift implements Comparable {
 		this.course = course
 		this.name = obj.name
 
-		this.type = obj.types[0] as ShiftType
+		const fenixType = obj.types[0] as ShiftTypeFenix
 		// TODO: Improve, we should be able to get immediately
-		const typeDesc = Object.entries(ShiftType).find(x => x[1] === this.type)
+		const type = Object.entries(ShiftTypeFenix).find(x => x[1] === fenixType)
 		const re = /^(.+)([\d]{2})$/
 		const match = this.name.match(re)
-		if (match === null || typeDesc === undefined) {
+		if (match === null || type === undefined) {
 			throw `Unexpected shift name - ${this.name}`
 		}
-
-		this.shiftId = typeDesc[0] + match[2]
+		
+		this.type = Object.entries(ShiftType).filter(x => x[0] === type[0])[0][1]
+		this.shiftId = this.type + match[2]
 
 		// Use course acronym
 		this.acronym = course.acronym
