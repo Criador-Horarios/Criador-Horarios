@@ -4,11 +4,20 @@ import Course from './Course'
 import { getColor1, getColor2 } from '../utils/colors'
 
 export enum ShiftType {
+	'Teo' = 'TEORICA',
+	'TP' = 'TEORICO_PRATICA',
+	'PB' = 'PROBLEMS',
+	'Prat' = 'PRATICA',
+	'Lab' = 'LABORATORIAL',
+	'Sem' = 'SEMINARY',
+}
+
+export enum ShiftTypeDesc {
 	'Teo' = 'T',
+	'TP' = 'TP',
 	'PB' = 'PB',
 	'Prat' = 'P',
 	'Lab' = 'L',
-	'TP' = 'TP',
 	'Sem' = 'S',
 }
 
@@ -32,17 +41,19 @@ export default class Shift implements Comparable {
 		this.course = course
 		this.name = obj.name
 
-		const allShiftTypes = Object.values(ShiftType)
-		const pattern = new RegExp(`^(.+)(${allShiftTypes.join('|')})([\\d]{2})$`)
-		// const re = /^(.+)(L|PB|T|S|TP|P)([\d]{2})$/ // Old regex
-		const match = this.name.match(pattern)
-		if (match === null) {
+		this.type = obj.types[0] as ShiftType
+		// TODO: Improve, we should be able to get immediately
+		const typeDesc = Object.entries(ShiftType).find(x => x[1] === this.type)
+		const re = /^(.+)([\d]{2})$/
+		const match = this.name.match(re)
+		if (match === null || typeDesc === undefined) {
 			throw `Unexpected shift name - ${this.name}`
 		}
+
+		this.shiftId = typeDesc[0] + match[2]
+
 		// Use course acronym
 		this.acronym = course.acronym
-		this.type = match[2] as ShiftType
-		this.shiftId = match[2] + match[3]
 		this.courseName = course.name
 		if (obj.rooms !== null || (obj.rooms as string[]).length > 0) {
 			this.campus = obj.rooms[0]?.topLevelSpace.name

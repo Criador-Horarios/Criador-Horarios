@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Errors in parsing crashed the state restoring, it now warns the user and keeps parsing
 - When a course was not well parsed, every shift type was shown, now none is shown
+- Fixed P shifts breaking TP shifts
 
 ### Removed
 
