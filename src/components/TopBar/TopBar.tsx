@@ -15,6 +15,8 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
+import Switch from '@material-ui/core/Switch'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
@@ -28,6 +30,7 @@ import Button from '@material-ui/core/Button'
 
 import Brightness2Icon from '@material-ui/icons/Brightness2'
 import Brightness5Icon from '@material-ui/icons/Brightness5'
+import AllInclusiveIcon from '@material-ui/icons/AllInclusiveIcon'
 
 import i18next from 'i18next'
 import Menu from '@material-ui/core/Menu'
@@ -43,6 +46,8 @@ class TopBar extends React.Component <{
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
+    multiShiftMode: boolean
+    onChangeMultiShiftMode: (multiShiftMode: boolean) => void
 }, unknown>{
 	state = {
 		degrees: [] as Degree[],
@@ -66,6 +71,7 @@ class TopBar extends React.Component <{
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onLanguageMenuClick = this.onLanguageMenuClick.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
+		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 	}
 
 	async componentDidMount(): Promise<void> {
@@ -204,6 +210,10 @@ class TopBar extends React.Component <{
 		this.props.onChangeDarkMode(!this.props.darkMode)
 	}
 
+	onChangeMultiShiftMode(): void {
+		this.props.onChangeMultiShiftMode(!this.props.multiShiftMode)
+	}
+
 	render(): React.ReactNode {
 		const maxTags = 14
 		const courseFilterOptions = createFilterOptions({
@@ -308,6 +318,12 @@ class TopBar extends React.Component <{
 							<IconButton color="inherit" onClick={this.onChangeDarkMode} component="span">
 								{ this.props.darkMode ? <Brightness5Icon/> : <Brightness2Icon/> }
 							</IconButton>
+						</Tooltip>
+						<Tooltip title={i18next.t('multishiftmode-switch') as string}>
+							<FormControlLabel
+								control={<Switch checked={this.props.multiShiftMode} onChange={this.onChangeMultiShiftMode} />}
+								label={<AllInclusiveIcon/>}
+							/>
 						</Tooltip>
 						<Tooltip title={i18next.t('help-button.tooltip') as string}>
 							<IconButton disabled={this.state.helpDialog} color="inherit" onClick={() => {this.setState({helpDialog: true})}} component="span">

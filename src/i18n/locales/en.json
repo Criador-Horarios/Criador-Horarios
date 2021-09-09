@@ -17,6 +17,7 @@
 		"dark": "Set to light mode",
 		"light": "Set to dark mode"
 	},
+	"multishiftmode-switch": "Allow choosing multiple shifts of the same kind/course",
 	"help-button": {
 		"tooltip": "Help"
 	},

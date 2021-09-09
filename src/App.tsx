@@ -75,6 +75,7 @@ class App extends React.Component <{
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false,
+		multiShiftMode: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  }
 	}
 	savedStateHandler: SavedStateHandler
@@ -236,12 +237,20 @@ class App extends React.Component <{
 		if (chosenShift) {
 			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
 
-			// Verify if of the same type and course to replace, but not the same
-			const replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
-			const selectedShifts = this.state.selectedShifts
-			
-			// Verify if shift is already selected and unselect
-			const idx = Comparables.indexOf(selectedShifts, chosenShift)
+			const idx
+			const replacingIndex
+			if (this.state.multiShiftMode) {
+				// We want to allow multiple shifts of the same type, don't replace anything
+				idx = -1
+			} else {
+				// Verify if of the same type and course to replace, but not the same
+				replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
+				const selectedShifts = this.state.selectedShifts
+
+				// Verify if shift is already selected and unselect
+				idx = Comparables.indexOf(selectedShifts, chosenShift)
+			}
+
 			if (idx === -1) {
 				selectedShifts.push(chosenShift)
 				if (replacingIndex !== -1) {
@@ -257,6 +266,13 @@ class App extends React.Component <{
 			}
 
 			this.setSelectedShifts(selectedShifts)
+		}
+	}
+
+	onChangeMultiShiftMode(multiShiftMode: boolean): void {
+		if (!multiShiftMode) {
+			// TODO: prevent multiShiftMode from being disabled when the current
+			// schedule is impossible to build without it
 		}
 	}
 
@@ -500,6 +516,8 @@ class App extends React.Component <{
 						onChangeLanguage={this.changeLanguage}
 						darkMode={this.state.darkMode}
 						onChangeDarkMode={this.onChangeDarkMode}
+						multiShiftMode={this.state.multiShiftMode}
+						onChangeMultiShiftMode={this.onChangeMultiShiftMode}
 					>
 					</TopBar>
 					<div className="main">
