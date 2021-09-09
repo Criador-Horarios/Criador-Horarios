@@ -6,6 +6,7 @@ import { getColor1, getColor2 } from '../utils/colors'
 export enum ShiftType {
 	'Teo' = 'T',
 	'PB' = 'PB',
+	'Prat' = 'P',
 	'Lab' = 'L',
 	'TP' = 'TP',
 	'Sem' = 'S',
@@ -30,7 +31,7 @@ export default class Shift implements Comparable {
 		this.courseId = course.id
 		this.course = course
 		this.name = obj.name
-		const re = /^(.+)(L|PB|T|S|TP)([\d]{2})$/
+		const re = /^(.+)(L|PB|T|S|TP|P)([\d]{2})$/
 		const match = this.name.match(re)
 		if (match === null) {
 			throw `Unexpected shift name - ${this.name}`
@@ -123,7 +124,6 @@ export default class Shift implements Comparable {
 }
 
 export const shortenDescriptions = (shifts: Shift[]): string => {
-	// TODO: This can now be a dictionary or something
 	const res = shifts
 		.map((s) => s.getFullId())
 		.reduce((acc, [course, shift]) => {
