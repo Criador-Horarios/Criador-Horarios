@@ -232,22 +232,19 @@ class App extends React.Component <{
 		this.setState({ selectedShifts: shifts })
 		this.topBar.current?.setHasSelectedShifts(shifts)
 		this.savedStateHandler.setShifts(shifts)
+		this.recomputeDisableMultiShiftModeChange()
+	}
 
-		if (this.state.multiShiftMode) {
-			// Check if multi-shift can be disabled safely
-			// if multiple shifts of the same course/type are selected, and
-			// multi-shift is disabled, chaos ensues
-			const shouldDisable = it_contains(
-				combinations2(shifts),
-				([a, b]) => Shift.isSameCourseAndType(a,b)
-			)
+	private recomputeDisableMultiShiftModeChange() {
+		// Check if multi-shift can't be disabled safely
+		// if multiple shifts of the same course/type are selected, and
+		// multi-shift is disabled, chaos ensues
+		const disable = this.state.multiShiftMode && it_contains(
+			combinations2(this.state.selectedShifts),
+			([a, b]) => Shift.isSameCourseAndType(a,b)
+		)
 
-			console.log('Should disable?', shouldDisable)
-
-			this.setState({
-				disableMultiShiftModeChange: shouldDisable
-			})
-		}
+		this.setState({ disableMultiShiftModeChange: disable })
 	}
 
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
@@ -289,6 +286,7 @@ class App extends React.Component <{
 	}
 
 	onChangeMultiShiftMode(multiShiftMode: boolean): void {
+		this.savedStateHandler.setMultiShiftMode(multiShiftMode)
 		this.setState({
 			multiShiftMode: multiShiftMode
 		})
@@ -308,7 +306,7 @@ class App extends React.Component <{
 				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
 			}
 
-			SavedStateHandler.changeUrl(false, [])
+			SavedStateHandler.changeUrl(false, [], false)
 		}
 	}
 
@@ -368,9 +366,10 @@ class App extends React.Component <{
 	}
 
 	async getLink(): Promise<void> {
-		const state = shortenDescriptions(this.state.selectedShifts)
+		const shifts = shortenDescriptions(this.state.selectedShifts)
 		const degrees = getDegreesAcronyms(this.state.selectedShifts)
-		const params = [`s=${state}`, `d=${degrees}`]
+		const isMultishift = this.state.multiShiftMode.toString()
+		const params = [`${SavedStateHandler.SHIFTS}=${shifts}`, `${SavedStateHandler.DEGREES}=${degrees}`, `${SavedStateHandler.IS_MULTISHIFT}=${isMultishift}`]
 		const shortLink = await API.getShortUrl(params)
 		const el = document.createElement('textarea')
 		el.value = shortLink
@@ -385,6 +384,16 @@ class App extends React.Component <{
 	}
 
 	async buildState(forceUpdate = false): Promise<void> {
+		try {
+			this.setState({
+				multiShiftMode: this.savedStateHandler.getMultiShiftMode()
+			})
+		} catch(err) {
+			console.error(err)
+			// ignored, bad URL/cookie state
+		}
+
+
 		// Build degree
 		try {
 			// Fetch degrees from url params or cookies
@@ -394,7 +403,7 @@ class App extends React.Component <{
 			console.error(err)
 			// ignored, bad URL/cookie state
 		}
-		
+
 		// Build shifts
 		try {
 			// Fetch shifts from url params or cookies
@@ -412,10 +421,11 @@ class App extends React.Component <{
 					selectedCampi: this.state.selectedCampi,
 					selectedShiftTypes: this.state.selectedShiftTypes,
 					availableShifts: state.availableShifts
-				})
+				}),
 			})
 			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-			SavedStateHandler.changeUrl(false, [])
+			this.recomputeDisableMultiShiftModeChange()
+			SavedStateHandler.changeUrl(false, [], false)
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL/cookie state

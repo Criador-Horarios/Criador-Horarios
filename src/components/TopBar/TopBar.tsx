@@ -326,7 +326,7 @@ class TopBar extends React.Component <{
 						<Tooltip title={i18next.t('multishiftmode-switch') as string}>
 							<FormControlLabel
 								label={<AllInclusiveIcon/>}
-								control={<Switch disabled={this.props.disableMultiShiftModeChange} onChange={this.onChangeMultiShiftMode} />}
+								control={<Switch checked={this.props.multiShiftMode} disabled={this.props.disableMultiShiftModeChange} onChange={this.onChangeMultiShiftMode} />}
 							/>
 						</Tooltip>
 						<Tooltip title={i18next.t('help-button.tooltip') as string}>
