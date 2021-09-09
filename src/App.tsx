@@ -400,7 +400,6 @@ class App extends React.Component <{
 
 	async changeLanguage(language: string, afterChange: () => Promise<void>): Promise<void> {
 		if (language !== this.state.lang) {
-			// TODO: Add loader
 			this.setState({loading: true, lang: language })
 			i18next.changeLanguage(language).then(() => i18next.options.lng = language)
 			API.setLanguage(language)
@@ -739,6 +738,7 @@ class App extends React.Component <{
 							this.state.availableShifts.forEach(shift => {
 								if (shift.courseId === course.id) {
 									shift.updateColorFromCourse()
+									this.savedStateHandler.setCoursesColor([course])
 								}
 							})
 							this.setState({ availableShifts: this.state.availableShifts })

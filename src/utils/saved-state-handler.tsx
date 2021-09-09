@@ -1,4 +1,5 @@
 import Cookies from 'universal-cookie'
+import { Comparables } from '../domain/Comparable'
 import Course from '../domain/Course'
 import Shift, { getDegreesAcronyms, shortenDescriptions } from '../domain/Shift'
 import API from './api'
@@ -11,6 +12,7 @@ export default class SavedStateHandler {
 	static DARK = 'dark'
 	static LANGUAGE = 'language'
 	static WARNING = 'warning'
+	static COLORS = 'colors'
 
 	static MAX_AGE_NORMAL = 60*60*24*31*3 // 3 months
 	static MAX_AGE_SMALL = 60*60*24 // 1 day
@@ -21,11 +23,15 @@ export default class SavedStateHandler {
 	// ATTRIBUTES
 	private shifts: string
 	private degrees: string
+	private colors: Record<string, string>
 	private cookies = new Cookies()
 
 	constructor(urlParams: Record<string, string>) {
-		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
-		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getCookie(SavedStateHandler.DEGREES)
+		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS) ??
+			this.getCookie(SavedStateHandler.SHIFTS)
+		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES) ??
+			this.getCookie(SavedStateHandler.DEGREES)
+		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS, true) ?? {}) as Record<string, string>
 	}
 
 	// CLASS METHODS
@@ -52,22 +58,26 @@ export default class SavedStateHandler {
 	// Returns the degrees acronyms, like MEIC-A
 	getDegrees(forceUpdate = false): string[] | undefined {
 		if (forceUpdate) {
-			this.degrees = this.getCookie(SavedStateHandler.DEGREES)
+			this.degrees = this.getLocalStorage(SavedStateHandler.DEGREES) as string
 		}
 		return this.degrees?.split(SavedStateHandler.PARAMS_SEP)
 	}
 
 	setShifts(selectedShifts: Shift[]): void {
 		if (selectedShifts.length === 0) {
-			this.cookies.remove(SavedStateHandler.SHIFTS)
-			this.cookies.remove(SavedStateHandler.DEGREES)
+			this.removeLocalStorage(SavedStateHandler.SHIFTS)
+			this.removeLocalStorage(SavedStateHandler.DEGREES)
+			this.removeLocalStorage(SavedStateHandler.COLORS)
 		} else {
 			this.shifts = shortenDescriptions(selectedShifts)
-			// this.cookies.set(SavedStateHandler.SHIFTS, this.shifts, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
 			this.setLocalStorage(SavedStateHandler.SHIFTS, this.shifts)
 
 			this.degrees = getDegreesAcronyms(selectedShifts) || ''
-			this.cookies.set(SavedStateHandler.DEGREES, this.degrees, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
+			this.setLocalStorage(SavedStateHandler.DEGREES, this.degrees)
+
+			// Store colors
+			const courses = Comparables.toUnique(selectedShifts.map(s => s.course)) as Course[]
+			this.setCoursesColor(courses)
 		}
 	}
 
@@ -116,6 +126,14 @@ export default class SavedStateHandler {
 		this.cookies.set(SavedStateHandler.WARNING, warning, { maxAge: SavedStateHandler.MAX_AGE_SMALL })
 	}
 
+	setCoursesColor(courses: Course[]): void {
+		courses.forEach(c => {
+			this.colors[c.id] = c.color
+		})
+
+		this.setLocalStorage(SavedStateHandler.COLORS, this.colors, true)
+	}
+
 	// HELPERS
 
 	private async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
@@ -128,8 +146,15 @@ export default class SavedStateHandler {
 			throw 'Repeated course on URL'
 		}
 
+		// Check if has a previous color and set it
+		const currColor = this.colors[course.id]
+		const hasColor = (currColor && currColor !== '') as boolean
+		if (hasColor) {
+			course.setColor(currColor)
+		}
+
 		// Set course as selected
-		updates.toggleCourse(course)
+		updates.toggleCourse(course, hasColor)
 
 		// Get the course schedules
 		const availableShifts = await API.getCourseSchedules(course)
@@ -153,16 +178,27 @@ export default class SavedStateHandler {
 		return this.cookies.get(accessor)
 	}
 
-	private setCookie(accessor: string, value: string | boolean, maxAge: number) {
+	private setCookie(accessor: string, value: string | boolean, maxAge = SavedStateHandler.MAX_AGE_NORMAL) {
 		this.cookies.set(accessor, value, { maxAge })
 	}
 
-	private getLocalStorage(accessor: string): string {
-		return localStorage.getItem(accessor) ?? ''
+	private getLocalStorage(accessor: string, formatJson = false): string | Record<string, string> {
+		const value = localStorage.getItem(accessor)
+		if (formatJson && value) {
+			return JSON.parse(value) 
+		}
+		return value as string
 	}
 
-	private setLocalStorage(accessor: string, value: string): void {
-		localStorage.setItem(accessor, value)
+	private setLocalStorage(accessor: string, value: string | Record<string, string>, formatJson = false): void {
+		if (formatJson) {
+			value = JSON.stringify(value)
+		}
+		localStorage.setItem(accessor, value as string)
+	}
+
+	private removeLocalStorage(accessor: string): void {
+		localStorage.removeItem(accessor)
 	}
 }
 

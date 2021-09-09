@@ -12,6 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.10.0] - 09/09/2021
+
+### Added
+
+- Store colors in LocalStorage
+
+### Fixed
+
+- Store degrees in LocalStorage
+- Missing shift type (P)
+
+### Removed
+
 ## [1.9.2] - 08/09/2021
 
 ### Added
