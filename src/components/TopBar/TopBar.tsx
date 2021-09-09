@@ -30,7 +30,7 @@ import Button from '@material-ui/core/Button'
 
 import Brightness2Icon from '@material-ui/icons/Brightness2'
 import Brightness5Icon from '@material-ui/icons/Brightness5'
-import AllInclusiveIcon from '@material-ui/icons/AllInclusiveIcon'
+import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
 
 import i18next from 'i18next'
 import Menu from '@material-ui/core/Menu'
@@ -210,8 +210,8 @@ class TopBar extends React.Component <{
 		this.props.onChangeDarkMode(!this.props.darkMode)
 	}
 
-	onChangeMultiShiftMode(): void {
-		this.props.onChangeMultiShiftMode(!this.props.multiShiftMode)
+	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
+		this.props.onChangeMultiShiftMode(value)
 	}
 
 	render(): React.ReactNode {
@@ -321,8 +321,8 @@ class TopBar extends React.Component <{
 						</Tooltip>
 						<Tooltip title={i18next.t('multishiftmode-switch') as string}>
 							<FormControlLabel
-								control={<Switch checked={this.props.multiShiftMode} onChange={this.onChangeMultiShiftMode} />}
 								label={<AllInclusiveIcon/>}
+								control={<Switch onChange={this.onChangeMultiShiftMode} />}
 							/>
 						</Tooltip>
 						<Tooltip title={i18next.t('help-button.tooltip') as string}>

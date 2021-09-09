@@ -104,6 +104,7 @@ class App extends React.Component <{
 		this.showAlert = this.showAlert.bind(this)
 		this.changeLanguage = this.changeLanguage.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
+		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 		this.exportToExcel = this.exportToExcel.bind(this)
 
 		this.chosenSchedule = React.createRef()
@@ -237,18 +238,18 @@ class App extends React.Component <{
 		if (chosenShift) {
 			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
 
-			let idx
+			const selectedShifts = this.state.selectedShifts
+
+			// Verify if shift is already selected and unselect
+			const idx = Comparables.indexOf(selectedShifts, chosenShift)
+
 			let replacingIndex
 			if (this.state.multiShiftMode) {
 				// We want to allow multiple shifts of the same type, don't replace anything
-				idx = -1
+				replacingIndex = -1
 			} else {
 				// Verify if of the same type and course to replace, but not the same
 				replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
-				const selectedShifts = this.state.selectedShifts
-
-				// Verify if shift is already selected and unselect
-				idx = Comparables.indexOf(selectedShifts, chosenShift)
 			}
 
 			if (idx === -1) {
@@ -270,10 +271,9 @@ class App extends React.Component <{
 	}
 
 	onChangeMultiShiftMode(multiShiftMode: boolean): void {
-		if (!multiShiftMode) {
-			// TODO: prevent multiShiftMode from being disabled when the current
-			// schedule is impossible to build without it
-		}
+		this.setState({
+			multiShiftMode: multiShiftMode
+		})
 	}
 
 	clearSelectedShifts(alert: boolean): void {

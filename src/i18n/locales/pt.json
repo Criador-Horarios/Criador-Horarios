@@ -17,7 +17,7 @@
 		"dark": "Mudar para o modo claro",
 		"light": "Mudar para o modo escuro"
 	},
-	"multishiftmode-button": "Permitir escolher vários turnos do mesmo tipo/cadeira",
+	"multishiftmode-switch": "Permitir escolher vários turnos do mesmo tipo/cadeira",
 	"help-button": {
 		"tooltip": "Ajuda"
 	},
