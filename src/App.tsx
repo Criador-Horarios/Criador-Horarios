@@ -237,8 +237,8 @@ class App extends React.Component <{
 		if (chosenShift) {
 			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
 
-			const idx
-			const replacingIndex
+			let idx
+			let replacingIndex
 			if (this.state.multiShiftMode) {
 				// We want to allow multiple shifts of the same type, don't replace anything
 				idx = -1
