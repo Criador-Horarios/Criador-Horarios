@@ -48,7 +48,11 @@ class TopBar extends React.Component <{
 	onChangeDarkMode: (dark: boolean) => void
     multiShiftMode: boolean
     onChangeMultiShiftMode: (multiShiftMode: boolean) => void
+    disableMultiShiftModeChange: boolean
 }, unknown>{
+	static defaultProps = {
+		disableMultiShiftModeChange: false
+	}
 	state = {
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
@@ -322,7 +326,7 @@ class TopBar extends React.Component <{
 						<Tooltip title={i18next.t('multishiftmode-switch') as string}>
 							<FormControlLabel
 								label={<AllInclusiveIcon/>}
-								control={<Switch onChange={this.onChangeMultiShiftMode} />}
+								control={<Switch disabled={this.props.disableMultiShiftModeChange} onChange={this.onChangeMultiShiftMode} />}
 							/>
 						</Tooltip>
 						<Tooltip title={i18next.t('help-button.tooltip') as string}>

@@ -14,6 +14,7 @@ import Degree from './domain/Degree'
 
 import saveToExcel from './utils/excel'
 import getCalendar from './utils/calendar-generator'
+import { combinations2, it_contains } from './utils/itertools'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -76,6 +77,7 @@ class App extends React.Component <{
 		lang: i18next.options.lng as string,
 		darkMode: false,
 		multiShiftMode: false,
+		disableMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  }
 	}
 	savedStateHandler: SavedStateHandler
@@ -230,6 +232,22 @@ class App extends React.Component <{
 		this.setState({ selectedShifts: shifts })
 		this.topBar.current?.setHasSelectedShifts(shifts)
 		this.savedStateHandler.setShifts(shifts)
+
+		if (this.state.multiShiftMode) {
+			// Check if multi-shift can be disabled safely
+			// if multiple shifts of the same course/type are selected, and
+			// multi-shift is disabled, chaos ensues
+			const shouldDisable = it_contains(
+				combinations2(shifts),
+				([a, b]) => Shift.isSameCourseAndType(a,b)
+			)
+
+			console.log('Should disable?', shouldDisable)
+
+			this.setState({
+				disableMultiShiftModeChange: shouldDisable
+			})
+		}
 	}
 
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
@@ -517,6 +535,7 @@ class App extends React.Component <{
 						darkMode={this.state.darkMode}
 						onChangeDarkMode={this.onChangeDarkMode}
 						multiShiftMode={this.state.multiShiftMode}
+						disableMultiShiftModeChange={this.state.disableMultiShiftModeChange}
 						onChangeMultiShiftMode={this.onChangeMultiShiftMode}
 					>
 					</TopBar>
