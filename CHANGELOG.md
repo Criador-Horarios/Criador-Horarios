@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Fixed
+
+### Removed
+
+## [1.10.0] - 09/09/2021
+
+### Added
+
 - Store colors in LocalStorage
 
 ### Fixed
