@@ -91,7 +91,7 @@ class TopBar extends React.Component <{
 		if (degrees.length > 0) {
 			let degreeCourses: Course[] = []
 			for (const degree of degrees) {
-				const tempCourses = await API.getCourses(degree) 
+				const tempCourses = await API.getCourses(degree)
 				if (tempCourses === null) {
 					// TODO: Test when this cannot be obtained
 					this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
@@ -124,7 +124,7 @@ class TopBar extends React.Component <{
 		})
 	}
 
-	//FIXME: Available courses not updating when a course from another degree is removed 
+	//FIXME: Available courses not updating when a course from another degree is removed
 	private async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		this.props.onSelectedCourse(selectedCourses)
 	}
@@ -142,7 +142,7 @@ class TopBar extends React.Component <{
 
 	setSelectedCourses(selectedCourses: CourseUpdates): void {
 		// FIXME: Maybe not use toUnique?
-		const availableCourses = 
+		const availableCourses =
 			Comparables.toUnique(this.state.availableCourses.concat(selectedCourses.courses)) as Course[]
 		this.setState({
 			selectedCourses,
@@ -339,7 +339,7 @@ class TopBar extends React.Component <{
 								// className={styles.semesterSelector}
 								autoWidth={true}
 							>
-								{staticData.terms.map( (s) => 
+								{staticData.terms.map( (s) =>
 									<MenuItem key={s.id} value={s.id}>{s.term} {s.semester}{i18next.t('settings-dialog.select.value', { count: s.semester }) as string}
 									</MenuItem>
 								)}

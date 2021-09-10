@@ -14,6 +14,7 @@ import Degree from './domain/Degree'
 
 import saveToExcel from './utils/excel'
 import getCalendar from './utils/calendar-generator'
+import { combinations2, it_contains } from './utils/itertools'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -32,6 +33,8 @@ import CardContent from '@material-ui/core/CardContent'
 import CardActions from '@material-ui/core/CardActions'
 import Chip from '@material-ui/core/Chip'
 import Paper from '@material-ui/core/Paper'
+import Switch from '@material-ui/core/Switch'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Backdrop from '@material-ui/core/Backdrop'
@@ -56,6 +59,8 @@ import DialogContent from '@material-ui/core/DialogContent'
 import Box from '@material-ui/core/Box'
 import { APP_STYLES } from './styles/styles'
 
+import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
+
 class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
@@ -75,6 +80,8 @@ class App extends React.Component <{
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false,
+		multiShiftMode: false,
+		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  }
 	}
 	savedStateHandler: SavedStateHandler
@@ -103,6 +110,7 @@ class App extends React.Component <{
 		this.showAlert = this.showAlert.bind(this)
 		this.changeLanguage = this.changeLanguage.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
+		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 		this.exportToExcel = this.exportToExcel.bind(this)
 
 		this.chosenSchedule = React.createRef()
@@ -228,6 +236,19 @@ class App extends React.Component <{
 		this.setState({ selectedShifts: shifts })
 		this.topBar.current?.setHasSelectedShifts(shifts)
 		this.savedStateHandler.setShifts(shifts)
+		this.recomputeDisableMultiShiftModeChange()
+	}
+
+	private recomputeDisableMultiShiftModeChange() {
+		// Check if multi-shift can't be disabled safely
+		// if multiple shifts of the same course/type are selected, and
+		// multi-shift is disabled, chaos ensues
+		const disable = this.state.multiShiftMode && it_contains(
+			combinations2(this.state.selectedShifts),
+			([a, b]) => Shift.isSameCourseAndType(a,b)
+		)
+
+		this.setState({ inhibitMultiShiftModeChange: disable })
 	}
 
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
@@ -236,16 +257,24 @@ class App extends React.Component <{
 		if (chosenShift) {
 			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
 
-			// Verify if of the same type and course to replace, but not the same
-			const replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
 			const selectedShifts = this.state.selectedShifts
-			
+
 			// Verify if shift is already selected and unselect
 			const idx = Comparables.indexOf(selectedShifts, chosenShift)
+
+			let replacingIndex
+			if (this.state.multiShiftMode) {
+				// We want to allow multiple shifts of the same type, don't replace anything
+				replacingIndex = -1
+			} else {
+				// Verify if of the same type and course to replace, but not the same
+				replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
+			}
+
 			if (idx === -1) {
 				selectedShifts.push(chosenShift)
 				if (replacingIndex !== -1) {
-					selectedShifts.splice(replacingIndex, 1)  
+					selectedShifts.splice(replacingIndex, 1)
 				} else if (shiftCourse.length === 1) {
 					shiftCourse[0].addSelectedShift(chosenShift)
 				}
@@ -258,6 +287,13 @@ class App extends React.Component <{
 
 			this.setSelectedShifts(selectedShifts)
 		}
+	}
+
+	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
+		this.savedStateHandler.setMultiShiftMode(value)
+		this.setState({
+			multiShiftMode: value
+		})
 	}
 
 	clearSelectedShifts(alert: boolean): void {
@@ -274,7 +310,7 @@ class App extends React.Component <{
 				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
 			}
 
-			SavedStateHandler.changeUrl(false, [])
+			SavedStateHandler.changeUrl(false, [], false)
 		}
 	}
 
@@ -334,9 +370,10 @@ class App extends React.Component <{
 	}
 
 	async getLink(): Promise<void> {
-		const state = shortenDescriptions(this.state.selectedShifts)
+		const shifts = shortenDescriptions(this.state.selectedShifts)
 		const degrees = getDegreesAcronyms(this.state.selectedShifts)
-		const params = [`s=${state}`, `d=${degrees}`]
+		const isMultishift = this.state.multiShiftMode.toString()
+		const params = [`${SavedStateHandler.SHIFTS}=${shifts}`, `${SavedStateHandler.DEGREES}=${degrees}`, `${SavedStateHandler.IS_MULTISHIFT}=${isMultishift}`]
 		const shortLink = await API.getShortUrl(params)
 		const el = document.createElement('textarea')
 		el.value = shortLink
@@ -351,6 +388,16 @@ class App extends React.Component <{
 	}
 
 	async buildState(forceUpdate = false): Promise<void> {
+		try {
+			this.setState({
+				multiShiftMode: this.savedStateHandler.getMultiShiftMode()
+			})
+		} catch(err) {
+			console.error(err)
+			// ignored, bad URL/cookie state
+		}
+
+
 		// Build degree
 		try {
 			// Fetch degrees from url params or cookies
@@ -360,7 +407,7 @@ class App extends React.Component <{
 			console.error(err)
 			// ignored, bad URL/cookie state
 		}
-		
+
 		// Build shifts
 		try {
 			// Fetch shifts from url params or cookies
@@ -383,10 +430,11 @@ class App extends React.Component <{
 					selectedCampi: this.state.selectedCampi,
 					selectedShiftTypes: this.state.selectedShiftTypes,
 					availableShifts: state.availableShifts
-				})
+				}),
 			})
 			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-			SavedStateHandler.changeUrl(false, [])
+			this.recomputeDisableMultiShiftModeChange()
+			SavedStateHandler.changeUrl(false, [], false)
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL/cookie state
@@ -557,7 +605,7 @@ class App extends React.Component <{
 											>
 												{Object.entries(ShiftType).map((name) => (
 													<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
-												))}       
+												))}
 											</StyledToggleButtonGroup>
 										</Paper>
 									</CardActions>
@@ -601,6 +649,22 @@ class App extends React.Component <{
 											))}
 										</div>
 										<div className={classes.centered as string}>
+											<Tooltip title={i18next.t('multishiftmode-switch') as string}>
+												{/* pay no attention to the dirty styling hacks */}
+												<FormControlLabel
+													className={classes.formLabel as string}
+													label={<AllInclusiveIcon fontSize="small" />}
+													labelPlacement="top"
+													control={
+														<Switch
+															checked={this.state.multiShiftMode}
+															disabled={this.state.inhibitMultiShiftModeChange}
+															onChange={this.onChangeMultiShiftMode}
+															size="small"
+														/>
+													}
+												/>
+											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.get-classes') as string}>
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
@@ -696,7 +760,7 @@ class App extends React.Component <{
 										</IconButton>
 									</Link>
 								</Tooltip>
-							</Toolbar>													
+							</Toolbar>
 						</AppBar>
 					</div>
 					<div className="dialogs">
@@ -733,7 +797,7 @@ class App extends React.Component <{
 								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
 								{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
 							</DialogActions>
-						</Dialog>	
+						</Dialog>
 						<Dialog open={this.state.changelogDialog}>
 							<DialogTitle>{i18next.t('changelog-dialog.title') as string}</DialogTitle>
 							<DialogContent style={{whiteSpace: 'pre-line'}}>{(i18next.t('changelog-dialog.content', {returnObjects: true}) as string[]).join('\n\n')}</DialogContent>

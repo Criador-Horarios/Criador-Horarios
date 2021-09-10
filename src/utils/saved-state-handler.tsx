@@ -13,6 +13,7 @@ export default class SavedStateHandler {
 	static LANGUAGE = 'language'
 	static WARNING = 'warning'
 	static COLORS = 'colors'
+	static IS_MULTISHIFT = 'ismulti'
 
 	static MAX_AGE_NORMAL = 60*60*24*31*3 // 3 months
 	static MAX_AGE_SMALL = 60*60*24 // 1 day
@@ -24,6 +25,7 @@ export default class SavedStateHandler {
 	private shifts: string
 	private degrees: string
 	private colors: Record<string, string>
+	private multiShiftMode: boolean
 	private cookies = new Cookies()
 
 	constructor(urlParams: Record<string, string>) {
@@ -32,11 +34,12 @@ export default class SavedStateHandler {
 		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES) ??
 			this.getCookie(SavedStateHandler.DEGREES)
 		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS, true) ?? {}) as Record<string, string>
+		this.multiShiftMode = (urlParams[SavedStateHandler.IS_MULTISHIFT] ?? this.getLocalStorage(SavedStateHandler.IS_MULTISHIFT)) === 'true'
 	}
 
 	// CLASS METHODS
 	// Updates user URL to use or not the state
-	static async changeUrl(toState: boolean, selectedShifts: Shift[]): Promise<void> {
+	static async changeUrl(toState: boolean, selectedShifts: Shift[], multiShiftMode: boolean): Promise<void> {
 		const title: string = document.title
 		let path = API.PATH_PREFIX + '/'
 		if (toState) {
@@ -45,6 +48,8 @@ export default class SavedStateHandler {
 
 			const degrees = getDegreesAcronyms(selectedShifts)
 			if (degrees !== '') path += `&${this.DEGREES}=${degrees}`
+
+			if (multiShiftMode) path += `&${this.IS_MULTISHIFT}=true`
 		}
 
 		if (window.history.replaceState) {
@@ -110,6 +115,15 @@ export default class SavedStateHandler {
 		}, { availableShifts: [], selectedShifts: [] } as ShiftState)
 
 		return [courseUpdate, state, errors.join(', ')]
+	}
+
+	setMultiShiftMode(multiShiftMode: boolean): void {
+		this.multiShiftMode = true
+		this.setLocalStorage(SavedStateHandler.IS_MULTISHIFT, multiShiftMode.toString())
+	}
+
+	getMultiShiftMode(): boolean {
+		return this.multiShiftMode
 	}
 
 	getDarkMode(): boolean | null {
