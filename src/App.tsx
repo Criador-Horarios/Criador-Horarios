@@ -33,6 +33,8 @@ import CardContent from '@material-ui/core/CardContent'
 import CardActions from '@material-ui/core/CardActions'
 import Chip from '@material-ui/core/Chip'
 import Paper from '@material-ui/core/Paper'
+import Switch from '@material-ui/core/Switch'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Backdrop from '@material-ui/core/Backdrop'
@@ -57,6 +59,8 @@ import DialogContent from '@material-ui/core/DialogContent'
 import Box from '@material-ui/core/Box'
 import { APP_STYLES } from './styles/styles'
 
+import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
+
 class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
@@ -77,7 +81,7 @@ class App extends React.Component <{
 		lang: i18next.options.lng as string,
 		darkMode: false,
 		multiShiftMode: false,
-		disableMultiShiftModeChange: false,
+		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  }
 	}
 	savedStateHandler: SavedStateHandler
@@ -244,7 +248,7 @@ class App extends React.Component <{
 			([a, b]) => Shift.isSameCourseAndType(a,b)
 		)
 
-		this.setState({ disableMultiShiftModeChange: disable })
+		this.setState({ inhibitMultiShiftModeChange: disable })
 	}
 
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
@@ -270,7 +274,7 @@ class App extends React.Component <{
 			if (idx === -1) {
 				selectedShifts.push(chosenShift)
 				if (replacingIndex !== -1) {
-					selectedShifts.splice(replacingIndex, 1)  
+					selectedShifts.splice(replacingIndex, 1)
 				} else if (shiftCourse.length === 1) {
 					shiftCourse[0].addSelectedShift(chosenShift)
 				}
@@ -285,10 +289,10 @@ class App extends React.Component <{
 		}
 	}
 
-	onChangeMultiShiftMode(multiShiftMode: boolean): void {
-		this.savedStateHandler.setMultiShiftMode(multiShiftMode)
+	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
+		this.savedStateHandler.setMultiShiftMode(value)
 		this.setState({
-			multiShiftMode: multiShiftMode
+			multiShiftMode: value
 		})
 	}
 
@@ -544,9 +548,6 @@ class App extends React.Component <{
 						onChangeLanguage={this.changeLanguage}
 						darkMode={this.state.darkMode}
 						onChangeDarkMode={this.onChangeDarkMode}
-						multiShiftMode={this.state.multiShiftMode}
-						disableMultiShiftModeChange={this.state.disableMultiShiftModeChange}
-						onChangeMultiShiftMode={this.onChangeMultiShiftMode}
 					>
 					</TopBar>
 					<div className="main">
@@ -599,7 +600,7 @@ class App extends React.Component <{
 											>
 												{Object.entries(ShiftType).map((name) => (
 													<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
-												))}       
+												))}
 											</StyledToggleButtonGroup>
 										</Paper>
 									</CardActions>
@@ -687,6 +688,22 @@ class App extends React.Component <{
 													<Icon>delete</Icon>
 												</IconButton>
 											</Tooltip>
+											<Tooltip title={i18next.t('multishiftmode-switch') as string}>
+												{/* pay no attention to the dirty styling hacks */}
+												<FormControlLabel
+													label={<AllInclusiveIcon style={{marginBottom: '-7px'}} />}
+													labelPlacement="top"
+													control={
+														<Switch
+															checked={this.state.multiShiftMode}
+															disabled={this.state.inhibitMultiShiftModeChange}
+															onChange={this.onChangeMultiShiftMode}
+															size="small"
+														/>
+													}
+													style={{margin: '0 6px'}}
+												/>
+											</Tooltip>
 										</div>
 									</CardActions>
 								</Card>
@@ -735,7 +752,7 @@ class App extends React.Component <{
 										</IconButton>
 									</Link>
 								</Tooltip>
-							</Toolbar>													
+							</Toolbar>
 						</AppBar>
 					</div>
 					<div className="dialogs">
@@ -772,7 +789,7 @@ class App extends React.Component <{
 								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
 								{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
 							</DialogActions>
-						</Dialog>	
+						</Dialog>
 						<Dialog open={this.state.changelogDialog}>
 							<DialogTitle>{i18next.t('changelog-dialog.title') as string}</DialogTitle>
 							<DialogContent style={{whiteSpace: 'pre-line'}}>{(i18next.t('changelog-dialog.content', {returnObjects: true}) as string[]).join('\n\n')}</DialogContent>

@@ -15,8 +15,6 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
-import Switch from '@material-ui/core/Switch'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
@@ -30,7 +28,6 @@ import Button from '@material-ui/core/Button'
 
 import Brightness2Icon from '@material-ui/icons/Brightness2'
 import Brightness5Icon from '@material-ui/icons/Brightness5'
-import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
 
 import i18next from 'i18next'
 import Menu from '@material-ui/core/Menu'
@@ -46,13 +43,7 @@ class TopBar extends React.Component <{
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
-	multiShiftMode: boolean
-	onChangeMultiShiftMode: (multiShiftMode: boolean) => void
-	disableMultiShiftModeChange: boolean
 }, unknown>{
-	static defaultProps = {
-		disableMultiShiftModeChange: false
-	}
 	state = {
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
@@ -75,7 +66,6 @@ class TopBar extends React.Component <{
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onLanguageMenuClick = this.onLanguageMenuClick.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
-		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 	}
 
 	async componentDidMount(): Promise<void> {
@@ -101,7 +91,7 @@ class TopBar extends React.Component <{
 		if (degrees.length > 0) {
 			let degreeCourses: Course[] = []
 			for (const degree of degrees) {
-				const tempCourses = await API.getCourses(degree) 
+				const tempCourses = await API.getCourses(degree)
 				if (tempCourses === null) {
 					// TODO: Test when this cannot be obtained
 					this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
@@ -134,7 +124,7 @@ class TopBar extends React.Component <{
 		})
 	}
 
-	//FIXME: Available courses not updating when a course from another degree is removed 
+	//FIXME: Available courses not updating when a course from another degree is removed
 	private async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		this.props.onSelectedCourse(selectedCourses)
 	}
@@ -152,7 +142,7 @@ class TopBar extends React.Component <{
 
 	setSelectedCourses(selectedCourses: CourseUpdates): void {
 		// FIXME: Maybe not use toUnique?
-		const availableCourses = 
+		const availableCourses =
 			Comparables.toUnique(this.state.availableCourses.concat(selectedCourses.courses)) as Course[]
 		this.setState({
 			selectedCourses,
@@ -212,10 +202,6 @@ class TopBar extends React.Component <{
 
 	onChangeDarkMode(): void {
 		this.props.onChangeDarkMode(!this.props.darkMode)
-	}
-
-	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
-		this.props.onChangeMultiShiftMode(value)
 	}
 
 	render(): React.ReactNode {
@@ -323,12 +309,6 @@ class TopBar extends React.Component <{
 								{ this.props.darkMode ? <Brightness5Icon/> : <Brightness2Icon/> }
 							</IconButton>
 						</Tooltip>
-						<Tooltip title={i18next.t('multishiftmode-switch') as string}>
-							<FormControlLabel
-								label={<AllInclusiveIcon/>}
-								control={<Switch checked={this.props.multiShiftMode} disabled={this.props.disableMultiShiftModeChange} onChange={this.onChangeMultiShiftMode} />}
-							/>
-						</Tooltip>
 						<Tooltip title={i18next.t('help-button.tooltip') as string}>
 							<IconButton disabled={this.state.helpDialog} color="inherit" onClick={() => {this.setState({helpDialog: true})}} component="span">
 								<Icon>help</Icon>
@@ -359,7 +339,7 @@ class TopBar extends React.Component <{
 								// className={styles.semesterSelector}
 								autoWidth={true}
 							>
-								{staticData.terms.map( (s) => 
+								{staticData.terms.map( (s) =>
 									<MenuItem key={s.id} value={s.id}>{s.term} {s.semester}{i18next.t('settings-dialog.select.value', { count: s.semester }) as string}
 									</MenuItem>
 								)}
