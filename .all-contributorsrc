@@ -32,6 +32,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "abread",
+      "name": "André Breda",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1618009?v=4",
+      "profile": "https://github.com/abread",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
