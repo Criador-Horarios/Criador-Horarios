@@ -641,6 +641,22 @@ class App extends React.Component <{
 											))}
 										</div>
 										<div className={classes.centered as string}>
+											<Tooltip title={i18next.t('multishiftmode-switch') as string}>
+												{/* pay no attention to the dirty styling hacks */}
+												<FormControlLabel
+													className={classes.formLabel as string}
+													label={<AllInclusiveIcon fontSize="small" />}
+													labelPlacement="top"
+													control={
+														<Switch
+															checked={this.state.multiShiftMode}
+															disabled={this.state.inhibitMultiShiftModeChange}
+															onChange={this.onChangeMultiShiftMode}
+															size="small"
+														/>
+													}
+												/>
+											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.get-classes') as string}>
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
@@ -687,22 +703,6 @@ class App extends React.Component <{
 													component="span">
 													<Icon>delete</Icon>
 												</IconButton>
-											</Tooltip>
-											<Tooltip title={i18next.t('multishiftmode-switch') as string}>
-												{/* pay no attention to the dirty styling hacks */}
-												<FormControlLabel
-													label={<AllInclusiveIcon style={{marginBottom: '-7px'}} />}
-													labelPlacement="top"
-													control={
-														<Switch
-															checked={this.state.multiShiftMode}
-															disabled={this.state.inhibitMultiShiftModeChange}
-															onChange={this.onChangeMultiShiftMode}
-															size="small"
-														/>
-													}
-													style={{margin: '0 6px'}}
-												/>
 											</Tooltip>
 										</div>
 									</CardActions>

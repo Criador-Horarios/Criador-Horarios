@@ -43,6 +43,12 @@ export const APP_STYLES = (theme: any) => ({
 		webkitUserSelect: 'text' as const,
 		oUserSelected: 'text' as const
 	},
+	formLabel: {
+		margin: 0,
+		'& .MuiTypography-root': {
+			lineHeight: 0.5
+		}
+	},
 	footer: {
 		bottom: '0px',
 		top: 'auto',
