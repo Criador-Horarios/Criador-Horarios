@@ -45,7 +45,7 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 			if (attrs.length === 5) {
 				const shiftName = $(attrs[0]).text()
 				
-				if (shiftName.includes(shift.shiftId) && !res[shift.name]) {
+				if (shiftName.includes(shift.name) && !res[shift.name]) {
 					res[shift.acronym + ' - ' + shift.shiftId] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
 				}
 			}

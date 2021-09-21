@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.10.3]
+
+### Added
+
+### Fixed
+
+- Not being able to fetch some classes for some shifts
+
+### Removed
+
 ## [1.10.2] - 09/09/2021
 
 ### Added
