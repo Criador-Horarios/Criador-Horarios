@@ -44,7 +44,7 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 			const attrs = $(element).children('td')
 			if (attrs.length === 5) {
 				const shiftName = $(attrs[0]).text()
-				
+
 				if (shiftName.includes(shift.name) && !res[shift.name]) {
 					res[shift.acronym + ' - ' + shift.shiftId] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
 				}
@@ -60,19 +60,14 @@ async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Pr
 	
 	// Filter all shifts that are from degrees not selected
 	if (selectedDegrees.length > 0) { // If no selected Degrees, ignore this step
-		const re = /([a-zA-Z-]+)[0-9]+$/
 		const degreeAcronyms = selectedDegrees.map(d => d.acronym)
 
 		Object.keys(allClasses).forEach((shift) => {
 			const filteredClasses: string[] = []
 			allClasses[shift].split(', ').forEach( (c) => {
-				const match = c.match(re)
-				if (match === null) {
-					throw 'Unexpected class name'
-				}
+				const possibleDegrees = degreeAcronyms.filter(substr => c.startsWith(substr))
 
-				const currDegree = match[1]
-				if (degreeAcronyms.indexOf(currDegree) != -1) {
+				if (possibleDegrees.length >= 0) { // It should only match one degree, if it matches more.... WTH
 					filteredClasses.push(c)
 				}
 			})

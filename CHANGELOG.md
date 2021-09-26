@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.10.4]
+
+### Added
+
+### Fixed
+
+- Shift scraper not working with degrees that have numbers in acronym
+
+### Removed
+
 ## [1.10.3]
 
 ### Added
