@@ -61,6 +61,8 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - [X] Find minimum classes for enrolments
 - [ ] Give option of what to add (room, campus, etc.) in excel
 - [X] Add occupation on shift hover
+- [ ] If the occupations is negative, it means that Fénix is awaiting for first year students
+- [ ] Add buttons below the left schedule to show/hide courses
 
 ## Contributors ✨
 
