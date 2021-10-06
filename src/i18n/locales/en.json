@@ -80,6 +80,7 @@
 	"schedule-selected": {
 		"title": "Selected Shifts",
 		"actions": {
+			"save-to-file": "Save schedule to a file",
 			"get-classes": "Get classes for enrolments",
 			"save-as-image": "Save as image",
 			"save-as-excel": "Save schedule and classes as Excel file",

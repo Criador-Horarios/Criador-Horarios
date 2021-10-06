@@ -79,6 +79,7 @@
 	"schedule-selected": {
 		"title": "Turnos Selecionados",
 		"actions": {
+			"save-to-file": "Guardar horário para um ficheiro",
 			"get-classes": "Obter turmas para inscrição",
 			"save-as-image": "Guardar como imagem",
 			"save-as-excel": "Guardar horário e turmas num ficheiro Excel",

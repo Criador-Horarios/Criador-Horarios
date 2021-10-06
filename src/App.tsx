@@ -60,6 +60,9 @@ import Box from '@material-ui/core/Box'
 import { APP_STYLES } from './styles/styles'
 
 import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -77,6 +80,7 @@ class App extends React.Component <{
 		classesDialog: false,
 		warningDialog: false,
 		changelogDialog: false,
+		saveMenuAnchor: null,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false,
@@ -521,6 +525,18 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.calendar-obtained'), 'success')
 	}
 
+	onSaveMenuClick(event: React.MouseEvent<HTMLSpanElement, MouseEvent> | null, open: boolean): void {
+		if (open && event !== null) {
+			this.setState({
+				saveMenuAnchor: event.currentTarget
+			})
+		} else {
+			this.setState({
+				saveMenuAnchor: null
+			})
+		}
+	}
+
 	render(): ReactNode {
 		const classes = this.props.classes
 
@@ -674,35 +690,59 @@ class App extends React.Component <{
 													<Icon>list</Icon>
 												</IconButton>
 											</Tooltip>
-											<Tooltip title={i18next.t('schedule-selected.actions.save-as-image') as string}>
+											<Tooltip title={i18next.t('schedule-selected.actions.save-to-file') as string}>
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
 													color="inherit"
-													onClick={this.saveSchedule}
+													onClick={(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {this.onSaveMenuClick(e, true)}}
 													component="span">
-													<Icon>image</Icon>
-												</IconButton>
-											</Tooltip>
-											<Tooltip title={i18next.t('schedule-selected.actions.save-as-excel') as string}>
-												<IconButton
-													disabled={this.state.selectedShifts.length === 0}
-													color='inherit'
-													onClick={() => {this.exportToExcel()}}
-													component="span"
-												>
 													<Icon>download</Icon>
 												</IconButton>
 											</Tooltip>
-											<Tooltip title={i18next.t('schedule-selected.actions.get-calendar') as string}>
-												<IconButton
-													disabled={this.state.selectedShifts.length === 0}
-													color='inherit'
-													onClick={() => {this.downloadCalendar()}}
-													component="span"
-												>
-													<Icon>event</Icon>
-												</IconButton>
-											</Tooltip>
+											<Menu anchorEl={this.state.saveMenuAnchor} open={Boolean(this.state.saveMenuAnchor)} keepMounted
+												onClose={() => {this.onSaveMenuClick(null, false)}}
+												anchorOrigin={{vertical:'top', horizontal:'center'}}
+												transformOrigin={{vertical:'bottom', horizontal:'center'}}
+											>
+												<MenuItem onClick={() => {this.onSaveMenuClick(null, false)}} disableRipple>
+													<Tooltip placement={'top'}
+														title={i18next.t('schedule-selected.actions.save-as-excel') as string}>
+														<IconButton
+															disabled={this.state.selectedShifts.length === 0}
+															color='inherit'
+															onClick={() => {this.exportToExcel()}}
+															component="span"
+														>
+															<FontAwesomeIcon icon={faFileExcel}/>
+														</IconButton>
+													</Tooltip>
+												</MenuItem>
+												<MenuItem onClick={() => {this.onSaveMenuClick(null, false)}} disableRipple>
+													<Tooltip placement={'top'}
+														title={i18next.t('schedule-selected.actions.save-as-image') as string}>
+														<IconButton
+															disabled={this.state.selectedShifts.length === 0}
+															color="inherit"
+															onClick={this.saveSchedule}
+															component="span">
+															<Icon>image</Icon>
+														</IconButton>
+													</Tooltip>
+												</MenuItem>
+												<MenuItem onClick={() => {this.onSaveMenuClick(null, false)}} disableRipple>
+													<Tooltip placement={'top'}
+														title={i18next.t('schedule-selected.actions.get-calendar') as string}>
+														<IconButton
+															disabled={this.state.selectedShifts.length === 0}
+															color='inherit'
+															onClick={() => {this.downloadCalendar()}}
+															component="span"
+														>
+															<Icon>event</Icon>
+														</IconButton>
+													</Tooltip>
+												</MenuItem>
+											</Menu>
 											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
 												<IconButton
 													disabled={this.state.selectedShifts.length === 0}
