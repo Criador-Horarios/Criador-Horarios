@@ -243,6 +243,11 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 				sheet.mergeCells(rowNumber, firstEmptyCol, rowNumber, secondEmptyCol)
 			}
 		}
+		// Padding after a lesson, but left to another lesson (specific case, when no merging is needed)
+		else if (colspan == 2 && nOcc == 0) {
+			const firstEmptyCol = getFreeCellCol(sheet, rowNumber, currColNumber, config.intervalUnit)
+			sheet.getRow(rowNumber).getCell(firstEmptyCol).border = {...config.schedule.emptyBorder}
+		}
 		// Set border style on cells along lessons with overlap
 		else if (colspan >= 2 && nOcc >= 0 && (colspan - 1 - nOcc) === 1 ) {
 			const emptyCol = getFreeCellCol(sheet, rowNumber, currColNumber + 1, config.intervalUnit)
@@ -316,8 +321,8 @@ function getOverlapsByHour(dayOfWeek: number, lessons: Record<number, Record<str
 		return  [{}, 1]
 	}
 	Object.entries(lessons[dayOfWeek]).forEach((value) => {
-		const lessons = value[1]
-		lessons.forEach(l => {
+		const lessons_by_day = value[1]
+		lessons_by_day.forEach(l => {
 			const overlapHours = Array.from({length: Math.floor(l.minutes / config.intervalUnit)}, (v,k) => addTime(l.startTime, k * config.intervalUnit))
 			overlapHours.forEach(hour => {	
 				if (res[hour]) {		
@@ -488,9 +493,9 @@ function addTime(time: string, increment: number): string {
 }
 
 function getFreeCellCol(sheet: ExcelJS.Worksheet, row: number, initialCol: number, duration: number): number {
-	const checkFree = (row: number, col: number, dur: number) => {
+	const checkFree = (row_1: number, col: number, dur: number) => {
 		for (let i = 0; i < dur; i++) {
-			const empty = sheet.getRow(row).getCell(col + i).text === config.emptyValue
+			const empty = sheet.getRow(row_1).getCell(col + i).text === config.emptyValue
 			if (!empty) {
 				return false
 			}
@@ -504,6 +509,8 @@ function getFreeCellCol(sheet: ExcelJS.Worksheet, row: number, initialCol: numbe
 	return initialCol
 }
 
+// Returns the nº of lessons in that hour minus 1, or -1 if there are none.
+// For example, if there are 2 lessons in that hour, it will return 1
 function getOccupied(overlaps: Record<string, number>, startTime: string, duration: number): number {
 	const times = Array.from({length: duration / config.intervalUnit}, (v,k) => addTime(startTime, k * config.intervalUnit))
 	let res = 0
