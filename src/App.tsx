@@ -63,6 +63,7 @@ import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
+import { ListItemIcon, ListItemText } from '@material-ui/core'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -704,43 +705,26 @@ class App extends React.Component <{
 												anchorOrigin={{vertical:'top', horizontal:'center'}}
 												transformOrigin={{vertical:'bottom', horizontal:'center'}}
 											>
-												<MenuItem onClick={() => {this.onSaveMenuClick(null, false)}} disableRipple>
-													<Tooltip placement={'top'}
-														title={i18next.t('schedule-selected.actions.save-as-excel') as string}>
-														<IconButton
-															disabled={this.state.selectedShifts.length === 0}
-															color='inherit'
-															onClick={() => {this.exportToExcel()}}
-															component="span"
-														>
-															<FontAwesomeIcon icon={faFileExcel}/>
-														</IconButton>
-													</Tooltip>
+												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.exportToExcel()}}
+													disableRipple>
+													<ListItemIcon style={{marginLeft: '3px'}}>
+														<FontAwesomeIcon size='2x' icon={faFileExcel}/>
+													</ListItemIcon>
+													<ListItemText style={{marginLeft: '-3px'}}>{i18next.t('schedule-selected.actions.save-as-excel')}</ListItemText>
 												</MenuItem>
-												<MenuItem onClick={() => {this.onSaveMenuClick(null, false)}} disableRipple>
-													<Tooltip placement={'top'}
-														title={i18next.t('schedule-selected.actions.save-as-image') as string}>
-														<IconButton
-															disabled={this.state.selectedShifts.length === 0}
-															color="inherit"
-															onClick={this.saveSchedule}
-															component="span">
-															<Icon>image</Icon>
-														</IconButton>
-													</Tooltip>
+												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.saveSchedule()}}
+													disableRipple>
+													<ListItemIcon>
+														<Icon>image</Icon>
+													</ListItemIcon>
+													<ListItemText>{i18next.t('schedule-selected.actions.save-as-image')}</ListItemText>
 												</MenuItem>
-												<MenuItem onClick={() => {this.onSaveMenuClick(null, false)}} disableRipple>
-													<Tooltip placement={'top'}
-														title={i18next.t('schedule-selected.actions.get-calendar') as string}>
-														<IconButton
-															disabled={this.state.selectedShifts.length === 0}
-															color='inherit'
-															onClick={() => {this.downloadCalendar()}}
-															component="span"
-														>
-															<Icon>event</Icon>
-														</IconButton>
-													</Tooltip>
+												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.downloadCalendar()}}
+													disableRipple>
+													<ListItemIcon>
+														<Icon>event</Icon>
+													</ListItemIcon>
+													<ListItemText>{i18next.t('schedule-selected.actions.get-calendar')}</ListItemText>
 												</MenuItem>
 											</Menu>
 											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
