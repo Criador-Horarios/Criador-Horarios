@@ -268,7 +268,10 @@ class TopBar extends React.Component <{
 							renderTags={(tagValue, getTagProps) => {
 								return tagValue.map((option, index) => (
 									<Tooltip title={option.displayName()} key={option.hashString()}>
-										<Chip {...getTagProps({ index })} size="small" color='primary' style={{backgroundColor: option.color}} label={option.acronym} />
+										<Chip {...getTagProps({ index })} size="small" color='primary'
+											style={{backgroundColor: option.color}}
+											label={<span style={{color: option.textColor}}>{option.acronym}</span>}
+										/>
 									</Tooltip>
 								))
 							}}

@@ -17,6 +17,7 @@ export default class Lesson implements Comparable {
 	courseUrl: string
 	courseName: string
 	room: string
+	campus: string
 
 	// eslint-disable-next-line
 	constructor(obj: Record<string, any>) {
@@ -33,8 +34,9 @@ export default class Lesson implements Comparable {
 		this.courseUrl = obj.url
 		this.courseName = obj.courseName
 		this.room = obj.room
-		this.title = `${obj.acronym} - ${obj.shiftId}\n${ (obj.campus !== undefined) ? obj.campus : '' }`
+		this.title = `${obj.acronym} - ${obj.shiftId}`
 		this.exportedTitle = `${obj.acronym} - ${obj.shiftId} @ ${obj.room !== undefined ? obj.room : '' }`
+		this.campus = obj.campus
 	}
 
 	hashString(): string {

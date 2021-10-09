@@ -78,7 +78,7 @@ export default class Shift implements Comparable {
 				// Replacing space to T to allow parsing on SAFARI
 				dayOfWeek:  new Date(l.start.replace(' ', 'T')).getDay(),
 				room: l.room?.name,
-				campus: l.room?.topLevelSpace.name,
+				campus: l.room?.topLevelSpace.name || this.campus,
 				acronym: this.acronym,
 				shiftId: this.shiftId,
 				id: this.name,
@@ -122,9 +122,9 @@ export default class Shift implements Comparable {
 	updateColorFromCourse(): void {
 		let newColor = this.color
 		if (this.type === ShiftType['Teo']) {
-			newColor = getColor1(this.course.color)
+			[newColor, ] = getColor1(this.course.color)
 		} else if (this.type === ShiftType['PB']) {
-			newColor = getColor2(this.course.color)
+			[newColor, ] = getColor2(this.course.color)
 		} else {
 			newColor = this.course.color
 		}

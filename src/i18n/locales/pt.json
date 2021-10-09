@@ -50,8 +50,7 @@
 			"- Pode alterar a cor duma cadeira (persistentemente), ao clicar na cadeira correspondente, em baixo dos turnos selecionados",
 			"- Ao obter as turmas para as inscrições, encontra o menor conjunto de turmas possível",
 			"- Download de um ficheiro iCalendar com as aulas",
-			"- Dados da ocupação dos turnos (não atualizados automaticamente)",
-			"- CTRL+Clique num turno para aceder à página da cadeira"
+			"- Dados da ocupação dos turnos (não atualizados automaticamente)"
 		],
 		"actions": {
 			"back": "Voltar"
@@ -79,6 +78,7 @@
 	"schedule-selected": {
 		"title": "Turnos Selecionados",
 		"actions": {
+			"save-to-file": "Guardar horário para um ficheiro",
 			"get-classes": "Obter turmas para inscrição",
 			"save-as-image": "Guardar como imagem",
 			"save-as-excel": "Guardar horário e turmas num ficheiro Excel",

@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.11.0] - 09/10/2021
+
+### Added
+
+- Menu that aggregates all download buttons
+- Text to change the color of each course in the chip
+- Change text color of lessons to contrast well with the background color
+- Add missing campus on some lessons and improve formatting
+
+### Fixed
+
+- Excel padding cells not formatted
+- Getting classes were showing degrees not selected
+
+### Removed
+
+- CTRL+Click on lesson to get course url, as we don't have the url
+
 ## [1.10.4]
 
 ### Added

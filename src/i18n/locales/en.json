@@ -51,8 +51,7 @@
 			"- You can now change the color of a course, by clicking in the corresponding course, below the selected shifts",
 			"- When obtaining the classes, find the smallest set of classes possible",
 			"- Download of calendar with the selected shifts",
-			"- Occupation of the shift (not updated automatically)",
-			"- CTRL+Click on a shift to access course page"
+			"- Occupation of the shift (not updated automatically)"
 		],
 		"actions": {
 			"back": "Back"
@@ -80,6 +79,7 @@
 	"schedule-selected": {
 		"title": "Selected Shifts",
 		"actions": {
+			"save-to-file": "Save schedule to a file",
 			"get-classes": "Get classes for enrolments",
 			"save-as-image": "Save as image",
 			"save-as-excel": "Save schedule and classes as Excel file",
