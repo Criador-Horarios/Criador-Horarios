@@ -15,8 +15,8 @@ export default class SavedStateHandler {
 	static COLORS = 'colors'
 	static IS_MULTISHIFT = 'ismulti'
 
-	static MAX_AGE_NORMAL = 60*60*24*31*3 // 3 months
-	static MAX_AGE_SMALL = 60*60*24 // 1 day
+	static MAX_AGE_NORMAL = 60*60*24*31*3 // 3 months - UNUSED
+	static AGE_WARNING = 60*60*24*2 // 2 days
 
 	static PARAMS_SEP = ';'
 	static ARGS_SEP = '~'
@@ -29,11 +29,9 @@ export default class SavedStateHandler {
 	private cookies = new Cookies()
 
 	constructor(urlParams: Record<string, string>) {
-		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS) ??
-			this.getCookie(SavedStateHandler.SHIFTS)
-		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES) ??
-			this.getCookie(SavedStateHandler.DEGREES)
-		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS, true) ?? {}) as Record<string, string>
+		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
+		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES)
+		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS) ?? {}) as Record<string, string>
 		this.multiShiftMode = (urlParams[SavedStateHandler.IS_MULTISHIFT] ?? this.getLocalStorage(SavedStateHandler.IS_MULTISHIFT)) === 'true'
 	}
 
@@ -142,14 +140,12 @@ export default class SavedStateHandler {
 		this.setLocalStorage(SavedStateHandler.LANGUAGE, language)
 	}
 
-	// TODO: Move to localStorage
 	getWarning(): boolean {
-		return this.getCookie(SavedStateHandler.WARNING) == 'true'
+		return this.getLocalStorage(SavedStateHandler.WARNING) == 'true'
 	}
 
-	// TODO: Move to localStorage
 	setWarning(warning: boolean): void {
-		this.cookies.set(SavedStateHandler.WARNING, warning, { maxAge: SavedStateHandler.MAX_AGE_SMALL })
+		this.setLocalStorage(SavedStateHandler.WARNING, warning.toString(), { maxAge: SavedStateHandler.AGE_WARNING })
 	}
 
 	setCoursesColor(courses: Course[]): void {
@@ -157,7 +153,7 @@ export default class SavedStateHandler {
 			this.colors[c.id] = c.color
 		})
 
-		this.setLocalStorage(SavedStateHandler.COLORS, this.colors, true)
+		this.setLocalStorage(SavedStateHandler.COLORS, this.colors, {})
 	}
 
 	// HELPERS
@@ -208,25 +204,95 @@ export default class SavedStateHandler {
 		this.cookies.set(accessor, value, { maxAge })
 	}
 
-	private getLocalStorage(accessor: string, formatJson = false): string | Record<string, string> {
+	private getLocalStorage(accessor: string): string | Record<string, string> {
 		const value = localStorage.getItem(accessor)
-		if (formatJson && value) {
-			return JSON.parse(value) 
+		if (value) {
+			try {
+				const storedValue = JSON.parse(value)
+				// Backwards compatibility
+				if (storedValue.version == undefined) {
+					this.migrateLocalStorageToVersion1(accessor)
+					return storedValue.toString()
+				}
+				else if (storedValue.version == 1) {
+					const parsedValue = storedValue as LocalStorageV1
+
+					return this.verifyValidity(parsedValue) ? parsedValue.value : ''
+				}
+			}
+			catch (e) {
+				// Not yet updated, keep going
+				this.migrateLocalStorageToVersion1(accessor)
+			}
 		}
 		return value as string
 	}
 
-	private setLocalStorage(accessor: string, value: string | Record<string, string>, formatJson = false): void {
-		if (formatJson) {
-			value = JSON.stringify(value)
-		}
-		localStorage.setItem(accessor, value as string)
+	private setLocalStorage(
+		accessor: string, value: string | Record<string, string>, options: Partial<LocalStorageOptions> = {}
+	): void {
+		const jsonValue = {
+			value: value,
+			version: LOCAL_STORAGE_VERSION,
+			maxAge: options.maxAge,
+			createdDate: new Date().toJSON()
+		} as LocalStorageV1
+
+		localStorage.setItem(accessor, JSON.stringify(jsonValue))
 	}
 
 	private removeLocalStorage(accessor: string): void {
 		localStorage.removeItem(accessor)
 	}
+
+	private verifyValidity(value: LocalStorageV1): boolean {
+		const today = new Date()
+
+		if (!value.createdDate || !value.maxAge) return true
+
+		const createdDate = Date.parse(value.createdDate as unknown as string)
+		const diff = (today.valueOf() - createdDate.valueOf()) / 1000 // in seconds
+		
+		return diff < value.maxAge
+	}
+
+	private migrateLocalStorageToVersion1(accessor: string): void {
+		const value = localStorage.getItem(accessor)
+		const newRes = { version: LOCAL_STORAGE_VERSION, createdDate: new Date().toJSON() } as LocalStorageV1
+
+		if (accessor == SavedStateHandler.WARNING) {
+			newRes.maxAge = SavedStateHandler.AGE_WARNING
+		}
+
+		if (value) {
+			try {
+				const storedValue = JSON.parse(value)
+				
+				// It is JSON, but not in the new version
+				if (storedValue.version == undefined) newRes.value = storedValue
+			}
+			catch (e) {
+				// It isn't JSON
+				newRes.value = value
+			}
+		}
+
+		localStorage.setItem(accessor, JSON.stringify(newRes))
+	}
 }
+
+type LocalStorageOptions = {
+	maxAge: number
+}
+
+type LocalStorageV1 = {
+	value: string | Record<string, string>,
+	version: number,
+	maxAge?: number,
+	createdDate: string
+}
+
+const LOCAL_STORAGE_VERSION = 1
 
 export type BuiltCourse = {
 	course: Course,

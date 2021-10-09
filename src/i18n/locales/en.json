@@ -121,7 +121,8 @@
 		"cannot-obtain-degrees": "It was not possible to obtain the degrees",
 		"cannot-obtain-courses": "It was not possible to obtain the courses of this degree",
 		"cannot-obtain-shifts": "It was not possible to obtain the shifts of this course",
-		"error-parsing": "There were errors in parsing. Please contact the administrators."
+		"error-parsing": "There were errors in parsing. Please contact the administrators.",
+		"minimal-classes-no-degrees": "You haven't selected a degree. Select at least one degree first."
 	},
 	"warning": {
 		"title": "Warnings: Calendar, Occupation and Shifts with different Degrees",
