@@ -21,14 +21,15 @@ class Schedule extends React.PureComponent <{
 	renderEventContent(eventInfo: {event: EventApi, backgroundColor: string}): JSX.Element {
 		const occupation = Object.values(eventInfo.event.extendedProps.occupation as ShiftOccupation)
 		const percentage = occupation[0]/occupation[1] * 100 || 0
-
 		const textColor = isOkWithWhite(hexRgb(eventInfo.backgroundColor)) ? 'white' : 'black'
+
 		return (
 			<Tooltip arrow title={
 				<React.Fragment>{i18next.t('schedule.shift.occupation')}: {occupation.join('/')} ({percentage.toFixed(0)}%)</React.Fragment>
 			} placement={'top'}>
 				<Box style={{maxWidth: '100%', height: '100%', color: textColor, wordBreak: 'break-word', overflowY: 'hidden'}}>
-					{eventInfo.event.title}
+					<p style={{margin: '0'}}>{eventInfo.event.title}</p>
+					<p style={{margin: '0'}}>{eventInfo.event.extendedProps.campus}</p>
 				</Box>
 			</Tooltip>
 		)

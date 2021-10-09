@@ -78,7 +78,7 @@ export default class Shift implements Comparable {
 				// Replacing space to T to allow parsing on SAFARI
 				dayOfWeek:  new Date(l.start.replace(' ', 'T')).getDay(),
 				room: l.room?.name,
-				campus: l.room?.topLevelSpace.name,
+				campus: l.room?.topLevelSpace.name || this.campus,
 				acronym: this.acronym,
 				shiftId: this.shiftId,
 				id: this.name,
