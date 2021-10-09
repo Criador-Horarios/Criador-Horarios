@@ -30,14 +30,16 @@ class Schedule extends React.PureComponent <{
 	}
 
 	onEventClick(info: EventClickArg): void {
-		const withCtrl = info.jsEvent.ctrlKey
-		if (withCtrl) {
-			const url = info.event.extendedProps.courseUrl
-			const win = window.open(url)
-			win?.focus()
-		} else {
-			this.props.onSelectedEvent(info.event.id)	
-		}
+		// TODO: The courses don't have url for now
+		// const withCtrl = info.jsEvent.ctrlKey
+		// if (withCtrl) {
+		// 	const url = info.event.extendedProps.courseUrl
+		// 	const win = window.open(url)
+		// 	win?.focus()
+		// } else {
+		// 	this.props.onSelectedEvent(info.event.id)	
+		// }
+		this.props.onSelectedEvent(info.event.id)	
 	}
 
 	render(): React.ReactNode {

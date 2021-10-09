@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Menu that aggregates all download buttons
+- Text to change the color of each course in the chip
 
 ### Fixed
 
@@ -16,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Getting classes were showing degrees not selected
 
 ### Removed
+
+- CTRL+Click on lesson to get course url, as we don't have the url
 
 ## [1.10.4]
 

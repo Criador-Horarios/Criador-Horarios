@@ -645,7 +645,8 @@ class App extends React.Component <{
 												<Paper elevation={0} variant={'outlined'} key={c.hashString()}
 													style={{padding: '4px', margin: '4px', display: 'flex'}}
 												>
-													<Tooltip title={c.displayName()} key={c.hashString()}>
+													<Tooltip title={i18next.t('color-picker-dialog.title', { course: c.acronym}) as string}
+														key={c.hashString()}>
 														<Chip size="small" color='primary'
 															style={{backgroundColor: c.color}} label={c.acronym}
 															onClick={() => this.colorPicker.current?.show(c)} // Toggle colorPicker on click
@@ -667,7 +668,6 @@ class App extends React.Component <{
 										</div>
 										<div className={classes.centered as string}>
 											<Tooltip title={i18next.t('multishiftmode-switch') as string}>
-												{/* pay no attention to the dirty styling hacks */}
 												<FormControlLabel
 													className={classes.formLabel as string}
 													label={<AllInclusiveIcon fontSize="small" />}
