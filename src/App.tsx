@@ -708,10 +708,10 @@ class App extends React.Component <{
 											>
 												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.exportToExcel()}}
 													disableRipple>
-													<ListItemIcon style={{marginLeft: '3px'}}>
-														<FontAwesomeIcon size='2x' icon={faFileExcel}/>
+													<ListItemIcon style={{marginLeft: '4px'}}>
+														<FontAwesomeIcon size='lg' icon={faFileExcel}/>
 													</ListItemIcon>
-													<ListItemText style={{marginLeft: '-3px'}}>{i18next.t('schedule-selected.actions.save-as-excel')}</ListItemText>
+													<ListItemText style={{marginLeft: '-4px'}}>{i18next.t('schedule-selected.actions.save-as-excel')}</ListItemText>
 												</MenuItem>
 												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.saveSchedule()}}
 													disableRipple>

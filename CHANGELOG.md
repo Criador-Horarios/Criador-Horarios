@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.11.1] - 09/10/2021
+
+### Added
+
+### Fixed
+
+- Move language and dark mode to localStorage
+- Improve size of excel icon
+
+### Removed
+
 ## [1.11.0] - 09/10/2021
 
 ### Added
