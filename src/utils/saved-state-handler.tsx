@@ -118,7 +118,7 @@ export default class SavedStateHandler {
 	}
 
 	setMultiShiftMode(multiShiftMode: boolean): void {
-		this.multiShiftMode = true
+		this.multiShiftMode = multiShiftMode
 		this.setLocalStorage(SavedStateHandler.IS_MULTISHIFT, multiShiftMode.toString())
 	}
 
@@ -126,28 +126,28 @@ export default class SavedStateHandler {
 		return this.multiShiftMode
 	}
 
-	getDarkMode(): boolean | null {
-		const darkName = this.getCookie(SavedStateHandler.DARK) ?? null
-		if (darkName == null) return null
-		return darkName === 'true'
+	getDarkMode(): boolean {
+		return this.getLocalStorage(SavedStateHandler.DARK) == 'true'
 	}
 
 	setDarkMode(isDark: boolean): void {
-		this.cookies.set(SavedStateHandler.DARK, isDark, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
+		this.setLocalStorage(SavedStateHandler.DARK, isDark.toString())
 	}
 
 	getLanguage(): string {
-		return this.getCookie(SavedStateHandler.LANGUAGE)
+		return this.getLocalStorage(SavedStateHandler.LANGUAGE) as string
 	}
 
 	setLanguage(language: string): void {
-		this.cookies.set(SavedStateHandler.LANGUAGE, language, { maxAge: SavedStateHandler.MAX_AGE_NORMAL })
+		this.setLocalStorage(SavedStateHandler.LANGUAGE, language)
 	}
 
+	// TODO: Move to localStorage
 	getWarning(): boolean {
 		return this.getCookie(SavedStateHandler.WARNING) == 'true'
 	}
 
+	// TODO: Move to localStorage
 	setWarning(warning: boolean): void {
 		this.cookies.set(SavedStateHandler.WARNING, warning, { maxAge: SavedStateHandler.MAX_AGE_SMALL })
 	}
