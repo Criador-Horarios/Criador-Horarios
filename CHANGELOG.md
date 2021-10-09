@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Excel padding cells not formatted
+- Getting classes were showing degrees not selected
 
 ### Removed
 

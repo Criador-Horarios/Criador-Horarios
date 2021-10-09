@@ -67,7 +67,7 @@ async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Pr
 			allClasses[shift].split(', ').forEach( (c) => {
 				const possibleDegrees = degreeAcronyms.filter(substr => c.startsWith(substr))
 
-				if (possibleDegrees.length >= 0) { // It should only match one degree, if it matches more.... WTH
+				if (possibleDegrees.length > 0) { // It should only match one degree, if it matches more.... WTH
 					filteredClasses.push(c)
 				}
 			})
