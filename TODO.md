@@ -38,4 +38,3 @@
 - [X] Change font color according to background color [help](https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color)
 - [ ] Get the classes with the schedules to show only the shifts with the selected degrees
 - [X] Show warning when there are no selected degrees and tries to get classes
-- [ ] When a degree is chosen, try to update selected courses to have that degree
