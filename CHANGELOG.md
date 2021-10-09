@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Fixed
+
+### Removed
+
+## [1.12.0] - 09/10/2021
+
+### Added
+
 - Changed all cookies to localStorage and created maxAge functionality
 
 ### Fixed
