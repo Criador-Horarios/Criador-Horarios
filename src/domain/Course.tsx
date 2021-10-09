@@ -1,3 +1,5 @@
+import hexRgb from 'hex-rgb'
+import { isOkWithWhite } from '../utils/colors'
 import Comparable from './Comparable'
 import Shift from './Shift'
 
@@ -9,6 +11,7 @@ export default class Course implements Comparable {
 	abbrev: string
 	degreeAcronym: string
 	color = ''
+	textColor = ''
 	shiftTypes: Map<string, boolean | undefined> = new Map()
 	nSelectedShifts = 0
 	isSelected = false
@@ -68,11 +71,13 @@ export default class Course implements Comparable {
 
 	setColor(color: string): void {
 		this.color = color
+		this.textColor = isOkWithWhite(hexRgb(color)) ? 'white' : 'black'
 	}
 
 	removeColor(): string {
 		const color = this.color
 		this.color = ''
+		this.textColor = 'white'
 		return color
 	}
 

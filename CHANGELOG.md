@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Menu that aggregates all download buttons
 - Text to change the color of each course in the chip
+- Change text color of lessons to contrast well with the background color
 
 ### Fixed
 

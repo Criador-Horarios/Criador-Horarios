@@ -74,7 +74,6 @@ export default class API {
 			.filter( (c: Course) => {
 				return c.semester === this.SEMESTER
 			})
-		console.log(courses)
 		return courses.sort(Course.compare)
 	}
 

@@ -122,9 +122,9 @@ export default class Shift implements Comparable {
 	updateColorFromCourse(): void {
 		let newColor = this.color
 		if (this.type === ShiftType['Teo']) {
-			newColor = getColor1(this.course.color)
+			[newColor, ] = getColor1(this.course.color)
 		} else if (this.type === ShiftType['PB']) {
-			newColor = getColor2(this.course.color)
+			[newColor, ] = getColor2(this.course.color)
 		} else {
 			newColor = this.course.color
 		}

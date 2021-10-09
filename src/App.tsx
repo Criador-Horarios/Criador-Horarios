@@ -648,7 +648,8 @@ class App extends React.Component <{
 													<Tooltip title={i18next.t('color-picker-dialog.title', { course: c.acronym}) as string}
 														key={c.hashString()}>
 														<Chip size="small" color='primary'
-															style={{backgroundColor: c.color}} label={c.acronym}
+															style={{backgroundColor: c.color}}
+															label={<span style={{color: c.textColor}}>{c.acronym}</span>}
 															onClick={() => this.colorPicker.current?.show(c)} // Toggle colorPicker on click
 														/>
 													</Tooltip>

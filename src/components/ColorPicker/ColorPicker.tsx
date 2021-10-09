@@ -38,9 +38,9 @@ class ColorPicker extends React.PureComponent <{
 
 	render(): React.ReactNode {
 		const currColor = this.state.color
-		const color1 = getColor1(currColor)
-		const color2 = getColor2(currColor)
-		const color3 = getColor3(currColor)
+		const [color1, textColor1] = getColor1(currColor)
+		const [color2, textColor2] = getColor2(currColor)
+		const [color3, textColor3] = getColor3(currColor)
 
 		return (
 			<div>
@@ -51,13 +51,16 @@ class ColorPicker extends React.PureComponent <{
 							<Typography>{i18next.t('color-picker-dialog.content.preview')}</Typography>
 							<Box display="flex" justifyContent="center" alignItems="center" flexDirection="row">
 								<Chip size="medium" className={styles.Chip}
-									style={{backgroundColor: color1}} label={'Teo'}
+									style={{backgroundColor: color1}}
+									label={<span style={{color: textColor1}}>Teo</span>}
 								/>
 								<Chip size="medium" className={styles.Chip}
-									style={{backgroundColor: color2}} label={'PB'}
+									style={{backgroundColor: color2}}
+									label={<span style={{color: textColor2}}>PB</span>}
 								/>
 								<Chip size="medium" className={styles.Chip}
-									style={{backgroundColor: color3}} label={'L'}
+									style={{backgroundColor: color3}}
+									label={<span style={{color: textColor3}}>L</span>}
 								/>
 							</Box>
 							<HexColorPicker className={styles.ReactColorful} color={this.state.color}
