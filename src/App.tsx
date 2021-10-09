@@ -495,8 +495,13 @@ class App extends React.Component <{
 	}
 
 	async getClasses(): Promise<void> {
+		if (this.selectedDegrees.length === 0) {
+			this.showAlert(i18next.t('alert.minimal-classes-no-degrees'), 'error')
+			return
+		}
+
 		this.setState({loading: true})
-		// TODO: Send message when there are no selected Degrees
+		
 		const [classesByShift, minimalClasses] = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
 
 		this.classesByShift = Object.entries(classesByShift)

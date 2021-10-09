@@ -120,7 +120,8 @@
 		"cannot-obtain-degrees": "Não foi possível obter os cursos",
 		"cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
 		"cannot-obtain-shifts": "Não foi possível obter os turnos desta UC",
-		"error-parsing": "Houve problemas a restaurar o estado. Por favor contacte os administradores."
+		"error-parsing": "Houve problemas a restaurar o estado. Por favor contacte os administradores.",
+		"minimal-classes-no-degrees": "Não selecionou nenhum curso. Primeiro selecione pelo menos um curso."
 	},
 	"warning": {
 		"title": "Avisos: Calendário, Ocupação e Turnos com Cursos diferentes",

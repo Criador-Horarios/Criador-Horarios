@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Show alert when fetching minimal classes but hasn't selected at least one course
+
 ### Removed
 
 ## [1.11.1] - 09/10/2021
