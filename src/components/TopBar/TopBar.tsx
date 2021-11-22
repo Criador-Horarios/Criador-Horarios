@@ -349,7 +349,7 @@ class TopBar extends React.Component <{
 							</Select>
 						</FormControl>
 						<Typography variant="caption" gutterBottom style={{marginTop: '8px'}}>
-							Isto irá apagar todos as disciplinas e turnos selecionados.
+							{i18next.t('settings-dialog.select.warning') as string}
 						</Typography>
 					</DialogContent>
 					<DialogActions>
