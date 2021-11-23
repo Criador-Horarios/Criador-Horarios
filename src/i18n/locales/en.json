@@ -29,6 +29,10 @@
 			"value_plural": "nd Semester",
 			"warning": "Alterar o semestre fará com que todos os turnos e disciplinas sejam apagados."
 		},
+		"occupancy-update": {
+			"label": "Shift occupancy update interval",
+			"warning": "Choose the interval to update the shift occupancies."
+		},
 		"actions": {
 			"close-button": "Save"
 		}

@@ -8,6 +8,7 @@ import Course from '../../domain/Course'
 import Shift from '../../domain/Shift'
 import CourseUpdates from '../../utils/CourseUpdate'
 
+import Divider from '@material-ui/core/Divider'
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
 import TextField from '@material-ui/core/TextField'
@@ -33,6 +34,7 @@ import i18next from 'i18next'
 import Menu from '@material-ui/core/Menu'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
+import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
@@ -53,7 +55,8 @@ class TopBar extends React.Component <{
 		settingsDialog: false,
 		helpDialog: false,
 		warningDialog: false,
-		languageAnchor: null
+		languageAnchor: null,
+		currentOccupancyRate: OccupancyUpdater.getRate()
 	}
 	selectedDegrees: Degree[] = []
 	tempSelectedDegrees: string[] = []
@@ -66,6 +69,8 @@ class TopBar extends React.Component <{
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onLanguageMenuClick = this.onLanguageMenuClick.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
+
+		OccupancyUpdater.getInstance().changeRate(occupancyRates['Off'])
 	}
 
 	async componentDidMount(): Promise<void> {
@@ -202,6 +207,13 @@ class TopBar extends React.Component <{
 
 	onChangeDarkMode(): void {
 		this.props.onChangeDarkMode(!this.props.darkMode)
+	}
+
+	onOccupancyRateUpdate(newRate: number): void {
+		OccupancyUpdater.getInstance().changeRate(newRate)
+		this.setState({
+			currentOccupancyRate: newRate
+		})
 	}
 
 	render(): React.ReactNode {
@@ -350,6 +362,26 @@ class TopBar extends React.Component <{
 						</FormControl>
 						<Typography variant="caption" gutterBottom style={{marginTop: '8px'}}>
 							{i18next.t('settings-dialog.select.warning') as string}
+						</Typography>
+						<Divider orientation="horizontal" style={{ marginTop: '30px' }} />
+						<FormControl variant='outlined'
+							fullWidth={true}
+						>
+							<InputLabel>{i18next.t('settings-dialog.occupancy-update.label') as string}</InputLabel>
+							<Select
+								id="occupancy-update"
+								value={this.state.currentOccupancyRate}
+								onChange={(e) => {this.onOccupancyRateUpdate(e.target.value as number)}}
+								label={i18next.t('settings-dialog.occupancy-update.label') as string}
+								autoWidth={true}
+							>
+								{Object.entries(occupancyRates).map( (s) => 
+									<MenuItem key={s[1]} value={s[1]}>{s[0]}</MenuItem>
+								)}
+							</Select>
+						</FormControl>
+						<Typography variant="caption" gutterBottom style={{marginTop: '8px'}}>
+							{i18next.t('settings-dialog.occupancy-update.warning') as string}
 						</Typography>
 					</DialogContent>
 					<DialogActions>

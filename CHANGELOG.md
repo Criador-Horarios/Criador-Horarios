@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved strings for semester changing
 - Use proper academicTerm when fetching fenix API
 - Cache fetched academic terms
+- Occupancy updater settings and logic (does not update the occupancy yet)
 
 ### Fixed
 

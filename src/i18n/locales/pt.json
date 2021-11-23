@@ -28,6 +28,10 @@
 			"value": "º Semestre",
 			"warning": "Alterar o semestre fará com que todos os turnos e disciplinas sejam apagados."
 		},
+		"occupancy-update": {
+			"label": "Intervalo de atualização da ocupação dos turnos",
+			"warning": "Escolha o intervalo de atualização da ocupação dos turnos."
+		},
 		"actions": {
 			"close-button": "Guardar"
 		}
