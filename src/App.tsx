@@ -552,12 +552,14 @@ class App extends React.Component <{
 
 	async updateShiftOccupancies(): Promise<void> {
 		const shiftsById: Record<string, Shift> = {}
-		const coursesToBeFetched = this.state.selectedShifts.map((s) => {
+		const coursesToBeFetched = new Set<Course>()
+		
+		this.state.selectedShifts.forEach((s) => {
 			shiftsById[s.getStoredId()] = s
-			return s.course
+			coursesToBeFetched.add(s.course)
 		})
 
-		const updatedShifts = await Promise.all(coursesToBeFetched.map(async (c) => {
+		const updatedShifts = await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
 			let newShifts: Shift[] | null | undefined = await API.getCourseSchedules(c)
 
 			newShifts = newShifts?.filter((s) => {
@@ -570,11 +572,11 @@ class App extends React.Component <{
 
 				return toUpdateShift !== undefined
 			})
-			// s.updateOccupancy(schedule)
 
 			return newShifts
 		}))
 
+		// TODO: Maybe this can be moved to the previous cycle
 		const newUpdatedShifts = updatedShifts.flat().filter((s) => {
 			return s !== undefined
 		})
