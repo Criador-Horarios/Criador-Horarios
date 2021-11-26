@@ -5,8 +5,9 @@ export default class OccupancyUpdater {
 	// Attributes
 	private currentRate = 0
 	private interval: NodeJS.Timeout | undefined = undefined
+	private updater: (() => Promise<void>) | undefined = undefined
+	private running = false
 
-	// TODO: Receive updating function
 	private constructor() {
 		this.currentRate = 0
 	}
@@ -19,10 +20,15 @@ export default class OccupancyUpdater {
 		return OccupancyUpdater.instance
 	}
 
+	public static setUpdateFunction(updater: () => Promise<void>): void {
+		this.getInstance().updater = updater
+	}
+
 	public static getRate(): number {
 		return OccupancyUpdater.getInstance().currentRate
 	}
 
+	// TODO: Change to static
 	public changeRate(newRate: number): void {
 		if (this.currentRate == newRate && newRate !== 0) {
 			return
@@ -37,19 +43,27 @@ export default class OccupancyUpdater {
 
 		// Create interval
 		if (this.currentRate !== 0) {
-			this.updateOccupancy() // Run the first time
-			this.interval = setInterval(this.updateOccupancy, this.currentRate * 1000)
+			OccupancyUpdater.updateOccupancy() // Run the first time
+			this.interval = setInterval(OccupancyUpdater.updateOccupancy, this.currentRate * 1000)
 		}
 	}
 
-	private updateOccupancy(): void {
-		console.log('Update!')
+	private static async updateOccupancy(): Promise<void> {
+		const currInstance = OccupancyUpdater.getInstance()
+		if (currInstance.running) {
+			// If other task is running, ignore this one
+			return
+		}
 
 		// Clear itself if it can
-		if (this.currentRate == 0 && this.interval) {
-			clearInterval(this.interval)
+		if (currInstance.currentRate == 0 && currInstance.interval) {
+			clearInterval(currInstance.interval)
 		}
-		return
+
+		// Call occupancy updater
+		currInstance.running = true
+		await currInstance.updater?.call(currInstance)
+		currInstance.running = false
 	}
 }
 

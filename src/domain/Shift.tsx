@@ -62,10 +62,7 @@ export default class Shift implements Comparable {
 
 		this.updateColorFromCourse()
 
-		this.occupation = {
-			current: obj.occupation.current,
-			max: obj.occupation.max,
-		}
+		this.updateOccupancy(obj.occupation)
 		this.url = course.url
 
 		const lessons = obj.lessons.map((l: LessonDto) => {
@@ -135,6 +132,13 @@ export default class Shift implements Comparable {
 		}
 
 		this.color = newColor
+	}
+
+	updateOccupancy(newOccupancy: ShiftOccupation): void {
+		this.occupation = {
+			current: newOccupancy.current,
+			max: newOccupancy.max,
+		}
 	}
 }
 

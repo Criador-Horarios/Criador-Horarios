@@ -69,8 +69,6 @@ class TopBar extends React.Component <{
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onLanguageMenuClick = this.onLanguageMenuClick.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
-
-		OccupancyUpdater.getInstance().changeRate(occupancyRates['Off'])
 	}
 
 	async componentDidMount(): Promise<void> {

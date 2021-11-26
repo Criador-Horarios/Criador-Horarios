@@ -64,6 +64,7 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
 import { ListItemIcon, ListItemText } from '@material-ui/core'
+import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -117,12 +118,17 @@ class App extends React.Component <{
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
 		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 		this.exportToExcel = this.exportToExcel.bind(this)
+		this.updateShiftOccupancies = this.updateShiftOccupancies.bind(this)
 
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
 		this.colorPicker = React.createRef()
 
 		this.theme = this.getTheme(this.state.darkMode)
+
+		// Set occupancy updater
+		OccupancyUpdater.getInstance().changeRate(occupancyRates['Off'])
+		OccupancyUpdater.setUpdateFunction(this.updateShiftOccupancies)
 
 		this.savedStateHandler = new SavedStateHandler(API.getUrlParams())
 
@@ -542,6 +548,40 @@ class App extends React.Component <{
 				saveMenuAnchor: null
 			})
 		}
+	}
+
+	async updateShiftOccupancies(): Promise<void> {
+		const shiftsById: Record<string, Shift> = {}
+		const coursesToBeFetched = this.state.selectedShifts.map((s) => {
+			shiftsById[s.getStoredId()] = s
+			return s.course
+		})
+
+		const updatedShifts = await Promise.all(coursesToBeFetched.map(async (c) => {
+			let newShifts: Shift[] | null | undefined = await API.getCourseSchedules(c)
+
+			newShifts = newShifts?.filter((s) => {
+				const toUpdateShift = shiftsById[s.getStoredId()]
+				if (toUpdateShift !== undefined) {
+					// FIXME: Remove this, just for testing
+					// s.occupation.current = Math.round(s.occupation.max * Math.random())
+					toUpdateShift.updateOccupancy(s.occupation)
+				}
+
+				return toUpdateShift !== undefined
+			})
+			// s.updateOccupancy(schedule)
+
+			return newShifts
+		}))
+
+		const newUpdatedShifts = updatedShifts.flat().filter((s) => {
+			return s !== undefined
+		})
+
+		this.setState({
+			selectedShifts: newUpdatedShifts
+		})
 	}
 
 	render(): ReactNode {
