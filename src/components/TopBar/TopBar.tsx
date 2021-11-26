@@ -328,7 +328,7 @@ class TopBar extends React.Component <{
 							</IconButton>
 						</Tooltip>
 						<IconButton color='inherit' onClick={() => {this.setState({settingsDialog: true})}} component="span"
-							style={{display: 'none'}}>
+							style={{display: 'inherit'}}>
 							<Icon>settings</Icon>
 						</IconButton>
 					</Toolbar>

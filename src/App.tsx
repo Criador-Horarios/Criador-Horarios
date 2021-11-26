@@ -554,6 +554,7 @@ class App extends React.Component <{
 		const shiftsById: Record<string, Shift> = {}
 		const coursesToBeFetched = new Set<Course>()
 		
+		// NOTICE: For now we update only the selected shifts
 		this.state.selectedShifts.forEach((s) => {
 			shiftsById[s.getStoredId()] = s
 			coursesToBeFetched.add(s.course)
@@ -567,6 +568,7 @@ class App extends React.Component <{
 				if (toUpdateShift !== undefined) {
 					// FIXME: Remove this, just for testing
 					// s.occupation.current = Math.round(s.occupation.max * Math.random())
+					// --
 					toUpdateShift.updateOccupancy(s.occupation)
 				}
 
