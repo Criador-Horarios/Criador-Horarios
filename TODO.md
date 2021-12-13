@@ -39,3 +39,4 @@
 - [ ] Get the classes with the schedules to show only the shifts with the selected degrees
 - [X] Show warning when there are no selected degrees and tries to get classes
 - [ ] Requests cache and bypass?
+- [ ] Finalize occupancy shift updater and set it for all available shifts for the selected courses

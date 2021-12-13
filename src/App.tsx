@@ -899,6 +899,7 @@ class App extends React.Component <{
 							</DialogContent>
 							<DialogActions>
 								<div />
+								<Button onClick={() => {this.setState({newDomainDialog: false})}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
 							</DialogActions>
 						</Dialog>
 						<Dialog open={this.state.changelogDialog}>
