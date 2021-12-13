@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.13.1] - 13/12/2021
+
+### Added
+
+### Fixed
+
+- Set domain dialog for production
+
+### Removed
+
 ## [1.13.0] - 13/12/2021
 
 ### Added

@@ -138,8 +138,7 @@ export default class SavedStateHandler {
 	getNewDomain(): boolean {
 		const currOrigin = window.location.origin
 		const rightOrigin = SavedStateHandler.DOMAIN
-		console.log(currOrigin, rightOrigin)
-		return currOrigin == rightOrigin || !this.debug
+		return currOrigin == rightOrigin
 	}
 
 	getDarkMode(): boolean {
