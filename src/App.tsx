@@ -829,7 +829,7 @@ class App extends React.Component <{
 									</Link>
 								</Tooltip>
 								<Tooltip title="Daniel Gonçalves">
-									<Link href="https://dagoncalves.me" target="_blank" onClick={() => {return}} color="inherit">
+									<Link href="https://dang.pt" target="_blank" onClick={() => {return}} color="inherit">
 										<IconButton size="small" title="Daniel Gonçalves" onClick={() => {return}}>
 											<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
 										</IconButton>
