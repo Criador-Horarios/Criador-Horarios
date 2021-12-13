@@ -5,7 +5,7 @@
 	},
 	"course-selector": {    
 		"title": "Escolha as UCs",
-		"noOptions": "Sem opções, escolha um curso primeiro"
+		"noOptions": "Sem opções, pode ter de escolher outro curso ou semestre"
 	},
 	"link-button": {
 		"tooltip": "Obter link de partilha"	
@@ -24,9 +24,14 @@
 	"settings-dialog": {
 		"title": "Escolha o semestre",
 		"select": {
-            "label": "Semestre",
-            "value": "º Semestre"
-        },
+			"label": "Semestre",
+			"value": "º Semestre",
+			"warning": "Alterar o semestre fará com que todos os turnos e disciplinas sejam apagados."
+		},
+		"occupancy-update": {
+			"label": "Intervalo de atualização da ocupação dos turnos",
+			"warning": "Escolha o intervalo de atualização da ocupação dos turnos."
+		},
 		"actions": {
 			"close-button": "Guardar"
 		}
@@ -133,6 +138,17 @@
 		"actions": {
 			"continue": "Continuar",
 			"back": "Voltar"
+		}
+	},
+	"new-domain": {
+		"title": "Novo domínio: {{domain}}",
+		"content": [
+			"O Criador de Horários possui um novo domínio: {{domain}}.",
+			"O domínio anterior (horarios.dagoncalves.me) irá ser mantido até 10/09/2022.",
+			"Para aceder ao novo domínio e manter os dados, clique no botão abaixo."
+		],
+		"actions": {
+			"access": "Aceder"
 		}
 	},
 	"excel": {

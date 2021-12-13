@@ -12,8 +12,18 @@ export default class API {
 	static PATH_PREFIX = ''
 
 	// eslint-disable-next-line
-	private static async getRequest(url: string): Promise<any> {
-		return fetch(`${API.PATH_PREFIX}${url}?academicTerm=${this.ACADEMIC_TERM}&lang=${this.LANG}`).then(r => {
+	private static async getRequest(url: string, ignoreAcademicTerm = false): Promise<any> {
+		let urlToFetch = `${API.PATH_PREFIX}${url}?lang=${this.LANG}`
+
+		if (!ignoreAcademicTerm) {
+			const selectedTerm = (await API.getAcademicTerms()).find( (t) => t.semester == API.SEMESTER && t.term == API.ACADEMIC_TERM)
+
+			if (selectedTerm !== undefined) {
+				urlToFetch += `&academicTerm=${selectedTerm.id}`
+			}
+		}
+
+		return fetch(urlToFetch).then(r => {
 			const contentType = r.headers.get('content-type')
 			if (contentType?.includes('application/json') && r.status === 200) {
 				return r.json()
@@ -120,18 +130,26 @@ export default class API {
 	}
 
 	public static async getAcademicTerms(): Promise<AcademicTerm[]> {
-		const res = (await this.getRequest('/api/academicterms')) as [] | null
+		// Cache the academic terms
+		if (staticData.terms.length > 0) {
+			return staticData.terms
+		}
+
+		const res = (await this.getRequest('/api/academicterms', true)) as [] | null
 		if (res === null) {
 			return []
 		}
 		// Prepare from array of [string, [string, string]] to array of string
-		return Object.entries(res)
+		// Keep only the current and previous years
+		staticData.terms = Object.entries(res)
 			.sort()
 			.reverse()
 			.slice(0, 2)
 			.map((arr) => arr[1])
 			.flat()
 			.map((s) => new AcademicTerm(s as string))
+
+		return staticData.terms
 	}
 
 	public static async getShortUrl(params: string[]): Promise<string> {
@@ -174,7 +192,7 @@ export async function defineCurrentTerm(): Promise<string> {
 	API.SEMESTER = semester
 
 	const currTerms = await API.getAcademicTerms()
-	staticData.terms = currTerms
+	
 	const selectedTerm = currTerms.find( (t) => t.semester == semester && t.term == currentTerm)
 	return selectedTerm?.id || ''
 }

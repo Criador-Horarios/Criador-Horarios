@@ -5,7 +5,7 @@
 	},
 	"course-selector": {    
 		"title": "Choose the courses",
-		"noOptions": "No options, select a degree first"
+		"noOptions": "No options, you might need to select another degree or academic term"
 	},
 	"link-button": {
 		"tooltip": "Get shareable link"	
@@ -24,13 +24,18 @@
 	"settings-dialog": {
 		"title": "Choose the semester",
 		"select": {
-            "label": "Semester",
-            "value": "st Semester",
-            "value_plural": "nd Semester"
-        },
+			"label": "Semester",
+			"value": "st Semester",
+			"value_plural": "nd Semester",
+			"warning": "Alterar o semestre fará com que todos os turnos e disciplinas sejam apagados."
+		},
+		"occupancy-update": {
+			"label": "Shift occupancy update interval",
+			"warning": "Choose the interval to update the shift occupancies."
+		},
 		"actions": {
-            "close-button": "Save"
-        }
+			"close-button": "Save"
+		}
 	},
 	"help-dialog": {
 		"actions": {
@@ -134,6 +139,17 @@
 		"actions": {
 			"continue": "Continue",
 			"back": "Back"
+		}
+	},
+	"new-domain": {
+		"title": "New domain: {{domain}}",
+		"content": [
+			"Criador de Horários now has a new domain: {{domain}}.",
+			"The previous domain (horarios.dagoncalves.me) will be maintained until 10/09/2022.",
+			"To access the new domain and keep the data, click on the button below."
+		],
+		"actions": {
+			"access": "Access"
 		}
 	},
 	"excel": {

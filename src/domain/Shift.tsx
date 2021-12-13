@@ -136,6 +136,13 @@ export default class Shift implements Comparable {
 
 		this.color = newColor
 	}
+
+	updateOccupancy(newOccupancy: ShiftOccupation): void {
+		this.occupation = {
+			current: newOccupancy.current,
+			max: newOccupancy.max,
+		}
+	}
 }
 
 export const shortenDescriptions = (shifts: Shift[]): string => {

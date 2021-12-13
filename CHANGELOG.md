@@ -12,6 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.13.0] - 13/12/2021
+
+### Added
+
+- Improved strings for semester changing
+- Use proper academicTerm when fetching fenix API
+- Cache fetched academic terms
+- Occupancy updater settings and logic (only selected shifts for now)
+- Dialog to warn about the new domain (only on debug for testing)
+
+### Fixed
+
+### Removed
+
 ## [1.12.0] - 09/10/2021
 
 ### Added
