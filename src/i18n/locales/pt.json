@@ -140,6 +140,17 @@
 			"back": "Voltar"
 		}
 	},
+	"new-domain": {
+		"title": "Novo domínio: {{domain}}",
+		"content": [
+			"O Criador de Horários possui um novo domínio: {{domain}}.",
+			"O domínio anterior (horarios.dagoncalves.me) irá ser mantido até 10/09/2022.",
+			"Para aceder ao novo domínio e manter os dados, clique no botão abaixo."
+		],
+		"actions": {
+			"access": "Aceder"
+		}
+	},
 	"excel": {
 		"filename": "ist-horario",
 		"worksheet-title": "Horário",

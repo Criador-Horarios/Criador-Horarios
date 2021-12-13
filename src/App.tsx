@@ -88,7 +88,8 @@ class App extends React.Component <{
 		darkMode: false,
 		multiShiftMode: false,
 		inhibitMultiShiftModeChange: false,
-		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  }
+		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
+		newDomainDialog: false
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
@@ -101,6 +102,7 @@ class App extends React.Component <{
 	warningTitle = ''
 	warningContent = ''
 	warningContinue: () => void = () => {return}
+	newDomainURL = SavedStateHandler.DOMAIN
 
 	// eslint-disable-next-line
 	constructor(props: any) {
@@ -156,9 +158,14 @@ class App extends React.Component <{
 		// Set warning with all notices
 		const isWarned = this.savedStateHandler.getWarning()
 		if (!isWarned) {
-			this.setWarningShiftDegrees()
+			this.setWarningDialog()
 			this.savedStateHandler.setWarning(true)
 		}
+		
+		// Warn about new domain
+		const isWarnedDomain = this.savedStateHandler.getNewDomain()
+		this.newDomainURL = await this.getSharingURL()
+		this.setState({newDomainDialog: !isWarnedDomain})
 	}
 
 	async onSelectedDegree(selectedDegree: Degree[]): Promise<void> {
@@ -380,12 +387,16 @@ class App extends React.Component <{
 		this.setState({ hasAlert: false })
 	}
 
-	async getLink(): Promise<void> {
+	async getSharingURL(): Promise<string> {
 		const shifts = shortenDescriptions(this.state.selectedShifts)
 		const degrees = getDegreesAcronyms(this.state.selectedShifts)
 		const isMultishift = this.state.multiShiftMode.toString()
 		const params = [`${SavedStateHandler.SHIFTS}=${shifts}`, `${SavedStateHandler.DEGREES}=${degrees}`, `${SavedStateHandler.IS_MULTISHIFT}=${isMultishift}`]
-		const shortLink = await API.getShortUrl(params)
+		return await SavedStateHandler.getAppURL(params)
+	}
+
+	async getLink(): Promise<void> {
+		const shortLink = await this.getSharingURL()
 		const el = document.createElement('textarea')
 		el.value = shortLink
 		el.setAttribute('readonly', '')
@@ -515,7 +526,7 @@ class App extends React.Component <{
 		this.setState({classesDialog: true, loading: false})
 	}
 
-	setWarningShiftDegrees(): void {
+	setWarningDialog(): void {
 		this.warningTitle = i18next.t('warning.title')
 		this.warningContent = (i18next.t('warning.content', {returnObjects: true}) as string[]).join('\n\n')
 		this.warningContinue = () => {return}
@@ -871,6 +882,23 @@ class App extends React.Component <{
 								<div />
 								<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
 								{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
+							</DialogActions>
+						</Dialog>
+						<Dialog maxWidth='sm' fullWidth open={this.state.newDomainDialog}>
+							<DialogTitle style={{alignSelf: 'center'}}>
+								{i18next.t('new-domain.title', {domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')})}
+							</DialogTitle>
+							<DialogContent style={{display: 'flex', flexDirection: 'column'}}>
+								<Box style={{whiteSpace: 'pre-line', alignSelf: 'center'}}>
+									{(i18next.t('new-domain.content', {returnObjects: true, domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')}) as string[]).join('\n\n')}
+								</Box>
+								<br/>
+								<Button variant='contained' style={{alignSelf: 'center'}} href={this.newDomainURL} color="primary">
+									{i18next.t('new-domain.actions.access') as string}
+								</Button>
+							</DialogContent>
+							<DialogActions>
+								<div />
 							</DialogActions>
 						</Dialog>
 						<Dialog open={this.state.changelogDialog}>

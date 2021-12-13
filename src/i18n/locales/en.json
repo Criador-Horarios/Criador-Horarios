@@ -141,6 +141,17 @@
 			"back": "Back"
 		}
 	},
+	"new-domain": {
+		"title": "New domain: {{domain}}",
+		"content": [
+			"Criador de Horários now has a new domain: {{domain}}.",
+			"The previous domain (horarios.dagoncalves.me) will be maintained until 10/09/2022.",
+			"To access the new domain and keep the data, click on the button below."
+		],
+		"actions": {
+			"access": "Access"
+		}
+	},
 	"excel": {
 		"filename": "ist-schedule",
 		"worksheet-title": "Schedule",

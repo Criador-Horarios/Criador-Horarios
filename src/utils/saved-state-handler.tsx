@@ -7,6 +7,7 @@ import CourseUpdates from './CourseUpdate'
 
 export default class SavedStateHandler {
 	// CONSTANTS
+	// Storage keys
 	static DEGREES = 'd'
 	static SHIFTS = 's'
 	static DARK = 'dark'
@@ -14,7 +15,10 @@ export default class SavedStateHandler {
 	static WARNING = 'warning'
 	static COLORS = 'colors'
 	static IS_MULTISHIFT = 'ismulti'
-
+	static DEBUG = 'debug'
+	
+	// 
+	static DOMAIN = process.env.REACT_APP_URL
 	static MAX_AGE_NORMAL = 60*60*24*31*3 // 3 months - UNUSED
 	static AGE_WARNING = 60*60*24*2 // 2 days
 
@@ -27,12 +31,14 @@ export default class SavedStateHandler {
 	private colors: Record<string, string>
 	private multiShiftMode: boolean
 	private cookies = new Cookies()
+	private debug: boolean
 
 	constructor(urlParams: Record<string, string>) {
 		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
 		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES)
 		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS) ?? {}) as Record<string, string>
 		this.multiShiftMode = (urlParams[SavedStateHandler.IS_MULTISHIFT] ?? this.getLocalStorage(SavedStateHandler.IS_MULTISHIFT)) === 'true'
+		this.debug = urlParams[SavedStateHandler.DEBUG] == 'true'
 	}
 
 	// CLASS METHODS
@@ -55,6 +61,10 @@ export default class SavedStateHandler {
 		} else {
 			window.history.pushState({}, title, path)
 		}
+	}
+
+	static getAppURL(params: string[]): string {
+		return `${SavedStateHandler.DOMAIN}?${params.join('&')}`
 	}
 
 	// INSTANCE METHODS
@@ -122,6 +132,14 @@ export default class SavedStateHandler {
 
 	getMultiShiftMode(): boolean {
 		return this.multiShiftMode
+	}
+
+	// Returns if true in the right domain and false otherwise
+	getNewDomain(): boolean {
+		const currOrigin = window.location.origin
+		const rightOrigin = SavedStateHandler.DOMAIN
+		console.log(currOrigin, rightOrigin)
+		return currOrigin == rightOrigin || !this.debug
 	}
 
 	getDarkMode(): boolean {
