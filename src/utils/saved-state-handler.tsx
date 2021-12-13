@@ -103,6 +103,7 @@ export default class SavedStateHandler {
 			.map((shift: string) => shift.split(SavedStateHandler.ARGS_SEP))
 
 		const courseUpdate = new CourseUpdates()
+
 		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
 			try {
 				return await this.buildCourse(description, courseUpdate)
@@ -177,13 +178,18 @@ export default class SavedStateHandler {
 
 	private async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
 		const course = await API.getCourse(description[0])
+
 		if (!course) {
 			throw 'Could not build course'
 		}
-
+		
 		if (updates.has(course)) {
 			throw 'Repeated course on URL'
 		}
+		
+		// Update course to have the selected degrees
+		const selectedDegrees = this.getDegrees() ?? []
+		course.updateDegree(selectedDegrees)
 
 		// Check if has a previous color and set it
 		const currColor = this.colors[course.id]

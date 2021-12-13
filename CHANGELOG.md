@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.13.2] - 13/12/2021
+
+### Added
+
+### Fixed
+
+- Degrees were not kept when creating state
+
+### Removed
+
 ## [1.13.1] - 13/12/2021
 
 ### Added
