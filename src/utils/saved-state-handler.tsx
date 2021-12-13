@@ -104,11 +104,9 @@ export default class SavedStateHandler {
 
 		const courseUpdate = new CourseUpdates()
 
-		const selectedDegrees = this.getDegrees() ?? []
-
 		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
 			try {
-				return await this.buildCourse(description, courseUpdate, selectedDegrees)
+				return await this.buildCourse(description, courseUpdate)
 			} catch (err) {
 				// Values not well parsed, but keeps parsing the rest
 				errors.push(err as string)
@@ -178,7 +176,7 @@ export default class SavedStateHandler {
 
 	// HELPERS
 
-	private async buildCourse(description: string[], updates: CourseUpdates, selectedDegrees: string[]): Promise<BuiltCourse> {
+	private async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
 		const course = await API.getCourse(description[0])
 
 		if (!course) {
@@ -190,6 +188,7 @@ export default class SavedStateHandler {
 		}
 		
 		// Update course to have the selected degrees
+		const selectedDegrees = this.getDegrees() ?? []
 		course.updateDegree(selectedDegrees)
 
 		// Check if has a previous color and set it
