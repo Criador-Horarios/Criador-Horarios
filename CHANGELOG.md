@@ -12,7 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-## [1.13.3] - 11/01/2021
+## [1.13.4] - 11/01/2022
+
+### Added
+
+- Warning is now highlighted when changing semesters
+
+### Fixed
+
+### Removed
+
+## [1.13.3] - 11/01/2022
 
 ### Added
 
