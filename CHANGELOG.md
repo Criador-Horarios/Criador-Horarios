@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.13.3] - 11/01/2021
+
+### Added
+
+### Fixed
+
+- Wrong change on semesters
+- Wrong calculation of academic term with the previous change on semesters
+
+### Removed
+
 ## [1.13.2] - 13/12/2021
 
 ### Added

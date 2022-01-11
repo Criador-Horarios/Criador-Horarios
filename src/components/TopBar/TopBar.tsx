@@ -328,7 +328,7 @@ class TopBar extends React.Component <{
 							</IconButton>
 						</Tooltip>
 						<IconButton color='inherit' onClick={() => {this.setState({settingsDialog: true})}} component="span"
-							style={{display: 'none'}}>
+							style={{display: 'initial'}}>
 							<Icon>settings</Icon>
 						</IconButton>
 					</Toolbar>
@@ -362,25 +362,29 @@ class TopBar extends React.Component <{
 							{i18next.t('settings-dialog.select.warning') as string}
 						</Typography>
 						<Divider orientation="horizontal" style={{ marginTop: '30px' }} />
-						<FormControl variant='outlined'
-							fullWidth={true}
-						>
-							<InputLabel>{i18next.t('settings-dialog.occupancy-update.label') as string}</InputLabel>
-							<Select
-								id="occupancy-update"
-								value={this.state.currentOccupancyRate}
-								onChange={(e) => {this.onOccupancyRateUpdate(e.target.value as number)}}
-								label={i18next.t('settings-dialog.occupancy-update.label') as string}
-								autoWidth={true}
+						<div style={{display: 'none'}}>
+							<Typography style={{margin: '10px 0'}}>This is not working, so do not try it :)</Typography>
+							<FormControl variant='outlined'
+								fullWidth={true}
 							>
-								{Object.entries(occupancyRates).map( (s) => 
-									<MenuItem key={s[1]} value={s[1]}>{s[0]}</MenuItem>
-								)}
-							</Select>
-						</FormControl>
-						<Typography variant="caption" gutterBottom style={{marginTop: '8px'}}>
-							{i18next.t('settings-dialog.occupancy-update.warning') as string}
-						</Typography>
+								<InputLabel>{i18next.t('settings-dialog.occupancy-update.label') as string}</InputLabel>
+								<Select
+									id="occupancy-update"
+									value={this.state.currentOccupancyRate}
+									// FIXME: Commented so it does not work until fully tested
+									// onChange={(e) => {this.onOccupancyRateUpdate(e.target.value as number)}}
+									label={i18next.t('settings-dialog.occupancy-update.label') as string}
+									autoWidth={true}
+								>
+									{Object.entries(occupancyRates).map( (s) => 
+										<MenuItem key={s[1]} value={s[1]}>{s[0]}</MenuItem>
+									)}
+								</Select>
+							</FormControl>
+							<Typography variant="caption" gutterBottom style={{marginTop: '8px'}}>
+								{i18next.t('settings-dialog.occupancy-update.warning') as string}
+							</Typography>
+						</div>
 					</DialogContent>
 					<DialogActions>
 						<div />

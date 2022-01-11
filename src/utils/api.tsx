@@ -71,6 +71,7 @@ export default class API {
 		}
 		const degrees = res.map((d: DegreeDto) => new Degree(d))
 			.filter((d: Degree) => d.academicTerms.includes(API.ACADEMIC_TERM))
+		
 		return degrees.sort(Degree.compare)
 	}
 
@@ -148,6 +149,7 @@ export default class API {
 			.map((arr) => arr[1])
 			.flat()
 			.map((s) => new AcademicTerm(s as string))
+			.sort(AcademicTerm.compare)
 
 		return staticData.terms
 	}
@@ -174,11 +176,13 @@ export const staticData = {
 
 export async function defineCurrentTerm(): Promise<string> {
 	const today = new Date()
-	const currentYear = today.getFullYear(), currentMonth = today.getMonth() + 1 // Month starts at 0
+	let currentYear = today.getFullYear()
+	const currentMonth = today.getMonth() + 1 // Month starts at 0
 
 	let currentTerm = '', semester = 0
 	// First semester (Between September and January)
 	if (currentMonth <= 1 || currentMonth >= 9 ) {
+		if (currentMonth <= 1) currentYear -= 1
 		currentTerm = `${currentYear}/${currentYear+1}`
 		semester = 1
 	} 

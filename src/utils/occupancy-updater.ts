@@ -69,7 +69,7 @@ export default class OccupancyUpdater {
 
 export const occupancyRates: Record<string, number> = {
 	'Off': 0,
-	'1s': 1, // FIXME: Remove as it is just for testing
+	// '1s': 1, // FIXME: Remove as it is just for testing
 	'10s': 10,
 	'30s': 30,
 	'1min': 60,

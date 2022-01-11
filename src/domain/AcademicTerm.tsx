@@ -14,6 +14,12 @@ export default class AcademicTerm {
 		this.term = match[3]
 		this.id = obj
 	}
+
+	static compare(a: AcademicTerm, b: AcademicTerm): number {
+		const termCompare = a.term.localeCompare(b.term)
+		const semCompare = a.semester.toString().localeCompare(b.semester.toString())
+		return termCompare == 0 ? semCompare : termCompare
+	}
 }
 
 /*
