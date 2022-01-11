@@ -358,7 +358,7 @@ class TopBar extends React.Component <{
 								)}
 							</Select>
 						</FormControl>
-						<Typography variant="caption" gutterBottom style={{marginTop: '8px'}}>
+						<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
 							{i18next.t('settings-dialog.select.warning') as string}
 						</Typography>
 						<Divider orientation="horizontal" style={{ marginTop: '30px' }} />
