@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import API from './utils/api'
+import API, { staticData } from './utils/api'
 import './App.scss'
 
 import campiList from './domain/CampiList'
@@ -132,7 +132,7 @@ class App extends React.Component <{
 		OccupancyUpdater.getInstance().changeRate(occupancyRates['Off'])
 		OccupancyUpdater.setUpdateFunction(this.updateShiftOccupancies)
 
-		this.savedStateHandler = new SavedStateHandler(API.getUrlParams())
+		this.savedStateHandler = SavedStateHandler.getInstance(API.getUrlParams())
 
 		API.setLanguage(this.state.lang)
 	}
@@ -253,6 +253,11 @@ class App extends React.Component <{
 	setSelectedShifts(shifts: Shift[]) {
 		this.setState({ selectedShifts: shifts })
 		this.topBar.current?.setHasSelectedShifts(shifts)
+		const selectedAcademicTerm = this.topBar.current?.state.selectedAcademicTerm
+		if (selectedAcademicTerm !== undefined) {
+			const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
+			if (parsedTerm !== undefined) this.savedStateHandler.setTerm(parsedTerm)
+		}
 		this.savedStateHandler.setShifts(shifts)
 		this.recomputeDisableMultiShiftModeChange()
 	}
@@ -410,6 +415,7 @@ class App extends React.Component <{
 	}
 
 	async buildState(forceUpdate = false): Promise<void> {
+		// Fetch multi shift mode
 		try {
 			this.setState({
 				multiShiftMode: this.savedStateHandler.getMultiShiftMode()

@@ -1,4 +1,5 @@
 import Cookies from 'universal-cookie'
+import AcademicTerm from '../domain/AcademicTerm'
 import { Comparables } from '../domain/Comparable'
 import Course from '../domain/Course'
 import Shift, { getDegreesAcronyms, shortenDescriptions } from '../domain/Shift'
@@ -10,6 +11,7 @@ export default class SavedStateHandler {
 	// Storage keys
 	static DEGREES = 'd'
 	static SHIFTS = 's'
+	static TERM = 'term'
 	static DARK = 'dark'
 	static LANGUAGE = 'language'
 	static WARNING = 'warning'
@@ -25,6 +27,9 @@ export default class SavedStateHandler {
 	static PARAMS_SEP = ';'
 	static ARGS_SEP = '~'
 
+	// SINGLETON
+	private static instance: SavedStateHandler
+
 	// ATTRIBUTES
 	private shifts: string
 	private degrees: string
@@ -33,7 +38,7 @@ export default class SavedStateHandler {
 	private cookies = new Cookies()
 	private debug: boolean
 
-	constructor(urlParams: Record<string, string>) {
+	private constructor(urlParams: Record<string, string>) {
 		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
 		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES)
 		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS) ?? {}) as Record<string, string>
@@ -42,6 +47,14 @@ export default class SavedStateHandler {
 	}
 
 	// CLASS METHODS
+	public static getInstance(options: Record<string, string> = {}): SavedStateHandler {
+		if (!SavedStateHandler.instance) {
+			SavedStateHandler.instance = new SavedStateHandler(options)
+		}
+
+		return SavedStateHandler.instance
+	}
+
 	// Updates user URL to use or not the state
 	static async changeUrl(toState: boolean, selectedShifts: Shift[], multiShiftMode: boolean): Promise<void> {
 		const title: string = document.title
@@ -140,6 +153,14 @@ export default class SavedStateHandler {
 		const currOrigin = window.location.origin
 		const rightOrigin = SavedStateHandler.DOMAIN
 		return currOrigin == rightOrigin
+	}
+
+	getTerm(): string | null {
+		return this.getLocalStorage(SavedStateHandler.TERM) as (string | null)
+	}
+
+	setTerm(term: AcademicTerm): void {
+		this.setLocalStorage(SavedStateHandler.TERM, term.id)
 	}
 
 	getDarkMode(): boolean {

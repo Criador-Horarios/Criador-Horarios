@@ -3,6 +3,7 @@ import Course, { CourseDto } from '../domain/Course'
 import Degree, { DegreeDto } from '../domain/Degree'
 import { ScheduleDto } from '../domain/Schedule'
 import Shift, { ShiftDto } from '../domain/Shift'
+import SavedStateHandler from './saved-state-handler'
 
 export default class API {
 	static ACADEMIC_TERM = '2020/2021'
@@ -175,6 +176,15 @@ export const staticData = {
 }
 
 export async function defineCurrentTerm(): Promise<string> {
+	// Fetch from previous sessions first
+	const stateInstance = SavedStateHandler.getInstance(API.getUrlParams())
+	const selectedAcademicTerm = stateInstance.getTerm()
+	if (selectedAcademicTerm !== null) {
+		const currTerms = await API.getAcademicTerms()
+		const selectedTerm = currTerms.find( (t) => t.id == selectedAcademicTerm)
+		return selectedTerm?.id || ''
+	}
+
 	const today = new Date()
 	let currentYear = today.getFullYear()
 	const currentMonth = today.getMonth() + 1 // Month starts at 0

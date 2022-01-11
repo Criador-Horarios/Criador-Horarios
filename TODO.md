@@ -40,3 +40,4 @@
 - [X] Show warning when there are no selected degrees and tries to get classes
 - [ ] Requests cache and bypass?
 - [ ] Finalize occupancy shift updater and set it for all available shifts for the selected courses
+- [X] Store selected academic term and use it
