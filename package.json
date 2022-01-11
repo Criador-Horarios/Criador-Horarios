@@ -1,6 +1,6 @@
 {
   "name": "horarios",
-  "version": "1.13.2",
+  "version": "1.13.3",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
@@ -24,7 +24,7 @@
     "i18next": "^19.8.7",
     "i18next-browser-languagedetector": "^6.0.1",
     "morgan": "^1.10.0",
-    "node-sass": "^4.14.1",
+    "sass": "^1.47.0",
     "randomcolor": "^0.6.2",
     "react": "^17.0.1",
     "react-colorful": "^5.4.0",
