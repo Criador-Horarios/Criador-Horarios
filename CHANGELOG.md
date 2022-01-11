@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.14.0] - 11/01/2022
+
+### Added
+
+- Selected academic term is now stored for future sessions and fetches previous sessions
+
+### Fixed
+
+### Removed
+
 ## [1.13.4] - 11/01/2022
 
 ### Added

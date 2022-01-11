@@ -35,6 +35,8 @@ import Menu from '@material-ui/core/Menu'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
+import SavedStateHandler from '../../utils/saved-state-handler'
+import AcademicTerm from '../../domain/AcademicTerm'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
@@ -155,8 +157,9 @@ class TopBar extends React.Component <{
 
 	async onSelectedAcademicTerm(s: string, fetchDegrees: boolean): Promise<void> {
 		const foundArr = staticData.terms.filter( (at) => at.id === s)
+		let chosenAT: AcademicTerm | undefined = undefined
 		if (foundArr.length > 0) {
-			const chosenAT = foundArr[0]
+			chosenAT = foundArr[0]
 			API.ACADEMIC_TERM = chosenAT.term
 			API.SEMESTER = chosenAT.semester
 		}
@@ -164,6 +167,11 @@ class TopBar extends React.Component <{
 		this.onSelectedCourse([])
 		this.onSelectedDegree([])
 		this.props.onClearShifts(false)
+		// Store in storage
+		if (chosenAT) {
+			const stateInstance = SavedStateHandler.getInstance()
+			stateInstance.setTerm(chosenAT)
+		}
 		if (fetchDegrees) {
 			const degrees = await API.getDegrees()
 			this.setState({
