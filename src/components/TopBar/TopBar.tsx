@@ -43,7 +43,6 @@ class TopBar extends React.Component <{
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
 	onClearShifts: (alert: boolean) => void
-	onGetLink: () => void
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
@@ -294,11 +293,6 @@ class TopBar extends React.Component <{
 								))
 							}}
 						/>
-						<Tooltip title={i18next.t('link-button.tooltip') as string}>
-							<IconButton disabled={!this.state.hasSelectedShifts} color="inherit" onClick={this.props.onGetLink} component="span">
-								<Icon>share</Icon>
-							</IconButton>
-						</Tooltip>
 						<Tooltip title={i18next.t('language-button.tooltip') as string}>
 							<IconButton color="inherit"
 								onClick={(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {this.onLanguageMenuClick(e, true)}}

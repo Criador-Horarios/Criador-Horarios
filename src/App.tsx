@@ -632,7 +632,6 @@ class App extends React.Component <{
 						onSelectedCourse={this.onSelectedCourse}
 						onSelectedDegree={this.onSelectedDegree}
 						onClearShifts={this.clearSelectedShifts}
-						onGetLink={this.getLink}
 						showAlert={this.showAlert}
 						onChangeLanguage={this.changeLanguage}
 						darkMode={this.state.darkMode}
@@ -757,6 +756,11 @@ class App extends React.Component <{
 													onClick={() => this.getClasses()}
 													component="span">
 													<Icon>list</Icon>
+												</IconButton>
+											</Tooltip>
+											<Tooltip title={i18next.t('link-button.tooltip') as string}>
+												<IconButton disabled={this.state.selectedShifts.length === 0} color="inherit" onClick={this.getLink} component="span">
+													<Icon>share</Icon>
 												</IconButton>
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.save-to-file') as string}>
