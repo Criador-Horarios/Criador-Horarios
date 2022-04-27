@@ -63,8 +63,10 @@ import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
-import { ListItemIcon, ListItemText } from '@material-ui/core'
+import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
+import { Autocomplete, createFilterOptions } from '@material-ui/lab'
+import Timetable from './domain/Timetable'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -89,7 +91,8 @@ class App extends React.Component <{
 		multiShiftMode: false,
 		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
-		newDomainDialog: false
+		newDomainDialog: false,
+		savedTimetable: new Timetable('Horário 1', [], false)
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
@@ -163,7 +166,7 @@ class App extends React.Component <{
 		}
 		
 		// Warn about new domain
-		const isWarnedDomain = this.savedStateHandler.getNewDomain()
+		const isWarnedDomain = this.savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
 		this.newDomainURL = await this.getSharingURL()
 		this.setState({newDomainDialog: !isWarnedDomain})
 	}
@@ -242,6 +245,21 @@ class App extends React.Component <{
 		this.setState({ availableShifts, shownShifts })
 	}
 
+	onSelectedTimetable(timetable: Timetable | string): void {
+		// String should not be received here
+		// TODO: Ignore if string
+		const newTimetable = timetable as Timetable
+		// Store timetable if not saved
+		if (!newTimetable.isSaved) {
+			newTimetable.save()
+			const prevTimetables = this.savedStateHandler.getCurrentTimetables()
+			this.savedStateHandler.setSavedTimetables(prevTimetables.concat([newTimetable]))
+		}
+		this.setState({
+			savedTimetable: newTimetable
+		})
+	}
+
 	getAllLessons(): Lesson[] {
 		return this.state.shownShifts.map((shift: Shift) => shift.lessons).flat()
 	}
@@ -278,6 +296,10 @@ class App extends React.Component <{
 		const chosenShift = arr.find((s: Shift) => s.name === shiftName)
 
 		if (chosenShift) {
+			// Add to current timetable and save
+			this.state.savedTimetable.addShift(chosenShift, this.state.multiShiftMode)
+			this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
+
 			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
 
 			const selectedShifts = this.state.selectedShifts
@@ -425,7 +447,16 @@ class App extends React.Component <{
 			// ignored, bad URL/cookie state
 		}
 
+		try {
+			const savedTimetables = await this.savedStateHandler.getSavedTimetables()
+			this.setState({
+				savedTimetable: savedTimetables[0]
+			})
+		} catch (err) {
+			console.error(err)
+		}
 
+		// TODO: Won't exist anymore
 		// Build degree
 		try {
 			// Fetch degrees from url params or cookies
@@ -694,9 +725,36 @@ class App extends React.Component <{
 									</CardActions>
 								</Card>
 								<Card className={classes.card as string}>
-									<CardHeader title={i18next.t('schedule-selected.title') as string}
+									<CardHeader //title={i18next.t('schedule-selected.title') as string}
 										titleTypographyProps={{ variant: 'h6', align: 'center' }}
 										className={classes.cardTitle as string}
+										title={
+											<Box style={{flexDirection: 'row', display: 'flex'}}>
+												<Typography>{i18next.t('schedule-selected.title')}</Typography>
+												<Autocomplete disableClearable freeSolo autoHighlight
+													filterOptions={(options, params): Timetable[] => {
+														const filter = createFilterOptions<Timetable>()
+														const filtered = filter(options, params)
+										
+														const { inputValue } = params
+														// Suggest the creation of a new value
+														const isExisting = options.some((option) => inputValue === option.name)
+														if (inputValue !== '' && !isExisting) {
+															filtered.push(new Timetable(inputValue, [], false))
+														}
+										
+														return filtered
+													}}
+													options={this.savedStateHandler.getCurrentTimetables()}
+													value={this.state.savedTimetable}
+													onChange={(_, value) => this.onSelectedTimetable(value)}
+													getOptionLabel={(option) => option.getDisplayName()}
+													// TODO: Add delete button (which should not delete if there is only a single timetable)
+													renderInput={(params) => <TextField {...params} label={'Horários'} variant="outlined" />}
+													style={{width: '100%'}}
+												/>
+											</Box>
+										}
 									/>
 									<CardContent className={classes.cardContent as string}>
 										<Schedule

@@ -3,8 +3,11 @@ import AcademicTerm from '../domain/AcademicTerm'
 import { Comparables } from '../domain/Comparable'
 import Course from '../domain/Course'
 import Shift, { getDegreesAcronyms, shortenDescriptions } from '../domain/Shift'
+import Timetable from '../domain/Timetable'
 import API from './api'
 import CourseUpdates from './CourseUpdate'
+
+import i18next from 'i18next'
 
 export default class SavedStateHandler {
 	// CONSTANTS
@@ -17,6 +20,7 @@ export default class SavedStateHandler {
 	static WARNING = 'warning'
 	static COLORS = 'colors'
 	static IS_MULTISHIFT = 'ismulti'
+	static SAVED_TIMETABLES = 'saved-timetables'
 	static DEBUG = 'debug'
 	
 	// 
@@ -34,6 +38,7 @@ export default class SavedStateHandler {
 	private shifts: string
 	private degrees: string
 	private colors: Record<string, string>
+	private savedTimetables: Timetable[] = []
 	private multiShiftMode: boolean
 	private cookies = new Cookies()
 	private debug: boolean
@@ -42,6 +47,7 @@ export default class SavedStateHandler {
 		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
 		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES)
 		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS) ?? {}) as Record<string, string>
+		this.savedTimetables = this.getCurrentTimetables()
 		this.multiShiftMode = (urlParams[SavedStateHandler.IS_MULTISHIFT] ?? this.getLocalStorage(SavedStateHandler.IS_MULTISHIFT)) === 'true'
 		this.debug = urlParams[SavedStateHandler.DEBUG] == 'true'
 	}
@@ -107,12 +113,16 @@ export default class SavedStateHandler {
 		}
 	}
 
-	async getShifts(): Promise<[CourseUpdates, ShiftState, string] | undefined> {
+	async getShifts(unparsedShifts = undefined): Promise<[CourseUpdates, ShiftState, string] | undefined> {
 		const errors: string[] = []
-		if (!this.shifts) {
+		const shiftsToParse = unparsedShifts || this.shifts
+		if (!shiftsToParse) {
 			return undefined
 		}
-		const shifts = this.shifts.split(SavedStateHandler.PARAMS_SEP)
+
+		// TODO: Build cache of shifts to avoid asking repeatedly
+
+		const shifts = shiftsToParse.split(SavedStateHandler.PARAMS_SEP)
 			.map((shift: string) => shift.split(SavedStateHandler.ARGS_SEP))
 
 		const courseUpdate = new CourseUpdates()
@@ -146,6 +156,41 @@ export default class SavedStateHandler {
 
 	getMultiShiftMode(): boolean {
 		return this.multiShiftMode
+	}
+
+	setSavedTimetables(timetables: Timetable[]): void {
+		// Mark every timetable has saved
+		timetables.forEach(t => t.save())
+		
+		const convertedTimetables: Record<string, string> = {}
+		timetables.map((t, index) => convertedTimetables[index] = t.toString())
+		
+		this.setLocalStorage(SavedStateHandler.SAVED_TIMETABLES, convertedTimetables)
+		this.savedTimetables = timetables
+	}
+
+	getCurrentTimetables(): Timetable[] {
+		const current = this.savedTimetables
+		return current.length === 0 ? [new Timetable(i18next.t('default-timetable'), [], true)] : this.savedTimetables
+	}
+	
+	async getSavedTimetables(): Promise<Timetable[]> {
+		const localTimetables = this.getLocalStorage(SavedStateHandler.SAVED_TIMETABLES)
+
+		// If there are none stored
+		if (!localTimetables) {
+			return this.getCurrentTimetables()
+		}
+
+		const parsedTimetables = await Promise.all(Object.values(localTimetables).map(async (unparsedTimetable: string) => {
+			return await Timetable.fromString(unparsedTimetable)
+		}))
+
+		const usableTimetables = parsedTimetables.filter((t) => t !== undefined) as Timetable[]
+
+		console.log(usableTimetables)
+		this.savedTimetables = usableTimetables
+		return usableTimetables.length === 0 ? this.getCurrentTimetables() : usableTimetables
 	}
 
 	// Returns if true in the right domain and false otherwise

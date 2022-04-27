@@ -177,5 +177,7 @@
 	"language": {
 		"english": "Inglês",
 		"portuguese": "Português"
-	}
+	},
+	"add": "Acrescentar",
+	"default-timetable": "Horário 1"
 }

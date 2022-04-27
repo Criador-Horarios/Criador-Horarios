@@ -143,6 +143,10 @@ export default class Shift implements Comparable {
 			max: newOccupancy.max,
 		}
 	}
+
+	toString(): string {
+		return this.getFullId().join(';')
+	}
 }
 
 export const shortenDescriptions = (shifts: Shift[]): string => {

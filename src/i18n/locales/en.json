@@ -178,5 +178,7 @@
 	"language": {
 		"english": "English",
 		"portuguese": "Portuguese"
-	}
+	},
+	"add": "Add",
+	"default-timetable": "Timetable 1"
 }
