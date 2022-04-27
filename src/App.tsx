@@ -92,7 +92,7 @@ class App extends React.Component <{
 		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
 		newDomainDialog: false,
-		savedTimetable: new Timetable('Horário 1', [], false)
+		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false)
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
@@ -251,10 +251,11 @@ class App extends React.Component <{
 		const newTimetable = timetable as Timetable
 		// Store timetable if not saved
 		if (!newTimetable.isSaved) {
-			newTimetable.save()
 			const prevTimetables = this.savedStateHandler.getCurrentTimetables()
 			this.savedStateHandler.setSavedTimetables(prevTimetables.concat([newTimetable]))
 		}
+
+		this.updateToNewTimetable(newTimetable)
 		this.setState({
 			savedTimetable: newTimetable
 		})
@@ -265,7 +266,8 @@ class App extends React.Component <{
 	}
 
 	getSelectedLessons(): Lesson[] {
-		return this.state.selectedShifts.map((shift: Shift) => shift.lessons).flat()
+		// return this.state.selectedShifts.map((shift: Shift) => shift.lessons).flat()
+		return this.state.savedTimetable.shifts.map((shift: Shift) => shift.lessons).flat()
 	}
 
 	setSelectedShifts(shifts: Shift[]) {
@@ -297,7 +299,7 @@ class App extends React.Component <{
 
 		if (chosenShift) {
 			// Add to current timetable and save
-			this.state.savedTimetable.addShift(chosenShift, this.state.multiShiftMode)
+			this.state.savedTimetable.toggleShift(chosenShift, this.state.multiShiftMode)
 			this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
 
 			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
@@ -317,20 +319,21 @@ class App extends React.Component <{
 			}
 
 			if (idx === -1) {
-				selectedShifts.push(chosenShift)
+				// selectedShifts.push(chosenShift)
 				if (replacingIndex !== -1) {
-					selectedShifts.splice(replacingIndex, 1)
+					// selectedShifts.splice(replacingIndex, 1)
 				} else if (shiftCourse.length === 1) {
 					shiftCourse[0].addSelectedShift(chosenShift)
 				}
 			} else {
-				selectedShifts.splice(idx, 1)
+				// selectedShifts.splice(idx, 1)
 				if (shiftCourse.length === 1) {
 					shiftCourse[0].removeSelectedShift(chosenShift)
 				}
 			}
 
-			this.setSelectedShifts(selectedShifts)
+			// this.setSelectedShifts(selectedShifts)
+			this.setSelectedShifts(this.state.savedTimetable.shifts)
 		}
 	}
 
@@ -447,35 +450,33 @@ class App extends React.Component <{
 			// ignored, bad URL/cookie state
 		}
 
+		let savedTimetables: Timetable[] = []
 		try {
-			const savedTimetables = await this.savedStateHandler.getSavedTimetables()
+			savedTimetables = await this.savedStateHandler.getSavedTimetables()
 			this.setState({
 				savedTimetable: savedTimetables[0]
 			})
-		} catch (err) {
-			console.error(err)
-		}
-
-		// TODO: Won't exist anymore
-		// Build degree
-		try {
-			// Fetch degrees from url params or cookies
-			const degreeAcronyms = this.savedStateHandler.getDegrees(forceUpdate)
+			const degreeAcronyms = savedTimetables[0]?.getDegreesString()
 			if (degreeAcronyms) this.topBar.current?.setSelectedDegrees(degreeAcronyms)
+			const currCourses = savedTimetables[0]?.courseUpdates
+			if (currCourses) this.topBar.current?.setSelectedCourses(currCourses)
 		} catch (err) {
 			console.error(err)
-			// ignored, bad URL/cookie state
 		}
 
-		// Build shifts
+		// Update remaining logic (available shifts, campi, shift types)
+		if (savedTimetables.length > 0) this.updateToNewTimetable(savedTimetables[0])
+	}
+
+	updateToNewTimetable(newTimetable: Timetable): void {
 		try {
-			// Fetch shifts from url params or cookies
-			const shiftState = await this.savedStateHandler.getShifts()
-			if (!shiftState) {
+			const courseUpdates = newTimetable.courseUpdates
+			const errors = newTimetable.errors
+			const state = newTimetable.shiftState
+			
+			if (!courseUpdates || !state) {
 				return
 			}
-			const [courseUpdates, state, errors] = shiftState
-
 			// Show that there were parsing errors
 			if (errors !== '') {
 				this.showAlert(i18next.t('alert.error-parsing'), 'warning')
@@ -667,6 +668,7 @@ class App extends React.Component <{
 						onChangeLanguage={this.changeLanguage}
 						darkMode={this.state.darkMode}
 						onChangeDarkMode={this.onChangeDarkMode}
+						currentTimetable={this.state.savedTimetable}
 					>
 					</TopBar>
 					<div className="main">

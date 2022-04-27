@@ -37,6 +37,7 @@ import Typography from '@material-ui/core/Typography'
 import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
 import SavedStateHandler from '../../utils/saved-state-handler'
 import AcademicTerm from '../../domain/AcademicTerm'
+import Timetable from '../../domain/Timetable'
 
 class TopBar extends React.Component <{
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
@@ -46,6 +47,7 @@ class TopBar extends React.Component <{
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
+	currentTimetable: Timetable
 }, unknown>{
 	state = {
 		degrees: [] as Degree[],
@@ -90,6 +92,15 @@ class TopBar extends React.Component <{
 		}
 	}
 
+	async componentDidUpdate(prevProps: any): Promise<void> {
+		if (prevProps.currentTimetable !== this.props.currentTimetable) {
+			const degreeAcronyms = Array.from(this.props.currentTimetable.degreeAcronyms)
+			this.setSelectedDegrees(degreeAcronyms)
+			const courses = this.props.currentTimetable.courseUpdates
+			if (courses) this.setSelectedCourses(courses)
+		}
+	}
+	// ----
 	async onSelectedDegree(degrees: Degree[]): Promise<void> {
 		this.selectedDegrees = degrees
 		if (degrees.length > 0) {
