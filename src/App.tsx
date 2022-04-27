@@ -247,7 +247,8 @@ class App extends React.Component <{
 
 	onSelectedTimetable(timetable: Timetable | string): void {
 		// String should not be received here
-		// TODO: Ignore if string
+		if (typeof timetable === 'string') return
+
 		const newTimetable = timetable as Timetable
 		// Store timetable if not saved
 		if (!newTimetable.isSaved) {
@@ -459,7 +460,7 @@ class App extends React.Component <{
 			const degreeAcronyms = savedTimetables[0]?.getDegreesString()
 			if (degreeAcronyms) this.topBar.current?.setSelectedDegrees(degreeAcronyms)
 			const currCourses = savedTimetables[0]?.courseUpdates
-			if (currCourses) this.topBar.current?.setSelectedCourses(currCourses)
+			this.topBar.current?.setSelectedCourses(currCourses)
 		} catch (err) {
 			console.error(err)
 		}

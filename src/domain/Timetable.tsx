@@ -13,8 +13,8 @@ export default class Timetable implements Comparable {
 	isSaved: boolean
 	// Not stored
 	courses: Set<Course> = new Set()
-	courseUpdates: CourseUpdates | undefined = undefined
-	shiftState: ShiftState | undefined = undefined
+	courseUpdates: CourseUpdates = new CourseUpdates()
+	shiftState: ShiftState = { 	availableShifts: [], selectedShifts: [] }
 	errors = ''
 
 	constructor(name: string, shifts: Shift[], isSaved: boolean) {
@@ -61,7 +61,7 @@ export default class Timetable implements Comparable {
 			replacingIndex = Comparables.indexOfBy(this.shifts, chosenShift, Shift.isSameCourseAndType)
 		}
 
-		this.courseUpdates?.toggleCourse(chosenShift.course)
+		this.courseUpdates.toggleCourse(chosenShift.course)
 
 		if (idx === -1) {
 			this.shifts.push(chosenShift)

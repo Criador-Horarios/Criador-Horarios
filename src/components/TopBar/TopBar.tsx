@@ -97,7 +97,7 @@ class TopBar extends React.Component <{
 			const degreeAcronyms = Array.from(this.props.currentTimetable.degreeAcronyms)
 			this.setSelectedDegrees(degreeAcronyms)
 			const courses = this.props.currentTimetable.courseUpdates
-			if (courses) this.setSelectedCourses(courses)
+			this.setSelectedCourses(courses)
 		}
 	}
 	// ----
