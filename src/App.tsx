@@ -177,7 +177,8 @@ class App extends React.Component <{
 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		if (selectedCourses.length === 0) {
-			const currCourses = this.state.selectedCourses as CourseUpdates
+			// const currCourses = this.state.selectedCourses as CourseUpdates
+			const currCourses = this.state.savedTimetable.courseUpdates as CourseUpdates
 			currCourses.removeAllCourses()
 			if (this.selectedDegrees === []) {
 				this.setState({
@@ -197,12 +198,14 @@ class App extends React.Component <{
 			return
 		}
 
-		const changedCourse = getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
+		// const changedCourse = getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
+		const changedCourse = getCoursesDifference(this.state.savedTimetable.courseUpdates.courses, selectedCourses)
 		if (!changedCourse) {
 			return
 		}
 
-		const currCourses = this.state.selectedCourses
+		// const currCourses = this.state.selectedCourses
+		const currCourses = this.state.savedTimetable.courseUpdates
 		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
 		if (changedCourse.course !== undefined) {
 			currCourses.toggleCourse(changedCourse.course)
@@ -227,13 +230,16 @@ class App extends React.Component <{
 				})
 				return
 			}
-			availableShifts = this.state.availableShifts.concat(schedule)
+			// availableShifts = this.state.availableShifts.concat(schedule)
+			availableShifts = this.state.savedTimetable.shiftState.availableShifts.concat(schedule)
 		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Remove) {
-			availableShifts = this.state.availableShifts
+			availableShifts = this.state.savedTimetable.shiftState.availableShifts
 				.filter((shift: Shift) => shift.courseId !== currCourses.lastUpdate?.course?.id)
 		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Clear) {
 			availableShifts = []
 		}
+
+		this.state.savedTimetable.shiftState.availableShifts = availableShifts
 
 		const shownShifts = this.filterShifts({
 			selectedCampi: this.state.selectedCampi,
@@ -303,7 +309,8 @@ class App extends React.Component <{
 			this.state.savedTimetable.toggleShift(chosenShift, this.state.multiShiftMode)
 			this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
 
-			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
+			// const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
+			const shiftCourse = this.state.savedTimetable.courseUpdates.courses.filter((c) => c.id === chosenShift.courseId)
 
 			const selectedShifts = this.state.selectedShifts
 
@@ -457,9 +464,9 @@ class App extends React.Component <{
 			this.setState({
 				savedTimetable: savedTimetables[0]
 			})
-			const degreeAcronyms = savedTimetables[0]?.getDegreesString()
+			const degreeAcronyms = savedTimetables[0].getDegreesString()
 			if (degreeAcronyms) this.topBar.current?.setSelectedDegrees(degreeAcronyms)
-			const currCourses = savedTimetables[0]?.courseUpdates
+			const currCourses = savedTimetables[0].courseUpdates
 			this.topBar.current?.setSelectedCourses(currCourses)
 		} catch (err) {
 			console.error(err)
@@ -558,7 +565,9 @@ class App extends React.Component <{
 
 		this.setState({loading: true})
 		
-		const [classesByShift, minimalClasses] = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
+		const [classesByShift, minimalClasses] =
+			await getMinimalClasses(this.state.savedTimetable.shifts, this.selectedDegrees)
+			// await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
 
 		this.classesByShift = Object.entries(classesByShift)
 		this.minimalClasses = minimalClasses
@@ -574,16 +583,19 @@ class App extends React.Component <{
 
 	async exportToExcel(): Promise<void> {
 		this.setState({loading: true})
-		const classes = await getClasses(this.state.selectedShifts)
+		const classes = await getClasses(this.state.savedTimetable.shifts)
+		// const classes = await getClasses(this.state.selectedShifts)
 
-		await saveToExcel(this.state.selectedShifts, classes)
+		await saveToExcel(this.state.savedTimetable.shifts, classes)
+		// await saveToExcel(this.state.selectedShifts, classes)
 
 		this.setState({loading: false})
 		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
 	}
 
 	downloadCalendar(): void {
-		getCalendar(this.state.selectedShifts)
+		getCalendar(this.state.savedTimetable.shifts)
+		// getCalendar(this.state.selectedShifts)
 
 		this.showAlert(i18next.t('alert.calendar-obtained'), 'success')
 	}
@@ -605,7 +617,8 @@ class App extends React.Component <{
 		const coursesToBeFetched = new Set<Course>()
 		
 		// NOTICE: For now we update only the selected shifts
-		this.state.selectedShifts.forEach((s) => {
+		// this.state.selectedShifts.forEach((s) => {
+		this.state.savedTimetable.shifts.forEach((s) => {
 			shiftsById[s.getStoredId()] = s
 			coursesToBeFetched.add(s.course)
 		})
@@ -693,7 +706,8 @@ class App extends React.Component <{
 									/>
 									<CardContent className={classes.cardContent as string}>
 										<Schedule
-											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
+											onSelectedEvent={(id: string) =>
+												this.onSelectedShift(id, this.state.savedTimetable.shiftState.availableShifts)}
 											events={this.getAllLessons()} lang={this.state.lang}
 											darkMode={this.state.darkMode}
 										/>
@@ -761,7 +775,7 @@ class App extends React.Component <{
 									/>
 									<CardContent className={classes.cardContent as string}>
 										<Schedule
-											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
+											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.savedTimetable.shiftState.selectedShifts)}
 											events={this.getSelectedLessons()} ref={this.chosenSchedule} lang={this.state.lang}
 											darkMode={this.state.darkMode}
 										/>
@@ -982,6 +996,7 @@ class App extends React.Component <{
 							</DialogActions>
 						</Dialog>
 						<ColorPicker ref={this.colorPicker} onUpdatedColor={(course: Course) => {
+							// TODO: Change to timetable
 							this.state.availableShifts.forEach(shift => {
 								if (shift.courseId === course.id) {
 									shift.updateColorFromCourse()

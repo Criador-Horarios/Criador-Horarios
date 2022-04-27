@@ -63,19 +63,23 @@ export default class Timetable implements Comparable {
 			replacingIndex = Comparables.indexOfBy(this.shifts, chosenShift, Shift.isSameCourseAndType)
 		}
 
-		this.courseUpdates.toggleCourse(chosenShift.course)
-
+		// TODO: Change on the course for the selected shift types
 		if (idx === -1) {
-			this.shifts.push(chosenShift)
+			if (!this.courseUpdates.has(chosenShift.course)) this.courseUpdates.toggleCourse(chosenShift.course)
+			// this.shifts.push(chosenShift)
+			this.shiftState.selectedShifts.push(chosenShift)
 			if (replacingIndex !== -1) {
 				this.shifts.splice(replacingIndex, 1)
 			}
 			this.courses.add(chosenShift.course)
 			this.degreeAcronyms.add(chosenShift.course.degreeAcronym)
 		} else {
-			this.shifts.splice(idx, 1)
+			// this.shifts.splice(idx, 1)
+			this.shiftState.selectedShifts.splice(idx, 1)
 			this.courses.delete(chosenShift.course)
-			this.degreeAcronyms.delete(chosenShift.course.degreeAcronym)
+
+			// TODO: When can we remove degrees?
+			// this.degreeAcronyms.delete(chosenShift.course.degreeAcronym)
 		}
 	}
 
@@ -101,7 +105,7 @@ export default class Timetable implements Comparable {
 		const obj = {
 			name: this.name,
 			degrees: this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP),
-			shifts: shortenDescriptions(this.shifts),
+			shifts: shortenDescriptions(this.shiftState.selectedShifts),
 			isSaved: this.isSaved
 		}
 		return JSON.stringify(obj)

@@ -87,6 +87,7 @@ const selectedColors = new Set([
 ])
 const initialColors = new Set(selectedColors)
 
+// FIXME: This should be for all courses and not for each timetable
 export function getColor(): string {
 	let chosenColor: string
 	if (initialColors.size > 0) {
