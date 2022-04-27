@@ -39,7 +39,7 @@ import SavedStateHandler from '../../utils/saved-state-handler'
 import AcademicTerm from '../../domain/AcademicTerm'
 import Timetable from '../../domain/Timetable'
 
-class TopBar extends React.Component <{
+interface TopBarProps {
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
@@ -48,7 +48,9 @@ class TopBar extends React.Component <{
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
 	currentTimetable: Timetable
-}, unknown>{
+}
+
+class TopBar extends React.Component<TopBarProps, unknown>{
 	state = {
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
@@ -66,7 +68,7 @@ class TopBar extends React.Component <{
 	hasPreviousDegrees = false
 
 	// eslint-disable-next-line
-	constructor(props: any) {
+	constructor(props: TopBarProps) {
 		super(props)
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
@@ -92,7 +94,7 @@ class TopBar extends React.Component <{
 		}
 	}
 
-	async componentDidUpdate(prevProps: any): Promise<void> {
+	async componentDidUpdate(prevProps: TopBarProps): Promise<void> {
 		if (prevProps.currentTimetable !== this.props.currentTimetable) {
 			const degreeAcronyms = Array.from(this.props.currentTimetable.degreeAcronyms)
 			this.setSelectedDegrees(degreeAcronyms)

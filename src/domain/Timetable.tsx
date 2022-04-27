@@ -11,6 +11,7 @@ export default class Timetable implements Comparable {
 	shifts: Shift[]
 	degreeAcronyms: Set<string> = new Set()
 	isSaved: boolean
+	// TODO: Add multi shift funcionality
 	// Not stored
 	courses: Set<Course> = new Set()
 	courseUpdates: CourseUpdates = new CourseUpdates()
@@ -32,7 +33,7 @@ export default class Timetable implements Comparable {
 			const [courseUpdate, shiftState, errors] = savedState
 			const newTimetable = new Timetable(parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved)
 			newTimetable.courses = new Set(courseUpdate.courses)
-			newTimetable.degreeAcronyms = new Set(parsedStr.degrees.split(SavedStateHandler.PARAMS_SEP))
+			newTimetable.degreeAcronyms = new Set(parsedStr.degrees?.split(SavedStateHandler.PARAMS_SEP))
 			// Stored for current usage, not kept in storage
 			newTimetable.courseUpdates = courseUpdate
 			newTimetable.shiftState = shiftState
@@ -40,6 +41,7 @@ export default class Timetable implements Comparable {
 			return newTimetable
 		} catch (err) {
 			// Baaaaah
+			console.error(err)
 			return undefined
 		}
 	}
