@@ -1,5 +1,7 @@
 import hexRgb from 'hex-rgb'
+import rgbHex from 'rgb-hex'
 import { isOkWithWhite } from '../utils/colors'
+import { getRandomDarkColor } from '../utils/CourseUpdate'
 import Comparable from './Comparable'
 import Shift from './Shift'
 
@@ -32,8 +34,9 @@ export default class Course implements Comparable {
 			this.url = obj.url
 		}
 
-		// const chosenColor = getRandomDarkColor()
-		// this.color = '#' + rgbHex(chosenColor.red, chosenColor.green, chosenColor.blue)
+		const color = getRandomDarkColor()
+		this.color = '#' + rgbHex(color.red, color.green, color.blue)
+		this.textColor = isOkWithWhite(hexRgb(this.color)) ? 'white' : 'black'
 	}
 
 	addShift(shift: Shift): void {
@@ -76,8 +79,8 @@ export default class Course implements Comparable {
 
 	removeColor(): string {
 		const color = this.color
-		this.color = ''
-		this.textColor = 'white'
+		// this.color = ''
+		// this.textColor = 'white'
 		return color
 	}
 

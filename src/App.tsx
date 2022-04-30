@@ -180,7 +180,9 @@ class App extends React.Component <{
 			// const currCourses = this.state.selectedCourses as CourseUpdates
 			const currCourses = this.state.savedTimetable.courseUpdates as CourseUpdates
 			currCourses.removeAllCourses()
-			if (this.selectedDegrees === []) {
+			// TODO: Change all other selected degrees for the timetable
+			this.state.savedTimetable.shiftState.availableShifts = []
+			if (this.state.savedTimetable.degreeAcronyms.size === 0) {
 				this.setState({
 					availableCourses: [],
 					selectedCourses: currCourses,

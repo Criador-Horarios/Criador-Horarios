@@ -114,7 +114,7 @@ export function returnColor(color: string): void {
 	}
 }
 
-const getRandomDarkColor = () => {
+export function getRandomDarkColor(): hexRgb.RgbaObject {
 	let chosenColor: hexRgb.RgbaObject
 	do {
 		chosenColor = hexRgb(randomColor({
