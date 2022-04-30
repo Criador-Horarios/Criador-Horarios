@@ -248,6 +248,7 @@ class App extends React.Component <{
 		})
 
 		this.topBar.current?.setSelectedCourses(currCourses)
+		this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
 		this.setState({ availableShifts, shownShifts })
 	}
 

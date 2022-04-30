@@ -113,12 +113,14 @@ export default class SavedStateHandler {
 		}
 	}
 
-	async getShifts(unparsedShifts = undefined, degreesChosen: Set<string> = new Set):
+	async getShifts(unparsedShifts: string | undefined = undefined, degreesChosen: Set<string> = new Set):
 		Promise<[CourseUpdates, ShiftState, string] | undefined> {
 		const errors: string[] = []
-		const shiftsToParse = unparsedShifts || this.shifts
+		const shiftsToParse = unparsedShifts
 		if (!shiftsToParse) {
-			return undefined
+			const courseUpdate = new CourseUpdates()
+			courseUpdate.degreeAcronyms = degreesChosen
+			return [courseUpdate, { availableShifts: [], selectedShifts: []}, '']
 		}
 
 		// TODO: Build cache of shifts to avoid asking repeatedly
