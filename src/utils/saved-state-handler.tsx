@@ -113,7 +113,8 @@ export default class SavedStateHandler {
 		}
 	}
 
-	async getShifts(unparsedShifts = undefined): Promise<[CourseUpdates, ShiftState, string] | undefined> {
+	async getShifts(unparsedShifts = undefined, degreesChosen: Set<string> = new Set):
+		Promise<[CourseUpdates, ShiftState, string] | undefined> {
 		const errors: string[] = []
 		const shiftsToParse = unparsedShifts || this.shifts
 		if (!shiftsToParse) {
@@ -121,11 +122,11 @@ export default class SavedStateHandler {
 		}
 
 		// TODO: Build cache of shifts to avoid asking repeatedly
-
 		const shifts = shiftsToParse.split(SavedStateHandler.PARAMS_SEP)
 			.map((shift: string) => shift.split(SavedStateHandler.ARGS_SEP))
 
 		const courseUpdate = new CourseUpdates()
+		courseUpdate.degreeAcronyms = degreesChosen
 
 		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
 			try {
@@ -188,7 +189,6 @@ export default class SavedStateHandler {
 
 		const usableTimetables = parsedTimetables.filter((t) => t !== undefined) as Timetable[]
 
-		console.log(usableTimetables)
 		this.savedTimetables = usableTimetables
 		return usableTimetables.length === 0 ? this.getCurrentTimetables() : usableTimetables
 	}
@@ -254,7 +254,7 @@ export default class SavedStateHandler {
 		}
 		
 		// Update course to have the selected degrees
-		const selectedDegrees = this.getDegrees() ?? []
+		const selectedDegrees = Array.from(updates.degreeAcronyms)
 		course.updateDegree(selectedDegrees)
 
 		// Check if has a previous color and set it

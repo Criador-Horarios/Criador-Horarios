@@ -42,3 +42,9 @@
 - [ ] Finalize occupancy shift updater and set it for all available shifts for the selected courses
 - [X] Store selected academic term and use it
 - [ ] Fix download dropdown to not use a dialog but a focus grab
+
+
+Multiple-Timetables:
+- [ ] Single line of colors for all timetables
+- [ ] When choosing BD multiple times it starts to not replace the old ones
+- [ ] Add a storage of the existing courses to avoid asking new ones

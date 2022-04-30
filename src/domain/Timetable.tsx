@@ -27,13 +27,14 @@ export default class Timetable implements Comparable {
 	static async fromString(str: string): Promise<Timetable | undefined> {
 		try {
 			const parsedStr = JSON.parse(str)
-			const savedState = await SavedStateHandler.getInstance().getShifts(parsedStr.shifts)
+			const degreesAcronyms: Set<string> = new Set(parsedStr.degrees?.split(SavedStateHandler.PARAMS_SEP))
+			const savedState = await SavedStateHandler.getInstance().getShifts(parsedStr.shifts, degreesAcronyms)
 			if (!savedState) return undefined
 
 			const [courseUpdate, shiftState, errors] = savedState
 			const newTimetable = new Timetable(parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved)
 			newTimetable.courses = new Set(courseUpdate.courses)
-			newTimetable.degreeAcronyms = new Set(parsedStr.degrees?.split(SavedStateHandler.PARAMS_SEP))
+			newTimetable.degreeAcronyms = degreesAcronyms
 			// Stored for current usage, not kept in storage
 			newTimetable.courseUpdates = courseUpdate
 			newTimetable.shiftState = shiftState

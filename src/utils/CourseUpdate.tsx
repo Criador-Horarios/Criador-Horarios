@@ -20,6 +20,7 @@ export type Update = {
 export default class CourseUpdates {
 	courses: Course[]
 	lastUpdate?: Update
+	degreeAcronyms: Set<string> = new Set()
 
 	constructor() {
 		this.courses = []
@@ -36,14 +37,20 @@ export default class CourseUpdates {
 		if (idx !== -1) {
 			// Remove color
 			if (!course.hasShiftsSelected() && !skipColor) {
-				const color = course.removeColor()
-				returnColor(color)
+				// const color = course.removeColor()
+				// returnColor(color)
 			}
 
 			course.isSelected = false
 
 			type = CourseUpdateType.Remove
 			this.courses.splice(idx, 1)
+			
+			// Check if degree needs to be removed
+			const removedCourseDegree = course.degreeAcronym
+			if (this.courses.filter(c => c.degreeAcronym === removedCourseDegree).length === 0) {
+				this.degreeAcronyms.delete(removedCourseDegree)
+			}
 		} else {
 			// Add color
 			if (!course.hasShiftsSelected() && !skipColor) {
@@ -52,6 +59,7 @@ export default class CourseUpdates {
 			}
 
 			course.isSelected = true
+			this.degreeAcronyms.add(course.degreeAcronym)
 
 			type = CourseUpdateType.Add
 			this.courses.push(course)
@@ -68,7 +76,7 @@ export default class CourseUpdates {
 		this.courses.forEach( (c: Course) => {
 			c.isSelected = false
 			if (!c.hasShiftsSelected) {
-				returnColor(c.removeColor())
+				// returnColor(c.removeColor())
 			}
 		})
 
