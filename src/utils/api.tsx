@@ -4,6 +4,7 @@ import Degree, { DegreeDto } from '../domain/Degree'
 import { ScheduleDto } from '../domain/Schedule'
 import Shift, { ShiftDto } from '../domain/Shift'
 import SavedStateHandler from './saved-state-handler'
+import StoredEntities from './stored-entities'
 
 export default class API {
 	static ACADEMIC_TERM = '2020/2021'
@@ -11,6 +12,7 @@ export default class API {
 	static LANG = 'pt-PT'
 	static PREFIX = ''
 	static PATH_PREFIX = ''
+	static REQUEST_CACHE = StoredEntities
 
 	// eslint-disable-next-line
 	private static async getRequest(url: string, ignoreAcademicTerm = false): Promise<any> {
@@ -90,6 +92,12 @@ export default class API {
 	}
 
 	public static async getCourse(course: string): Promise<Course | null> {
+		// Check if it is on the cache
+		const courseCached = this.REQUEST_CACHE.getCourses([course])
+		if (courseCached.length === 1) {
+			return courseCached[0]
+		}
+		// TODO: Ideally, if we are requesting for a course, any other request on the same course should wait for the first
 		const res = (await this.getRequest(`/api/courses/${course}`) as CourseDto | null)
 		if (res === null) {
 			return null
@@ -101,7 +109,9 @@ export default class API {
 		) {
 			courseAcronyms = res.competences[0].degrees.map(d => d.acronym).join('/')
 		}
-		return new Course(res, courseAcronyms)
+		const newCourse = new Course(res, courseAcronyms)
+		this.REQUEST_CACHE.storeCourse(newCourse)
+		return newCourse
 	}
 
 	public static async getCourseSchedules(course: Course): Promise<Shift[] | null> {

@@ -45,6 +45,7 @@
 
 
 Multiple-Timetables:
-- [ ] Single line of colors for all timetables
-- [ ] When choosing BD multiple times it starts to not replace the old ones
-- [ ] Add a storage of the existing courses to avoid asking new ones
+- [X] Single line of colors for all timetables
+- [X] When choosing BD multiple times it starts to not replace the old ones
+- [X] Add a storage of the existing courses to avoid asking new ones
+- [ ] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times)
