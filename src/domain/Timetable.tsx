@@ -8,19 +8,18 @@ import CourseUpdates from '../utils/CourseUpdate'
 
 export default class Timetable implements Comparable {
 	name: string
-	shifts: Shift[]
+	shiftState: ShiftState = { 	availableShifts: [], selectedShifts: [] }
 	degreeAcronyms: Set<string> = new Set()
 	isSaved: boolean
 	// TODO: Add multi shift funcionality
 	// Not stored
 	courses: Set<Course> = new Set()
 	courseUpdates: CourseUpdates = new CourseUpdates()
-	shiftState: ShiftState = { 	availableShifts: [], selectedShifts: [] }
 	errors = ''
 
 	constructor(name: string, shifts: Shift[], isSaved: boolean) {
 		this.name = name
-		this.shifts = shifts
+		this.shiftState.selectedShifts = shifts
 		this.isSaved = isSaved
 	}
 
@@ -52,8 +51,9 @@ export default class Timetable implements Comparable {
 	}
 
 	toggleShift(chosenShift: Shift, multiShiftMode = false): void {
-		const idx = Comparables.indexOf(this.shifts, chosenShift)
+		const idx = Comparables.indexOf(this.shiftState.selectedShifts, chosenShift)
 		// if (idx !== -1 && !multiShiftMode) return
+		const shiftCourse = this.courseUpdates.courses.filter(c => c.id === chosenShift.courseId)
 
 		let replacingIndex
 		if (multiShiftMode) {
@@ -61,27 +61,36 @@ export default class Timetable implements Comparable {
 			replacingIndex = -1
 		} else {
 			// Verify if of the same type and course to replace, but not the same
-			replacingIndex = Comparables.indexOfBy(this.shifts, chosenShift, Shift.isSameCourseAndType)
+			replacingIndex = Comparables.indexOfBy(this.shiftState.selectedShifts, chosenShift, Shift.isSameCourseAndType)
 		}
 
-		// TODO: Change on the course for the selected shift types
 		if (idx === -1) {
+			// Add course if not existing
 			if (!this.courseUpdates.has(chosenShift.course)) this.courseUpdates.toggleCourse(chosenShift.course)
-			// this.shifts.push(chosenShift)
+			
 			this.shiftState.selectedShifts.push(chosenShift)
 			if (replacingIndex !== -1) {
-				this.shifts.splice(replacingIndex, 1)
+				this.shiftState.selectedShifts.splice(replacingIndex, 1)
+			} else if (shiftCourse.length === 1) {
+				// Change on the course for the selected shift types
+				shiftCourse[0].addSelectedShift(chosenShift)
 			}
-			this.courses.add(chosenShift.course)
 			this.degreeAcronyms.add(chosenShift.course.degreeAcronym)
 		} else {
-			// this.shifts.splice(idx, 1)
 			this.shiftState.selectedShifts.splice(idx, 1)
-			this.courses.delete(chosenShift.course)
-
-			// TODO: When can we remove degrees?
-			// this.degreeAcronyms.delete(chosenShift.course.degreeAcronym)
+			if (shiftCourse.length === 1) {
+				// Change on the course for the selected shift types
+				shiftCourse[0].removeSelectedShift(chosenShift)
+			}
 		}
+	}
+
+	// Returns true if any shifts were cleared, false otherwise
+	clearAllShifts(): boolean {
+		if (this.shiftState.selectedShifts.length === 0) return false
+		this.courseUpdates.courses.forEach(c => c.clearSelectedShifts())
+		this.shiftState.selectedShifts = []
+		return true
 	}
 
 	save(): void {

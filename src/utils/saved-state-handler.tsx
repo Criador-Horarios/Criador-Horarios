@@ -185,6 +185,7 @@ export default class SavedStateHandler {
 			return this.getCurrentTimetables()
 		}
 
+		// TODO: First time should only fetch the first timetable to avoid getting unused timetables
 		const parsedTimetables = await Promise.all(Object.values(localTimetables).map(async (unparsedTimetable: string) => {
 			return await Timetable.fromString(unparsedTimetable)
 		}))

@@ -2,7 +2,6 @@ import Shift from '../domain/Shift'
 import API from './api'
 import cheerio from 'cheerio'
 import i18next from 'i18next'
-import Degree from '../domain/Degree'
 
 const prefix = 'https://fenix.tecnico.ulisboa.pt'
 
@@ -54,13 +53,13 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 	return res
 }
 
-async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Promise<[Record<string, string>, string[]]> {
+async function getMinimalClasses(shifts: Shift[], selectedDegreesAcronyms: string[]): Promise<[Record<string, string>, string[]]> {
 	const allClasses = await getClasses(shifts)
 	const currClasses: Record<string, string[]> = {}
 	
 	// Filter all shifts that are from degrees not selected
-	if (selectedDegrees.length > 0) { // If no selected Degrees, ignore this step
-		const degreeAcronyms = selectedDegrees.map(d => d.acronym)
+	if (selectedDegreesAcronyms.length > 0) { // If no selected Degrees, ignore this step
+		const degreeAcronyms = selectedDegreesAcronyms
 
 		Object.keys(allClasses).forEach((shift) => {
 			const filteredClasses: string[] = []
