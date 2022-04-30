@@ -88,15 +88,12 @@ export default class API {
 			.filter( (c: Course) => {
 				return c.semester === this.SEMESTER
 			})
+		// Store in cache for future use
+		// courses.forEach(c => this.REQUEST_CACHE.storeCourse(c))
 		return courses.sort(Course.compare)
 	}
 
 	public static async getCourse(course: string): Promise<Course | null> {
-		// Check if it is on the cache
-		const courseCached = this.REQUEST_CACHE.getCourses([course])
-		if (courseCached.length === 1) {
-			return courseCached[0]
-		}
 		// TODO: Ideally, if we are requesting for a course, any other request on the same course should wait for the first
 		const res = (await this.getRequest(`/api/courses/${course}`) as CourseDto | null)
 		if (res === null) {
@@ -110,7 +107,6 @@ export default class API {
 			courseAcronyms = res.competences[0].degrees.map(d => d.acronym).join('/')
 		}
 		const newCourse = new Course(res, courseAcronyms)
-		this.REQUEST_CACHE.storeCourse(newCourse)
 		return newCourse
 	}
 
