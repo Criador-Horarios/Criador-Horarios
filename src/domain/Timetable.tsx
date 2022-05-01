@@ -118,6 +118,18 @@ export default class Timetable implements Comparable {
 		return currDegrees.reduce((a, b) => `${a};${b}`).split(SavedStateHandler.PARAMS_SEP)
 	}
 
+	toURLParams(): string[] {
+		const shifts = shortenDescriptions(this.shiftState.selectedShifts)
+		const degrees = this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP)
+		const isMultishift = this.isMultiShift.toString()
+		return [
+			`${SavedStateHandler.URL_TIMETABLE_NAME}=${this.name}`,
+			`${SavedStateHandler.URL_SHIFTS}=${shifts}`,
+			`${SavedStateHandler.URL_DEGREES}=${degrees}`,
+			`${SavedStateHandler.URL_IS_MULTISHIFT}=${isMultishift}`
+		]
+	}
+
 	toString(): string {
 		const obj = {
 			name: this.name,

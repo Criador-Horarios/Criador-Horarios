@@ -17,6 +17,12 @@ export default class SavedStateHandler {
 	static COLORS = 'colors'
 	static SAVED_TIMETABLES = 'saved-timetables'
 	static DEBUG = 'debug'
+
+	// URL keys
+	static URL_TIMETABLE_NAME = 'n'
+	static URL_SHIFTS = 's'
+	static URL_DEGREES = 'd'
+	static URL_IS_MULTISHIFT = 'm'
 	
 	// 
 	static DOMAIN = process.env.REACT_APP_URL
@@ -74,7 +80,9 @@ export default class SavedStateHandler {
 	}
 
 	static getAppURL(params: string[]): string {
-		return `${SavedStateHandler.DOMAIN}?${params.join('&')}`
+		let domain = SavedStateHandler.DOMAIN
+		if (process.env.NODE_ENV === 'development') domain = 'localhost:3000'
+		return `${domain}?${params.join('&')}`
 	}
 
 	// INSTANCE METHODS

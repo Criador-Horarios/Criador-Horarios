@@ -375,11 +375,7 @@ class App extends React.Component <{
 	}
 
 	async getSharingURL(): Promise<string> {
-		// TODO: Should now share the timetable
-		const shifts = shortenDescriptions(this.state.savedTimetable.shiftState.selectedShifts)
-		const degrees = getDegreesAcronyms(this.state.savedTimetable.shiftState.selectedShifts)
-		const isMultishift = this.state.savedTimetable.isMultishift.toString()
-		const params = [`${SavedStateHandler.SHIFTS}=${shifts}`, `${SavedStateHandler.DEGREES}=${degrees}`, `${SavedStateHandler.IS_MULTISHIFT}=${isMultishift}`]
+		const params = this.state.savedTimetable.toURLParams()
 		return await SavedStateHandler.getAppURL(params)
 	}
 
