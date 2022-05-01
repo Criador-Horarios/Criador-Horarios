@@ -11,7 +11,7 @@ export default class Timetable implements Comparable {
 	shiftState: ShiftState = { 	availableShifts: [], selectedShifts: [] }
 	degreeAcronyms: Set<string> = new Set()
 	isSaved: boolean
-	isMultishift: boolean
+	isMultiShift: boolean
 	// Not stored
 	courses: Set<Course> = new Set()
 	courseUpdates: CourseUpdates = new CourseUpdates()
@@ -21,7 +21,7 @@ export default class Timetable implements Comparable {
 		this.name = name
 		this.shiftState.selectedShifts = shifts
 		this.isSaved = isSaved
-		this.isMultishift = isMultishift
+		this.isMultiShift = isMultishift
 	}
 
 	static async fromString(str: string): Promise<Timetable | undefined> {
@@ -59,7 +59,7 @@ export default class Timetable implements Comparable {
 		const shiftCourse = this.courseUpdates.courses.filter(c => c.id === chosenShift.courseId)
 
 		let replacingIndex
-		if (this.isMultishift) {
+		if (this.isMultiShift) {
 			// We want to allow multiple shifts of the same type, don't replace anything
 			replacingIndex = -1
 		} else {
@@ -97,7 +97,7 @@ export default class Timetable implements Comparable {
 	}
 
 	setMultiShiftMode(mode: boolean): void {
-		this.isMultishift = mode
+		this.isMultiShift = mode
 	}
 
 	save(): void {
@@ -124,7 +124,7 @@ export default class Timetable implements Comparable {
 			degrees: this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP),
 			shifts: shortenDescriptions(this.shiftState.selectedShifts),
 			isSaved: this.isSaved,
-			isMultishift: this.isMultishift
+			isMultishift: this.isMultiShift
 		}
 		return JSON.stringify(obj)
 	}

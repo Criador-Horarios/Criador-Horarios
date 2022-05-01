@@ -4,7 +4,7 @@ import './App.scss'
 
 import campiList from './domain/CampiList'
 import Course from './domain/Course'
-import Shift, { getDegreesAcronyms, ShiftType, shortenDescriptions } from './domain/Shift'
+import Shift, { ShiftType } from './domain/Shift'
 import Lesson from './domain/Lesson'
 import Schedule from './components/Schedule/Schedule'
 import ColorPicker from './components/ColorPicker/ColorPicker'
@@ -276,7 +276,7 @@ class App extends React.Component <{
 		// if multiple shifts of the same course/type are selected, and
 		// multi-shift is disabled, chaos ensues
 		const currTimetable = timetable || this.state.savedTimetable
-		const disable = currTimetable.isMultishift && it_contains(
+		const disable = currTimetable.isMultiShift && it_contains(
 			combinations2(currTimetable.shiftState.selectedShifts),
 			([a, b]) => Shift.isSameCourseAndType(a,b)
 		)
@@ -398,16 +398,6 @@ class App extends React.Component <{
 	}
 
 	async buildState(forceUpdate = false): Promise<void> {
-		// Fetch multi shift mode
-		try {
-			this.setState({
-				multiShiftMode: this.savedStateHandler.getMultiShiftMode()
-			})
-		} catch(err) {
-			console.error(err)
-			// ignored, bad URL/cookie state
-		}
-
 		let savedTimetables: Timetable[] = []
 		try {
 			savedTimetables = await this.savedStateHandler.getSavedTimetables()
@@ -450,7 +440,8 @@ class App extends React.Component <{
 					selectedShiftTypes: this.state.selectedShiftTypes,
 					availableShifts: state.availableShifts
 				}),
-				savedTimetable: newTimetable
+				savedTimetable: newTimetable,
+				multiShiftMode: this.state.savedTimetable.isMultiShift
 			})
 			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
 			this.recomputeDisableMultiShiftModeChange(newTimetable)
@@ -477,8 +468,6 @@ class App extends React.Component <{
 			i18next.changeLanguage(language).then(() => i18next.options.lng = language)
 			API.setLanguage(language)
 
-			// Clear shifts?
-			// this.clearSelectedShifts(false)
 			this.savedStateHandler.setLanguage(language)
 
 			await afterChange()
@@ -766,7 +755,7 @@ class App extends React.Component <{
 													labelPlacement="top"
 													control={
 														<Switch
-															checked={this.state.savedTimetable.isMultishift}
+															checked={this.state.savedTimetable.isMultiShift}
 															disabled={this.state.inhibitMultiShiftModeChange}
 															onChange={this.onChangeMultiShiftMode}
 															size="small"

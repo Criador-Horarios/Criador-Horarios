@@ -49,7 +49,10 @@ Multiple-Timetables:
 - [X] When choosing BD multiple times it starts to not replace the old ones
 - [X] Add a storage of the existing courses to avoid asking new ones
 - [X] Allow multishift (and store it)
-- [ ] Remove stored states not necessary anymore
-- [ ] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times)
+- [ ] Set academic term in timetable, as we should be able to store timetables from different semesters
+- [ ] Allow sharing the timetable with the URL
+- [X] Remove stored states not necessary anymore
 - [ ] Store course color for consistent usage
 - [ ] Don't load all timetables at once, only load the first one and then the ones used
+- [X] Academic terms are being loaded way too much!
+- [ ] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times) (related to above)

@@ -1,6 +1,4 @@
-import Cookies from 'universal-cookie'
 import AcademicTerm from '../domain/AcademicTerm'
-import { Comparables } from '../domain/Comparable'
 import Course from '../domain/Course'
 import Shift, { getDegreesAcronyms, shortenDescriptions } from '../domain/Shift'
 import Timetable from '../domain/Timetable'
@@ -12,14 +10,11 @@ import i18next from 'i18next'
 export default class SavedStateHandler {
 	// CONSTANTS
 	// Storage keys
-	static DEGREES = 'd'
-	static SHIFTS = 's'
 	static TERM = 'term'
 	static DARK = 'dark'
 	static LANGUAGE = 'language'
 	static WARNING = 'warning'
 	static COLORS = 'colors'
-	static IS_MULTISHIFT = 'ismulti'
 	static SAVED_TIMETABLES = 'saved-timetables'
 	static DEBUG = 'debug'
 	
@@ -35,20 +30,14 @@ export default class SavedStateHandler {
 	private static instance: SavedStateHandler
 
 	// ATTRIBUTES
-	private shifts: string
-	private degrees: string
 	private colors: Record<string, string>
 	private savedTimetables: Timetable[] = []
-	private multiShiftMode: boolean
-	private cookies = new Cookies()
 	private debug: boolean
 
 	private constructor(urlParams: Record<string, string>) {
-		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
-		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES)
+		// TODO: Fetch from URL when a timetable is shared
 		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS) ?? {}) as Record<string, string>
 		this.savedTimetables = this.getCurrentTimetables()
-		this.multiShiftMode = (urlParams[SavedStateHandler.IS_MULTISHIFT] ?? this.getLocalStorage(SavedStateHandler.IS_MULTISHIFT)) === 'true'
 		this.debug = urlParams[SavedStateHandler.DEBUG] == 'true'
 	}
 
@@ -66,13 +55,15 @@ export default class SavedStateHandler {
 		const title: string = document.title
 		let path = API.PATH_PREFIX + '/'
 		if (toState) {
+			// TODO: Implement
 			const shifts = shortenDescriptions(selectedShifts)
-			if (shifts !== '') path += `?${this.SHIFTS}=${shifts}`
+			// if (shifts !== '') path += `?${this.SHIFTS}=${shifts}`
 
 			const degrees = getDegreesAcronyms(selectedShifts)
-			if (degrees !== '') path += `&${this.DEGREES}=${degrees}`
+			// if (degrees !== '') path += `&${this.DEGREES}=${degrees}`
 
-			if (multiShiftMode) path += `&${this.IS_MULTISHIFT}=true`
+			// if (multiShiftMode) path += `&${this.IS_MULTISHIFT}=true`
+			path += ''
 		}
 
 		if (window.history.replaceState) {
@@ -87,32 +78,6 @@ export default class SavedStateHandler {
 	}
 
 	// INSTANCE METHODS
-	// Returns the degrees acronyms, like MEIC-A
-	getDegrees(forceUpdate = false): string[] | undefined {
-		if (forceUpdate) {
-			this.degrees = this.getLocalStorage(SavedStateHandler.DEGREES) as string
-		}
-		return this.degrees?.split(SavedStateHandler.PARAMS_SEP)
-	}
-
-	setShifts(selectedShifts: Shift[]): void {
-		if (selectedShifts.length === 0) {
-			this.removeLocalStorage(SavedStateHandler.SHIFTS)
-			this.removeLocalStorage(SavedStateHandler.DEGREES)
-			this.removeLocalStorage(SavedStateHandler.COLORS)
-		} else {
-			this.shifts = shortenDescriptions(selectedShifts)
-			this.setLocalStorage(SavedStateHandler.SHIFTS, this.shifts)
-
-			this.degrees = getDegreesAcronyms(selectedShifts) || ''
-			this.setLocalStorage(SavedStateHandler.DEGREES, this.degrees)
-
-			// Store colors
-			const courses = Comparables.toUnique(selectedShifts.map(s => s.course)) as Course[]
-			this.setCoursesColor(courses)
-		}
-	}
-
 	async getShifts(unparsedShifts: string | undefined = undefined, degreesChosen: Set<string> = new Set):
 		Promise<[CourseUpdates, ShiftState, string] | undefined> {
 		const errors: string[] = []
@@ -152,15 +117,6 @@ export default class SavedStateHandler {
 		return [courseUpdate, state, errors.join(', ')]
 	}
 
-	setMultiShiftMode(multiShiftMode: boolean): void {
-		this.multiShiftMode = multiShiftMode
-		this.setLocalStorage(SavedStateHandler.IS_MULTISHIFT, multiShiftMode.toString())
-	}
-
-	getMultiShiftMode(): boolean {
-		return this.multiShiftMode
-	}
-
 	setSavedTimetables(timetables: Timetable[]): void {
 		// Mark every timetable has saved
 		timetables.forEach(t => t.save())
@@ -177,8 +133,9 @@ export default class SavedStateHandler {
 		return current.length === 0 ? [new Timetable(i18next.t('default-timetable'), [], false, false)] : this.savedTimetables
 	}
 	
-	async getSavedTimetables(): Promise<Timetable[]> {
+	async getSavedTimetables(forceUpdate = false): Promise<Timetable[]> {
 		const localTimetables = this.getLocalStorage(SavedStateHandler.SAVED_TIMETABLES)
+		console.log('timetables!')
 
 		// If there are none stored
 		if (!localTimetables) {
@@ -244,7 +201,6 @@ export default class SavedStateHandler {
 	}
 
 	// HELPERS
-
 	private async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
 		const course = await API.getCourse(description[0])
 
@@ -266,6 +222,7 @@ export default class SavedStateHandler {
 		if (hasColor) {
 			course.setColor(currColor)
 		}
+		// TODO: If not, store it
 
 		// Set course as selected
 		updates.toggleCourse(course, hasColor)
@@ -286,14 +243,6 @@ export default class SavedStateHandler {
 			return acc
 		}, [] as Shift[])
 		return { course, availableShifts, selectedShifts }
-	}
-
-	private getCookie(accessor: string): string {
-		return this.cookies.get(accessor)
-	}
-
-	private setCookie(accessor: string, value: string | boolean, maxAge = SavedStateHandler.MAX_AGE_NORMAL) {
-		this.cookies.set(accessor, value, { maxAge })
 	}
 
 	private getLocalStorage(accessor: string): string | Record<string, string> {
