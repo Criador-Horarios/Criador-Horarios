@@ -48,6 +48,8 @@ Multiple-Timetables:
 - [X] Single line of colors for all timetables
 - [X] When choosing BD multiple times it starts to not replace the old ones
 - [X] Add a storage of the existing courses to avoid asking new ones
+- [X] Allow multishift (and store it)
+- [ ] Remove stored states not necessary anymore
 - [ ] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times)
 - [ ] Store course color for consistent usage
 - [ ] Don't load all timetables at once, only load the first one and then the ones used

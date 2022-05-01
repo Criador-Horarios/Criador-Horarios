@@ -8,7 +8,7 @@ import Shift, { getDegreesAcronyms, ShiftType, shortenDescriptions } from './dom
 import Lesson from './domain/Lesson'
 import Schedule from './components/Schedule/Schedule'
 import ColorPicker from './components/ColorPicker/ColorPicker'
-import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
+import CourseUpdates, { CourseUpdateType, getCoursesDifference } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
 import saveToExcel from './utils/excel'
@@ -85,11 +85,10 @@ class App extends React.Component <{
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false,
-		multiShiftMode: false,
 		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
 		newDomainDialog: false,
-		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false)
+		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false, false)
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
@@ -262,9 +261,6 @@ class App extends React.Component <{
 		}
 
 		this.updateToNewTimetable(newTimetable)
-		this.setState({
-			savedTimetable: newTimetable
-		})
 	}
 
 	getAllLessons(): Lesson[] {
@@ -275,12 +271,13 @@ class App extends React.Component <{
 		return this.state.savedTimetable.shiftState.selectedShifts.map((shift: Shift) => shift.lessons).flat()
 	}
 
-	private recomputeDisableMultiShiftModeChange() {
+	private recomputeDisableMultiShiftModeChange(timetable: Timetable | undefined = undefined) {
 		// Check if multi-shift can't be disabled safely
 		// if multiple shifts of the same course/type are selected, and
 		// multi-shift is disabled, chaos ensues
-		const disable = this.state.multiShiftMode && it_contains(
-			combinations2(this.state.savedTimetable.shiftState.selectedShifts),
+		const currTimetable = timetable || this.state.savedTimetable
+		const disable = currTimetable.isMultishift && it_contains(
+			combinations2(currTimetable.shiftState.selectedShifts),
 			([a, b]) => Shift.isSameCourseAndType(a,b)
 		)
 
@@ -292,7 +289,7 @@ class App extends React.Component <{
 
 		if (chosenShift) {
 			// Add to current timetable and save
-			this.state.savedTimetable.toggleShift(chosenShift, this.state.multiShiftMode)
+			this.state.savedTimetable.toggleShift(chosenShift)
 			this.topBar.current?.setHasSelectedShifts(this.state.savedTimetable.shiftState.selectedShifts)
 			this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
 			this.recomputeDisableMultiShiftModeChange()
@@ -306,10 +303,9 @@ class App extends React.Component <{
 	}
 
 	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
-		this.savedStateHandler.setMultiShiftMode(value)
-		this.setState({
-			multiShiftMode: value
-		})
+		this.state.savedTimetable.setMultiShiftMode(value)
+		this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
+		this.setState({ savedTimetable: this.state.savedTimetable })
 	}
 
 	clearSelectedShifts(alert: boolean): void {
@@ -379,9 +375,10 @@ class App extends React.Component <{
 	}
 
 	async getSharingURL(): Promise<string> {
+		// TODO: Should now share the timetable
 		const shifts = shortenDescriptions(this.state.savedTimetable.shiftState.selectedShifts)
 		const degrees = getDegreesAcronyms(this.state.savedTimetable.shiftState.selectedShifts)
-		const isMultishift = this.state.multiShiftMode.toString()
+		const isMultishift = this.state.savedTimetable.isMultishift.toString()
 		const params = [`${SavedStateHandler.SHIFTS}=${shifts}`, `${SavedStateHandler.DEGREES}=${degrees}`, `${SavedStateHandler.IS_MULTISHIFT}=${isMultishift}`]
 		return await SavedStateHandler.getAppURL(params)
 	}
@@ -430,6 +427,7 @@ class App extends React.Component <{
 	}
 
 	updateToNewTimetable(newTimetable: Timetable): void {
+		// FIXME: Should not need try
 		try {
 			const courseUpdates = newTimetable.courseUpdates
 			const errors = newTimetable.errors
@@ -452,9 +450,10 @@ class App extends React.Component <{
 					selectedShiftTypes: this.state.selectedShiftTypes,
 					availableShifts: state.availableShifts
 				}),
+				savedTimetable: newTimetable
 			})
 			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-			this.recomputeDisableMultiShiftModeChange()
+			this.recomputeDisableMultiShiftModeChange(newTimetable)
 			SavedStateHandler.changeUrl(false, [], false)
 		} catch (err) {
 			console.error(err)
@@ -516,7 +515,7 @@ class App extends React.Component <{
 			return
 		}
 
-		this.setState({loading: true})
+		this.setState({ loading: true })
 		
 		const [classesByShift, minimalClasses] = await getMinimalClasses(
 			this.state.savedTimetable.shiftState.selectedShifts,
@@ -708,7 +707,7 @@ class App extends React.Component <{
 														// Suggest the creation of a new value
 														const isExisting = options.some((option) => inputValue === option.name)
 														if (inputValue !== '' && !isExisting) {
-															filtered.push(new Timetable(inputValue, [], false))
+															filtered.push(new Timetable(inputValue, [], false, false))
 														}
 										
 														return filtered
@@ -767,7 +766,7 @@ class App extends React.Component <{
 													labelPlacement="top"
 													control={
 														<Switch
-															checked={this.state.multiShiftMode}
+															checked={this.state.savedTimetable.isMultishift}
 															disabled={this.state.inhibitMultiShiftModeChange}
 															onChange={this.onChangeMultiShiftMode}
 															size="small"

@@ -11,16 +11,17 @@ export default class Timetable implements Comparable {
 	shiftState: ShiftState = { 	availableShifts: [], selectedShifts: [] }
 	degreeAcronyms: Set<string> = new Set()
 	isSaved: boolean
-	// TODO: Add multi shift funcionality
+	isMultishift: boolean
 	// Not stored
 	courses: Set<Course> = new Set()
 	courseUpdates: CourseUpdates = new CourseUpdates()
 	errors = ''
 
-	constructor(name: string, shifts: Shift[], isSaved: boolean) {
+	constructor(name: string, shifts: Shift[], isSaved: boolean, isMultishift: boolean) {
 		this.name = name
 		this.shiftState.selectedShifts = shifts
 		this.isSaved = isSaved
+		this.isMultishift = isMultishift
 	}
 
 	static async fromString(str: string): Promise<Timetable | undefined> {
@@ -31,7 +32,9 @@ export default class Timetable implements Comparable {
 			if (!savedState) return undefined
 
 			const [courseUpdate, shiftState, errors] = savedState
-			const newTimetable = new Timetable(parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved)
+			const newTimetable = new Timetable(
+				parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved, parsedStr.isMultishift || false
+			)
 			newTimetable.courses = new Set(courseUpdate.courses)
 			newTimetable.degreeAcronyms = degreesAcronyms
 			// Stored for current usage, not kept in storage
@@ -50,13 +53,13 @@ export default class Timetable implements Comparable {
 		return this.isSaved ? this.name : `${i18next.t('add')}: “${this.name}”`
 	}
 
-	toggleShift(chosenShift: Shift, multiShiftMode = false): void {
+	toggleShift(chosenShift: Shift): void {
 		const idx = Comparables.indexOf(this.shiftState.selectedShifts, chosenShift)
 		// if (idx !== -1 && !multiShiftMode) return
 		const shiftCourse = this.courseUpdates.courses.filter(c => c.id === chosenShift.courseId)
 
 		let replacingIndex
-		if (multiShiftMode) {
+		if (this.isMultishift) {
 			// We want to allow multiple shifts of the same type, don't replace anything
 			replacingIndex = -1
 		} else {
@@ -93,6 +96,10 @@ export default class Timetable implements Comparable {
 		return true
 	}
 
+	setMultiShiftMode(mode: boolean): void {
+		this.isMultishift = mode
+	}
+
 	save(): void {
 		this.isSaved = true
 	}
@@ -116,7 +123,8 @@ export default class Timetable implements Comparable {
 			name: this.name,
 			degrees: this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP),
 			shifts: shortenDescriptions(this.shiftState.selectedShifts),
-			isSaved: this.isSaved
+			isSaved: this.isSaved,
+			isMultishift: this.isMultishift
 		}
 		return JSON.stringify(obj)
 	}
