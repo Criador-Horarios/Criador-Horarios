@@ -79,6 +79,10 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 	async componentDidMount(): Promise<void> {
 		// Update term
 		const currTermId = await defineCurrentTerm()
+		if (currTermId === undefined) {
+			this.props.showAlert('Can\'t access Fenix API servers, try again later.', 'error')
+			return
+		}
 		this.onSelectedAcademicTerm(currTermId, false)
 
 		const degrees = await API.getDegrees()

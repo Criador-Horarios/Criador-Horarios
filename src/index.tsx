@@ -7,6 +7,7 @@ import API from './utils/api'
 import i18n from './i18n/i18n'
 import {I18nextProvider} from 'react-i18next'
 
+API.setMutexes()
 API.setPrefix()
 
 ReactDOM.render(

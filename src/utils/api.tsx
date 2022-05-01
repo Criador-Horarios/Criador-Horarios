@@ -5,6 +5,7 @@ import { ScheduleDto } from '../domain/Schedule'
 import Shift, { ShiftDto } from '../domain/Shift'
 import SavedStateHandler from './saved-state-handler'
 import StoredEntities from './stored-entities'
+import { Mutex, MutexInterface, withTimeout } from 'async-mutex'
 
 export default class API {
 	static ACADEMIC_TERM = '2020/2021'
@@ -13,13 +14,22 @@ export default class API {
 	static PREFIX = ''
 	static PATH_PREFIX = ''
 	static REQUEST_CACHE = StoredEntities
+	static MUTEXES: Record<string, MutexInterface> = {}
+
+	public static setMutexes(): void {
+		const mutexKeys = [
+			'academic-terms'
+		]
+		// mutexKeys.forEach(k => this.MUTEXES[k] = new Mutex())
+		mutexKeys.forEach(k => this.MUTEXES[k] = withTimeout(new Mutex(), 5000))
+	}
 
 	// eslint-disable-next-line
 	private static async getRequest(url: string, ignoreAcademicTerm = false): Promise<any> {
 		let urlToFetch = `${API.PATH_PREFIX}${url}?lang=${this.LANG}`
 
 		if (!ignoreAcademicTerm) {
-			const selectedTerm = (await API.getAcademicTerms()).find( (t) => t.semester == API.SEMESTER && t.term == API.ACADEMIC_TERM)
+			const selectedTerm = (await API.getAcademicTerms()).find((t) => t.semester == API.SEMESTER && t.term == API.ACADEMIC_TERM)
 
 			if (selectedTerm !== undefined) {
 				urlToFetch += `&academicTerm=${selectedTerm.id}`
@@ -41,7 +51,7 @@ export default class API {
 	public static setPrefix(): void {
 		const cut = window.location.pathname.slice(-1) === '/' ? 1 : 0
 		API.PATH_PREFIX = window.location.pathname.slice(0, window.location.pathname.length - cut)
-		API.PREFIX = `${window.location.protocol}//${window.location.host}${window.location.pathname}`	
+		API.PREFIX = `${window.location.protocol}//${window.location.host}${window.location.pathname}`
 	}
 
 	public static setLanguage(recvLang: string): void {
@@ -74,7 +84,7 @@ export default class API {
 		}
 		const degrees = res.map((d: DegreeDto) => new Degree(d))
 			.filter((d: Degree) => d.academicTerms.includes(API.ACADEMIC_TERM))
-		
+
 		return degrees.sort(Degree.compare)
 	}
 
@@ -85,7 +95,7 @@ export default class API {
 		}
 		const courses = res
 			.map((d: CourseDto) => new Course(d, degree.acronym))
-			.filter( (c: Course) => {
+			.filter((c: Course) => {
 				return c.semester === this.SEMESTER
 			})
 		// Store in cache for future use
@@ -143,8 +153,26 @@ export default class API {
 			return staticData.terms
 		}
 
+		// LOCK HERE to avoid repeating the same request N times
+		const mutexKey = 'academic-terms'
+		const mutex = this.MUTEXES[mutexKey]
+		let releaser: undefined | MutexInterface.Releaser = undefined
+		try {
+			releaser = await mutex.acquire()
+		} catch (err) {
+			console.error('Fenix API taking too long...')
+			return []
+		}
+
+		// Check again after getting the lock
+		if (staticData.terms.length > 0) {
+			releaser()
+			return staticData.terms
+		}
+
 		const res = (await this.getRequest('/api/academicterms', true)) as [] | null
 		if (res === null) {
+			releaser()
 			return []
 		}
 		// Prepare from array of [string, [string, string]] to array of string
@@ -158,6 +186,8 @@ export default class API {
 			.map((s) => new AcademicTerm(s as string))
 			.sort(AcademicTerm.compare)
 
+		// RELEASE LOCK HERE after fetching and storing terms
+		releaser()
 		return staticData.terms
 	}
 
@@ -181,13 +211,14 @@ export const staticData = {
 	terms: [] as AcademicTerm[]
 }
 
-export async function defineCurrentTerm(): Promise<string> {
+export async function defineCurrentTerm(): Promise<string | undefined> {
 	// Fetch from previous sessions first
 	const stateInstance = SavedStateHandler.getInstance(API.getUrlParams())
 	const selectedAcademicTerm = stateInstance.getTerm()
 	if (selectedAcademicTerm !== null) {
 		const currTerms = await API.getAcademicTerms()
-		const selectedTerm = currTerms.find( (t) => t.id == selectedAcademicTerm)
+		if (currTerms === undefined) return undefined
+		const selectedTerm = currTerms.find((t) => t.id == selectedAcademicTerm)
 		return selectedTerm?.id || ''
 	}
 
@@ -197,14 +228,14 @@ export async function defineCurrentTerm(): Promise<string> {
 
 	let currentTerm = '', semester = 0
 	// First semester (Between September and January)
-	if (currentMonth <= 1 || currentMonth >= 9 ) {
+	if (currentMonth <= 1 || currentMonth >= 9) {
 		if (currentMonth <= 1) currentYear -= 1
-		currentTerm = `${currentYear}/${currentYear+1}`
+		currentTerm = `${currentYear}/${currentYear + 1}`
 		semester = 1
-	} 
+	}
 	// Second semester (Between February and August)
 	else {
-		currentTerm = `${currentYear-1}/${currentYear}`
+		currentTerm = `${currentYear - 1}/${currentYear}`
 		semester = 2
 	}
 
@@ -212,8 +243,8 @@ export async function defineCurrentTerm(): Promise<string> {
 	API.SEMESTER = semester
 
 	const currTerms = await API.getAcademicTerms()
-	
-	const selectedTerm = currTerms.find( (t) => t.semester == semester && t.term == currentTerm)
+
+	const selectedTerm = currTerms.find((t) => t.semester == semester && t.term == currentTerm)
 	return selectedTerm?.id || ''
 }
 
