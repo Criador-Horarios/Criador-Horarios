@@ -131,7 +131,8 @@ export default class Timetable implements Comparable {
 	}
 
 	equals(obj: Comparable): boolean {
-		return false
+		// TODO: Implement
+		return obj.hashString() === ''
 	}
 
 	hashString(): string {

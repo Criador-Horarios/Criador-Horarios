@@ -5,7 +5,6 @@ import API, { staticData, defineCurrentTerm } from '../../utils/api'
 import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
-import Shift from '../../domain/Shift'
 import CourseUpdates from '../../utils/CourseUpdate'
 
 import Divider from '@material-ui/core/Divider'

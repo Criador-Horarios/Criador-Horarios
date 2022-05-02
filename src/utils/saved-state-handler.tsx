@@ -1,6 +1,6 @@
 import AcademicTerm from '../domain/AcademicTerm'
 import Course from '../domain/Course'
-import Shift, { getDegreesAcronyms, shortenDescriptions } from '../domain/Shift'
+import Shift from '../domain/Shift'
 import Timetable from '../domain/Timetable'
 import API from './api'
 import CourseUpdates from './CourseUpdate'
@@ -161,6 +161,7 @@ export default class SavedStateHandler {
 
 		const usableTimetables = parsedTimetables.filter((t) => t !== undefined) as Timetable[]
 
+		// TODO: Missing sorting :/
 		this.savedTimetables = usableTimetables
 		return usableTimetables.length === 0 ? this.getCurrentTimetables() : usableTimetables
 	}
