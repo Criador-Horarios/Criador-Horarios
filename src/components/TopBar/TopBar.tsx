@@ -82,6 +82,7 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 			this.props.showAlert('Can\'t access Fenix API servers, try again later.', 'error')
 			return
 		}
+		if (this.props.currentTimetable.academicTerm === '') this.props.currentTimetable.academicTerm = currTermId
 		this.onSelectedAcademicTerm(currTermId, false)
 
 		const degrees = await API.getDegrees()
@@ -171,6 +172,7 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 			chosenAT = foundArr[0]
 			API.ACADEMIC_TERM = chosenAT.term
 			API.SEMESTER = chosenAT.semester
+			this.props.currentTimetable.academicTerm = chosenAT.id
 		}
 
 		this.onSelectedCourse([])

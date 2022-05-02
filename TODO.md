@@ -44,7 +44,7 @@
 - [ ] Fix download dropdown to not use a dialog but a focus grab
 
 
-Multiple-Timetables:
+Multiple-Timetables (Important):
 - [X] Single line of colors for all timetables
 - [X] When choosing BD multiple times it starts to not replace the old ones
 - [X] Add a storage of the existing courses to avoid asking new ones
@@ -52,6 +52,8 @@ Multiple-Timetables:
 - [ ] Set academic term in timetable, as we should be able to store timetables from different semesters
 - [X] Allow sharing the timetable with the URL
 - [X] Remove stored states not necessary anymore
+
+Good to do but not important
 - [ ] Store course color for consistent usage
 - [ ] Don't load all timetables at once, only load the first one and then the ones used
 - [X] Academic terms are being loaded way too much!

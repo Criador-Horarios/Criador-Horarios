@@ -88,8 +88,9 @@ class App extends React.Component <{
 		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
 		newDomainDialog: false,
-		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false, false),
-		shownTimetables: [] as Timetable[]
+		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false, false, ''),
+		shownTimetables: [] as Timetable[],
+		currentAcademicTerm: ''
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
@@ -321,7 +322,7 @@ class App extends React.Component <{
 				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
 			}
 
-			SavedStateHandler.changeUrl(false, [], false)
+			SavedStateHandler.changeUrl()
 		}
 	}
 
@@ -448,7 +449,7 @@ class App extends React.Component <{
 				multiShiftMode: this.state.savedTimetable.isMultiShift
 			})
 			this.recomputeDisableMultiShiftModeChange(newTimetable)
-			SavedStateHandler.changeUrl(false, [], false)
+			SavedStateHandler.changeUrl()
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL/cookie state
@@ -699,7 +700,7 @@ class App extends React.Component <{
 														// Suggest the creation of a new value
 														const isExisting = options.some((option) => inputValue === option.name)
 														if (inputValue !== '' && !isExisting) {
-															filtered.push(new Timetable(inputValue, [], false, false))
+															filtered.push(new Timetable(inputValue, [], false, false, this.state.currentAcademicTerm))
 														}
 										
 														return filtered

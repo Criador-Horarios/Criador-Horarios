@@ -12,17 +12,19 @@ export default class Timetable implements Comparable {
 	degreeAcronyms: Set<string> = new Set()
 	isSaved: boolean
 	isMultiShift: boolean
+	academicTerm: string
 	// Not stored
 	isImported = false
 	courses: Set<Course> = new Set()
 	courseUpdates: CourseUpdates = new CourseUpdates()
 	errors = ''
 
-	constructor(name: string, shifts: Shift[], isSaved: boolean, isMultishift: boolean) {
+	constructor(name: string, shifts: Shift[], isSaved: boolean, isMultishift: boolean, academicTerm: string) {
 		this.name = name
 		this.shiftState.selectedShifts = shifts
 		this.isSaved = isSaved
 		this.isMultiShift = isMultishift
+		this.academicTerm = academicTerm
 	}
 
 	static async fromString(str: string, isImported = false): Promise<Timetable | undefined> {
@@ -34,7 +36,8 @@ export default class Timetable implements Comparable {
 
 			const [courseUpdate, shiftState, errors] = savedState
 			const newTimetable = new Timetable(
-				parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved, ((parsedStr.isMultishift || 'false') === 'true')
+				parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved,
+				((parsedStr.isMultishift || 'false') === 'true'), parsedStr.academicTerm
 			)
 			newTimetable.courses = new Set(courseUpdate.courses)
 			newTimetable.degreeAcronyms = degreesAcronyms
@@ -142,6 +145,7 @@ export default class Timetable implements Comparable {
 	}
 
 	toURLParams(): string[] {
+		// FIXME: Missing academic term
 		const shifts = shortenDescriptions(this.shiftState.selectedShifts)
 		const degrees = this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP)
 		const isMultishift = this.isMultiShift.toString()
@@ -159,7 +163,8 @@ export default class Timetable implements Comparable {
 			degrees: this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP),
 			shifts: shortenDescriptions(this.shiftState.selectedShifts),
 			isSaved: this.isSaved,
-			isMultishift: this.isMultiShift
+			isMultishift: this.isMultiShift,
+			academicTerm: this.academicTerm
 		}
 		return JSON.stringify(obj)
 	}

@@ -36,6 +36,7 @@ export default class SavedStateHandler {
 	private static instance: SavedStateHandler
 
 	// ATTRIBUTES
+	public currentTerm = ''
 	private colors: Record<string, string>
 	private savedTimetables: Timetable[] = []
 	private urlParams: Record<string, string>
@@ -58,20 +59,9 @@ export default class SavedStateHandler {
 	}
 
 	// Updates user URL to use or not the state
-	static async changeUrl(toState: boolean, selectedShifts: Shift[], multiShiftMode: boolean): Promise<void> {
+	static changeUrl(): void {
 		const title: string = document.title
-		let path = API.PATH_PREFIX + '/'
-		if (toState) {
-			// TODO: Implement
-			const shifts = shortenDescriptions(selectedShifts)
-			// if (shifts !== '') path += `?${this.SHIFTS}=${shifts}`
-
-			const degrees = getDegreesAcronyms(selectedShifts)
-			// if (degrees !== '') path += `&${this.DEGREES}=${degrees}`
-
-			// if (multiShiftMode) path += `&${this.IS_MULTISHIFT}=true`
-			path += ''
-		}
+		const path = API.PATH_PREFIX + '/'
 
 		if (window.history.replaceState) {
 			window.history.replaceState({}, title, path)
@@ -139,7 +129,8 @@ export default class SavedStateHandler {
 
 	getCurrentTimetables(): Timetable[] {
 		const current = this.savedTimetables
-		return current.length === 0 ? [new Timetable(i18next.t('default-timetable'), [], false, false)] : this.savedTimetables
+		return current.length === 0 ?
+			[new Timetable(i18next.t('default-timetable'), [], false, false, '')] : this.savedTimetables
 	}
 	
 	async getSavedTimetables(forceUpdate = false): Promise<Timetable[]> {
