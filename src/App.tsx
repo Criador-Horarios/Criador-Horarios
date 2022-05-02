@@ -88,7 +88,8 @@ class App extends React.Component <{
 		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
 		newDomainDialog: false,
-		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false, false)
+		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false, false),
+		shownTimetables: [] as Timetable[]
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
@@ -281,7 +282,7 @@ class App extends React.Component <{
 			([a, b]) => Shift.isSameCourseAndType(a,b)
 		)
 
-		this.setState({ inhibitMultiShiftModeChange: disable })
+		if (this.state.inhibitMultiShiftModeChange !== disable) this.setState({ inhibitMultiShiftModeChange: disable })
 	}
 
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
@@ -290,7 +291,6 @@ class App extends React.Component <{
 		if (chosenShift) {
 			// Add to current timetable and save
 			this.state.savedTimetable.toggleShift(chosenShift)
-			this.topBar.current?.setHasSelectedShifts(this.state.savedTimetable.shiftState.selectedShifts)
 			this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
 			this.recomputeDisableMultiShiftModeChange()
 			// Store academic term
@@ -299,13 +299,19 @@ class App extends React.Component <{
 				const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
 				if (parsedTerm !== undefined) this.savedStateHandler.setTerm(parsedTerm)
 			}
+			this.setState({
+				savedTimetable: this.state.savedTimetable,
+				shownTimetables: this.savedStateHandler.getCurrentTimetables()
+			})
 		}
 	}
 
 	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
 		this.state.savedTimetable.setMultiShiftMode(value)
 		this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
-		this.setState({ savedTimetable: this.state.savedTimetable })
+		this.setState({
+			shownTimetables: this.savedStateHandler.getCurrentTimetables(), savedTimetable: this.state.savedTimetable
+		})
 	}
 
 	clearSelectedShifts(alert: boolean): void {
@@ -398,6 +404,7 @@ class App extends React.Component <{
 		try {
 			savedTimetables = await this.savedStateHandler.getSavedTimetables()
 			this.setState({
+				shownTimetables: savedTimetables, 
 				savedTimetable: savedTimetables[0]
 			})
 			const degreeAcronyms = savedTimetables[0].getDegreesString()
@@ -436,10 +443,10 @@ class App extends React.Component <{
 					selectedShiftTypes: this.state.selectedShiftTypes,
 					availableShifts: state.availableShifts
 				}),
+				shownTimetables: this.savedStateHandler.getCurrentTimetables(),
 				savedTimetable: newTimetable,
 				multiShiftMode: this.state.savedTimetable.isMultiShift
 			})
-			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
 			this.recomputeDisableMultiShiftModeChange(newTimetable)
 			SavedStateHandler.changeUrl(false, [], false)
 		} catch (err) {
@@ -697,7 +704,7 @@ class App extends React.Component <{
 										
 														return filtered
 													}}
-													options={this.savedStateHandler.getCurrentTimetables()}
+													options={this.state.shownTimetables}
 													value={this.state.savedTimetable}
 													onChange={(_, value) => this.onSelectedTimetable(value)}
 													getOptionLabel={(option) => option.getDisplayName()}

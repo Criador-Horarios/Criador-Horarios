@@ -179,5 +179,6 @@
 		"portuguese": "Português"
 	},
 	"add": "Acrescentar",
-	"default-timetable": "Horário 1"
+	"default-timetable": "Horário 1",
+	"unsaved": "Não guardado"
 }

@@ -180,5 +180,6 @@
 		"portuguese": "Portuguese"
 	},
 	"add": "Add",
-	"default-timetable": "Timetable 1"
+	"default-timetable": "Timetable 1",
+	"unsaved": "Unsaved"
 }

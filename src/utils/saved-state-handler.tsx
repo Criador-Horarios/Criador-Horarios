@@ -38,12 +38,13 @@ export default class SavedStateHandler {
 	// ATTRIBUTES
 	private colors: Record<string, string>
 	private savedTimetables: Timetable[] = []
+	private urlParams: Record<string, string>
 	private debug: boolean
 
 	private constructor(urlParams: Record<string, string>) {
-		// TODO: Fetch from URL when a timetable is shared
 		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS) ?? {}) as Record<string, string>
 		this.savedTimetables = this.getCurrentTimetables()
+		this.urlParams = urlParams
 		this.debug = urlParams[SavedStateHandler.DEBUG] == 'true'
 	}
 
@@ -143,17 +144,29 @@ export default class SavedStateHandler {
 	
 	async getSavedTimetables(forceUpdate = false): Promise<Timetable[]> {
 		const localTimetables = this.getLocalStorage(SavedStateHandler.SAVED_TIMETABLES)
-		console.log('timetables!')
+
+		let parsedTimetables: (Timetable | undefined)[] = []
+		if (this.urlParams !== {}) {
+			const parsedTimetable = await Timetable.fromURLParams(this.urlParams)
+			parsedTimetables = parsedTimetables.concat(parsedTimetable)
+			const usableTimetables = parsedTimetables.filter(t => t !== undefined) as Timetable[]
+			this.urlParams = {}
+			// TODO: Should we save it?
+			if (usableTimetables.length !== 0) this.savedTimetables = usableTimetables
+		}
 
 		// If there are none stored
+		// FIXME: Use forceUpdate!
 		if (!localTimetables) {
 			return this.getCurrentTimetables()
 		}
 
 		// TODO: First time should only fetch the first timetable to avoid getting unused timetables
-		const parsedTimetables = await Promise.all(Object.values(localTimetables).map(async (unparsedTimetable: string) => {
+		const moreParsedTimetables = await Promise.all(Object.values(localTimetables).map(async (unparsedTimetable: string) => {
 			return await Timetable.fromString(unparsedTimetable)
 		}))
+
+		parsedTimetables = parsedTimetables.concat(moreParsedTimetables)
 
 		const usableTimetables = parsedTimetables.filter((t) => t !== undefined) as Timetable[]
 

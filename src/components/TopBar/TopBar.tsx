@@ -56,7 +56,6 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 		availableCourses: [] as Course[],
 		selectedAcademicTerm: '',
 		selectedCourses: new CourseUpdates(),
-		hasSelectedShifts: false,
 		settingsDialog: false,
 		helpDialog: false,
 		warningDialog: false,
@@ -137,12 +136,6 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 			})
 		}
 		this.props.onSelectedDegree(this.selectedDegrees)
-	}
-
-	setHasSelectedShifts(shifts: Shift[]): void {
-		this.setState({
-			hasSelectedShifts: shifts.length > 0
-		})
 	}
 
 	//FIXME: Available courses not updating when a course from another degree is removed

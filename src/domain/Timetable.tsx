@@ -13,6 +13,7 @@ export default class Timetable implements Comparable {
 	isSaved: boolean
 	isMultiShift: boolean
 	// Not stored
+	isImported = false
 	courses: Set<Course> = new Set()
 	courseUpdates: CourseUpdates = new CourseUpdates()
 	errors = ''
@@ -24,7 +25,7 @@ export default class Timetable implements Comparable {
 		this.isMultiShift = isMultishift
 	}
 
-	static async fromString(str: string): Promise<Timetable | undefined> {
+	static async fromString(str: string, isImported = false): Promise<Timetable | undefined> {
 		try {
 			const parsedStr = JSON.parse(str)
 			const degreesAcronyms: Set<string> = new Set(parsedStr.degrees?.split(SavedStateHandler.PARAMS_SEP))
@@ -33,7 +34,7 @@ export default class Timetable implements Comparable {
 
 			const [courseUpdate, shiftState, errors] = savedState
 			const newTimetable = new Timetable(
-				parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved, parsedStr.isMultishift || false
+				parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved, ((parsedStr.isMultishift || 'false') === 'true')
 			)
 			newTimetable.courses = new Set(courseUpdate.courses)
 			newTimetable.degreeAcronyms = degreesAcronyms
@@ -41,6 +42,7 @@ export default class Timetable implements Comparable {
 			newTimetable.courseUpdates = courseUpdate
 			newTimetable.shiftState = shiftState
 			newTimetable.errors = errors
+			newTimetable.isImported = isImported
 			return newTimetable
 		} catch (err) {
 			// Baaaaah
@@ -49,7 +51,27 @@ export default class Timetable implements Comparable {
 		}
 	}
 
+	static async fromURLParams(urlParams: Record<string, string>): Promise<Timetable | undefined> {
+		const neededParams = [
+			SavedStateHandler.URL_TIMETABLE_NAME, SavedStateHandler.URL_SHIFTS,
+			SavedStateHandler.URL_DEGREES, SavedStateHandler.URL_IS_MULTISHIFT
+		]
+
+		// Check if needed params are there
+		if (neededParams.filter(k => urlParams[k] !== undefined).length !== neededParams.length) return undefined
+
+		const objToParse = {
+			name: decodeURI(urlParams[SavedStateHandler.URL_TIMETABLE_NAME]), // Decode for utf-8 characters
+			degrees: urlParams[SavedStateHandler.URL_DEGREES],
+			shifts: urlParams[SavedStateHandler.URL_SHIFTS],
+			isSaved: false,
+			isMultishift: urlParams[SavedStateHandler.URL_IS_MULTISHIFT]
+		}
+		return Timetable.fromString(JSON.stringify(objToParse), true)
+	}
+
 	getDisplayName(): string {
+		if (this.isImported) return this.name
 		return this.isSaved ? this.name : `${i18next.t('add')}: “${this.name}”`
 	}
 
@@ -101,6 +123,7 @@ export default class Timetable implements Comparable {
 	}
 
 	save(): void {
+		this.isImported = false
 		this.isSaved = true
 	}
 
@@ -123,7 +146,7 @@ export default class Timetable implements Comparable {
 		const degrees = this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP)
 		const isMultishift = this.isMultiShift.toString()
 		return [
-			`${SavedStateHandler.URL_TIMETABLE_NAME}=${this.name}`,
+			`${SavedStateHandler.URL_TIMETABLE_NAME}=${encodeURI(this.name)}`,
 			`${SavedStateHandler.URL_SHIFTS}=${shifts}`,
 			`${SavedStateHandler.URL_DEGREES}=${degrees}`,
 			`${SavedStateHandler.URL_IS_MULTISHIFT}=${isMultishift}`

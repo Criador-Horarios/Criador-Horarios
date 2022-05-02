@@ -50,7 +50,7 @@ Multiple-Timetables:
 - [X] Add a storage of the existing courses to avoid asking new ones
 - [X] Allow multishift (and store it)
 - [ ] Set academic term in timetable, as we should be able to store timetables from different semesters
-- [ ] Allow sharing the timetable with the URL
+- [X] Allow sharing the timetable with the URL
 - [X] Remove stored states not necessary anymore
 - [ ] Store course color for consistent usage
 - [ ] Don't load all timetables at once, only load the first one and then the ones used
