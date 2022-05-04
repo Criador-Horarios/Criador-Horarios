@@ -717,8 +717,24 @@ class App extends React.Component <{
 													value={this.state.savedTimetable}
 													onChange={(_, value) => this.onSelectedTimetable(value)}
 													getOptionLabel={(option) => option.getDisplayName()}
-													// TODO: Add delete button (which should not delete if there is only a single timetable)
 													renderInput={(params) => <TextField {...params} label={'Horários'} variant="outlined" />}
+													renderOption={(option, state) =>
+														<React.Fragment>
+															<div style={{flexGrow: 1}}>
+																{option.name}
+															</div>
+															<IconButton color="inherit" component="span"
+																// FUTURE: Maybe this should just be hidden
+																disabled={this.state.shownTimetables.length === 0}
+																onClick={() => {
+																	// TODO: Make dialog to confirm this
+																	console.log('delete!')
+																}}
+															>
+																<Icon>delete</Icon>
+															</IconButton>
+														</React.Fragment>
+													}
 													style={{width: '100%'}}
 												/>
 											</Box>
@@ -958,7 +974,8 @@ class App extends React.Component <{
 						<NewTimetable ref={this.newTimetable}
 							onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
 							onCancel={() =>
-								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.academicTerm, false)} />
+								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.academicTerm, false)}
+						/>
 					</div>
 				</div>
 			</ThemeProvider>

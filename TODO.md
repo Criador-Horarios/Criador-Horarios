@@ -49,10 +49,11 @@ Multiple-Timetables (Important):
 - [X] When choosing BD multiple times it starts to not replace the old ones
 - [X] Add a storage of the existing courses to avoid asking new ones
 - [X] Allow multishift (and store it)
-- [ ] Set academic term in timetable, as we should be able to store timetables from different semesters
+- [X] Set academic term in timetable, as we should be able to store timetables from different semesters
 - [X] Allow sharing the timetable with the URL
 - [X] Remove stored states not necessary anymore~
-- [ ] Test if there are errors and how they are displayed when parsing a timetable
+- [X] Test if there are errors and how they are displayed when parsing a timetable
+- [ ] Delete button for timetables (missing confirmation dialog)
 
 Good to do but not important
 - [ ] Store course color for consistent usage
