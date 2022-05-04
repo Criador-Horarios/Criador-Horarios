@@ -7,7 +7,6 @@ import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
 import CourseUpdates from '../../utils/CourseUpdate'
 
-import Divider from '@material-ui/core/Divider'
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
 import TextField from '@material-ui/core/TextField'
@@ -34,7 +33,6 @@ import Menu from '@material-ui/core/Menu'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
-import SavedStateHandler from '../../utils/saved-state-handler'
 import AcademicTerm from '../../domain/AcademicTerm'
 import Timetable from '../../domain/Timetable'
 
@@ -47,6 +45,7 @@ interface TopBarProps {
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
 	currentTimetable: Timetable
+	onChangeAcademicTerm: (newAcademicTerm: AcademicTerm) => void
 }
 
 class TopBar extends React.Component<TopBarProps, unknown>{
@@ -75,16 +74,12 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 	}
 
 	async componentDidMount(): Promise<void> {
-		// Update term
-		const currTermId = await defineCurrentTerm()
-		if (currTermId === undefined) {
-			this.props.showAlert('Can\'t access Fenix API servers, try again later.', 'error')
-			return
-		}
-		if (this.props.currentTimetable.academicTerm === '') this.props.currentTimetable.academicTerm = currTermId
+		// Fetch all terms
+		await defineCurrentTerm()
+		const currTermId = this.props.currentTimetable.academicTerm
 		this.onSelectedAcademicTerm(currTermId, false)
 
-		const degrees = await API.getDegrees()
+		const degrees = await API.getDegrees(undefined)
 		this.setState({
 			degrees: degrees ?? []
 		})
@@ -103,6 +98,10 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 			this.setSelectedDegrees(degreeAcronyms)
 			const courses = this.props.currentTimetable.courseUpdates
 			this.setSelectedCourses(courses)
+
+			if (this.props.currentTimetable.academicTerm !== this.state.selectedAcademicTerm) {
+				this.setState({ selectedAcademicTerm: this.props.currentTimetable.academicTerm })
+			}
 		}
 	}
 	// ----
@@ -111,7 +110,7 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 		if (degrees.length > 0) {
 			let degreeCourses: Course[] = []
 			for (const degree of degrees) {
-				const tempCourses = await API.getCourses(degree)
+				const tempCourses = await API.getCourses(degree, this.state.selectedAcademicTerm)
 				if (tempCourses === null) {
 					// TODO: Test when this cannot be obtained
 					this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
@@ -164,32 +163,13 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 		})
 	}
 
-	async onSelectedAcademicTerm(s: string, fetchDegrees: boolean): Promise<void> {
+	async onSelectedAcademicTerm(s: string, openDialog: boolean): Promise<void> {
 		const foundArr = staticData.terms.filter( (at) => at.id === s)
 		let chosenAT: AcademicTerm | undefined = undefined
 		if (foundArr.length > 0) {
 			chosenAT = foundArr[0]
-			API.ACADEMIC_TERM = chosenAT.term
-			API.SEMESTER = chosenAT.semester
-			this.props.currentTimetable.academicTerm = chosenAT.id
-		}
-
-		this.onSelectedCourse([])
-		this.onSelectedDegree([])
-		this.props.onClearShifts(false)
-		// Store in storage
-		if (chosenAT) {
-			const stateInstance = SavedStateHandler.getInstance()
-			stateInstance.setTerm(chosenAT)
-		}
-		if (fetchDegrees) {
-			const degrees = await API.getDegrees()
-			this.setState({
-				selectedAcademicTerm: s,
-				degrees: degrees ?? []
-			})
-		} else {
-			this.setState({ selectedAcademicTerm: s })
+			this.setState({ selectedAcademicTerm: s, settingsDialog: false })
+			if (openDialog) this.props.onChangeAcademicTerm(chosenAT)
 		}
 	}
 
@@ -211,14 +191,11 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 		// The inner function will only run if the language changes
 		await this.props.onChangeLanguage(language, async () => {
 			// Get degrees with correct language and erase courses
-			const degrees = await API.getDegrees()
+			const degrees = await API.getDegrees(this.state.selectedAcademicTerm)
 			this.setState({
 				degrees: degrees ?? []
 			})
 		})
-
-		// this.selectedDegrees = []
-		// this.onSelectedCourse([])
 	}
 
 	onChangeDarkMode(): void {
@@ -371,10 +348,6 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 								)}
 							</Select>
 						</FormControl>
-						<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
-							{i18next.t('settings-dialog.select.warning') as string}
-						</Typography>
-						<Divider orientation="horizontal" style={{ marginTop: '30px' }} />
 						<div style={{display: 'none'}}>
 							<Typography style={{margin: '10px 0'}}>This is not working, so do not try it :)</Typography>
 							<FormControl variant='outlined'

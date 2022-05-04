@@ -5,11 +5,11 @@ import i18next from 'i18next'
 
 const prefix = 'https://fenix.tecnico.ulisboa.pt'
 
-export default async function getClasses(shifts: Shift[]): Promise<Record<string, string>> {
+export default async function getClasses(shifts: Shift[], academicTermId: string): Promise<Record<string, string>> {
 	const shiftPage: Record<string, string> = {}
 	const courseUrls = Array.from(new Set(shifts.map(shift => shift.courseId)))
 	await Promise.all(courseUrls
-		.map(courseId => API.getCourse(courseId)
+		.map(courseId => API.getCourse(courseId, academicTermId)
 			.then(async c => {
 				if (!shiftPage[courseId] && c !== null) {
 					const url = c.url.replace(prefix, '') + '/turnos'
@@ -53,8 +53,9 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 	return res
 }
 
-async function getMinimalClasses(shifts: Shift[], selectedDegreesAcronyms: string[]): Promise<[Record<string, string>, string[]]> {
-	const allClasses = await getClasses(shifts)
+async function getMinimalClasses(shifts: Shift[], selectedDegreesAcronyms: string[], academicTermId: string):
+	Promise<[Record<string, string>, string[]]> {
+	const allClasses = await getClasses(shifts, academicTermId)
 	const currClasses: Record<string, string[]> = {}
 	
 	// Filter all shifts that are from degrees not selected

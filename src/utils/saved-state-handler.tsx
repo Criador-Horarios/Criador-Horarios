@@ -2,7 +2,7 @@ import AcademicTerm from '../domain/AcademicTerm'
 import Course from '../domain/Course'
 import Shift from '../domain/Shift'
 import Timetable from '../domain/Timetable'
-import API from './api'
+import API, { defineCurrentTerm, staticData } from './api'
 import CourseUpdates from './CourseUpdate'
 
 import i18next from 'i18next'
@@ -36,7 +36,7 @@ export default class SavedStateHandler {
 	private static instance: SavedStateHandler
 
 	// ATTRIBUTES
-	public currentTerm = ''
+	public currentTerm: AcademicTerm | undefined = undefined
 	private colors: Record<string, string>
 	private savedTimetables: Timetable[] = []
 	private urlParams: Record<string, string>
@@ -77,8 +77,11 @@ export default class SavedStateHandler {
 	}
 
 	// INSTANCE METHODS
-	async getShifts(unparsedShifts: string | undefined = undefined, degreesChosen: Set<string> = new Set):
-		Promise<[CourseUpdates, ShiftState, string] | undefined> {
+	async getShifts(
+		unparsedShifts: string | undefined = undefined,
+		degreesChosen: Set<string> = new Set,
+		academicTermId: string
+	): Promise<[CourseUpdates, ShiftState, string] | undefined> {
 		const errors: string[] = []
 		const shiftsToParse = unparsedShifts
 		if (!shiftsToParse) {
@@ -96,7 +99,7 @@ export default class SavedStateHandler {
 
 		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
 			try {
-				return await this.buildCourse(description, courseUpdate)
+				return await this.buildCourse(description, courseUpdate, academicTermId)
 			} catch (err) {
 				// Values not well parsed, but keeps parsing the rest
 				errors.push(err as string)
@@ -134,6 +137,11 @@ export default class SavedStateHandler {
 	}
 	
 	async getSavedTimetables(forceUpdate = false): Promise<Timetable[]> {
+		// If we don't have terms, please fetch them for the timetables
+		if (staticData.currentTerm === undefined) {
+			await defineCurrentTerm()
+		}
+
 		const localTimetables = this.getLocalStorage(SavedStateHandler.SAVED_TIMETABLES)
 
 		let parsedTimetables: (Timetable | undefined)[] = []
@@ -214,8 +222,8 @@ export default class SavedStateHandler {
 	}
 
 	// HELPERS
-	private async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
-		const course = await API.getCourse(description[0])
+	private async buildCourse(description: string[], updates: CourseUpdates, academicTermId: string): Promise<BuiltCourse> {
+		const course = await API.getCourse(description[0], academicTermId)
 
 		if (!course) {
 			throw 'Could not build course'
@@ -241,7 +249,7 @@ export default class SavedStateHandler {
 		updates.toggleCourse(course, hasColor)
 
 		// Get the course schedules
-		const availableShifts = await API.getCourseSchedules(course)
+		const availableShifts = await API.getCourseSchedules(course, academicTermId)
 		if (!availableShifts) {
 			throw 'Could not fetch course schedule'
 		}

@@ -25,15 +25,27 @@
 		"title": "Escolha o semestre",
 		"select": {
 			"label": "Semestre",
-			"value": "º Semestre",
-			"warning": "Alterar o semestre fará com que todos os turnos e disciplinas sejam apagados."
+			"value": "º Semestre"
 		},
 		"occupancy-update": {
 			"label": "Intervalo de atualização da ocupação dos turnos",
 			"warning": "Escolha o intervalo de atualização da ocupação dos turnos."
 		},
 		"actions": {
-			"close-button": "Guardar"
+			"close-button": "Cancelar"
+		}
+	},
+	"timetable-dialog": {
+		"title": "Adicionar novo horário",
+		"chosen-term": "Semestre escolhido:",
+		"timetable-name": "Nome do horário",
+		"warning": "Alterar o semestre fará com que seja criado um novo horário, escolha o seu nome.",
+		"errors": {
+			"not-empty": "Não pode estar vazio."
+		},
+		"actions": {
+			"cancel": "Cancelar",
+			"save": "Guardar"
 		}
 	},
 	"help-dialog": {

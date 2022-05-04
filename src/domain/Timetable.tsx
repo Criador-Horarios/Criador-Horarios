@@ -5,6 +5,7 @@ import i18next from 'i18next'
 import SavedStateHandler, { ShiftState } from '../utils/saved-state-handler'
 import Course from './Course'
 import CourseUpdates from '../utils/CourseUpdate'
+import { staticData } from '../utils/api'
 
 export default class Timetable implements Comparable {
 	name: string
@@ -25,13 +26,18 @@ export default class Timetable implements Comparable {
 		this.isSaved = isSaved
 		this.isMultiShift = isMultishift
 		this.academicTerm = academicTerm
+
+		if (academicTerm === '' || academicTerm === undefined) {
+			this.academicTerm = staticData.currentTerm?.id || ''
+		}
 	}
 
 	static async fromString(str: string, isImported = false): Promise<Timetable | undefined> {
 		try {
 			const parsedStr = JSON.parse(str)
 			const degreesAcronyms: Set<string> = new Set(parsedStr.degrees?.split(SavedStateHandler.PARAMS_SEP))
-			const savedState = await SavedStateHandler.getInstance().getShifts(parsedStr.shifts, degreesAcronyms)
+			const savedState =
+				await SavedStateHandler.getInstance().getShifts(parsedStr.shifts, degreesAcronyms, parsedStr.academicTerm)
 			if (!savedState) return undefined
 
 			const [courseUpdate, shiftState, errors] = savedState

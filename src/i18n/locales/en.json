@@ -26,15 +26,27 @@
 		"select": {
 			"label": "Semester",
 			"value": "st Semester",
-			"value_plural": "nd Semester",
-			"warning": "Alterar o semestre fará com que todos os turnos e disciplinas sejam apagados."
+			"value_plural": "nd Semester"
 		},
 		"occupancy-update": {
 			"label": "Shift occupancy update interval",
 			"warning": "Choose the interval to update the shift occupancies."
 		},
 		"actions": {
-			"close-button": "Save"
+			"close-button": "Cancel"
+		}
+	},
+	"timetable-dialog": {
+		"title": "Add new timetable",
+		"chosen-term": "Chosen term:",
+		"timetable-name": "Timetable name",
+		"warning": "Changing semester will create a new timetable, please choose its name.",
+		"errors": {
+			"not-empty": "This field can't be empty."
+		},
+		"actions": {
+			"cancel": "Cancel",
+			"save": "Save"
 		}
 	},
 	"help-dialog": {

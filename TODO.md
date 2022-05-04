@@ -51,7 +51,8 @@ Multiple-Timetables (Important):
 - [X] Allow multishift (and store it)
 - [ ] Set academic term in timetable, as we should be able to store timetables from different semesters
 - [X] Allow sharing the timetable with the URL
-- [X] Remove stored states not necessary anymore
+- [X] Remove stored states not necessary anymore~
+- [ ] Test if there are errors and how they are displayed when parsing a timetable
 
 Good to do but not important
 - [ ] Store course color for consistent usage

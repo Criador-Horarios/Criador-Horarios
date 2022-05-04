@@ -1,3 +1,4 @@
+import i18next from 'i18next'
 
 export default class AcademicTerm {
 	term: string
@@ -19,6 +20,10 @@ export default class AcademicTerm {
 		const termCompare = a.term.localeCompare(b.term)
 		const semCompare = a.semester.toString().localeCompare(b.semester.toString())
 		return termCompare == 0 ? semCompare : termCompare
+	}
+
+	displayTitle(): string {
+		return `${decodeURI(this.term)} ${this.semester}${i18next.t('settings-dialog.select.value', { count: this.semester })}`
 	}
 }
 

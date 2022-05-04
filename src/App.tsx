@@ -66,6 +66,7 @@ import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
 import Timetable from './domain/Timetable'
+import NewTimetable from './components/NewTimetable/NewTimetable'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -97,6 +98,7 @@ class App extends React.Component <{
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 	colorPicker: React.RefObject<ColorPicker>
+	newTimetable: React.RefObject<NewTimetable>
 	theme: Theme
 	classesByShift: [string, string][] = []
 	minimalClasses: string[] = []
@@ -126,6 +128,7 @@ class App extends React.Component <{
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
 		this.colorPicker = React.createRef()
+		this.newTimetable = React.createRef()
 
 		this.theme = this.getTheme(this.state.darkMode)
 
@@ -220,7 +223,8 @@ class App extends React.Component <{
 		let availableShifts: Shift[] = []
 		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
 			currCourses.lastUpdate.course !== undefined) {
-			const schedule = await API.getCourseSchedules(currCourses.lastUpdate.course)
+			const schedule =
+				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.academicTerm)
 			if (schedule === null) {
 				this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
 				// Remove course if it can't get the schedules
@@ -512,7 +516,8 @@ class App extends React.Component <{
 		
 		const [classesByShift, minimalClasses] = await getMinimalClasses(
 			this.state.savedTimetable.shiftState.selectedShifts,
-			Array.from(this.state.savedTimetable.degreeAcronyms)
+			Array.from(this.state.savedTimetable.degreeAcronyms),
+			this.state.savedTimetable.academicTerm
 		)
 
 		this.classesByShift = Object.entries(classesByShift)
@@ -529,7 +534,8 @@ class App extends React.Component <{
 
 	async exportToExcel(): Promise<void> {
 		this.setState({loading: true})
-		const classes = await getClasses(this.state.savedTimetable.shiftState.selectedShifts)
+		const classes =
+			await getClasses(this.state.savedTimetable.shiftState.selectedShifts, this.state.savedTimetable.academicTerm)
 
 		await saveToExcel(this.state.savedTimetable.shiftState.selectedShifts, classes)
 
@@ -566,7 +572,8 @@ class App extends React.Component <{
 		})
 
 		const updatedShifts = await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
-			let newShifts: Shift[] | null | undefined = await API.getCourseSchedules(c)
+			let newShifts: Shift[] | null | undefined =
+				await API.getCourseSchedules(c, this.state.savedTimetable.academicTerm)
 
 			newShifts = newShifts?.filter((s) => {
 				const toUpdateShift = shiftsById[s.getStoredId()]
@@ -626,6 +633,7 @@ class App extends React.Component <{
 						darkMode={this.state.darkMode}
 						onChangeDarkMode={this.onChangeDarkMode}
 						currentTimetable={this.state.savedTimetable}
+						onChangeAcademicTerm={(at) => this.newTimetable.current?.show(at)}
 					>
 					</TopBar>
 					<div className="main">
@@ -947,6 +955,10 @@ class App extends React.Component <{
 							})
 							this.setState({ availableShifts: this.state.savedTimetable.shiftState.availableShifts })
 						}}/>
+						<NewTimetable ref={this.newTimetable}
+							onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
+							onCancel={() =>
+								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.academicTerm, false)} />
 					</div>
 				</div>
 			</ThemeProvider>
