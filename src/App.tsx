@@ -722,7 +722,7 @@ class App extends React.Component <{
 													renderOption={(option, _state) =>
 														<React.Fragment>
 															<div style={{flexGrow: 1}}>
-																{option.name}
+																{option.getDisplayName()}
 															</div>
 															{this.state.shownTimetables.length > 1 &&
 																<IconButton color="inherit" component="span"

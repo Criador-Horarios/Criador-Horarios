@@ -54,10 +54,11 @@ Multiple-Timetables (Important):
 - [X] Remove stored states not necessary anymore~
 - [X] Test if there are errors and how they are displayed when parsing a timetable
 - [X] Delete button for timetables
-- [ ] Fix adding timetables not showing the correct text
+- [X] Fix adding timetables not showing the correct text
 
 Good to do but not important
 - [ ] Store course color for consistent usage
-- [ ] Don't load all timetables at once, only load the first one and then the ones used
+- [ ] Don't load all timetables at once, only load the first one and then the ones used (lazy load)
 - [X] Academic terms are being loaded way too much!
 - [ ] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times) (related to above)
+- [ ] Allow editing timetables' name
