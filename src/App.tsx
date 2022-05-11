@@ -702,7 +702,7 @@ class App extends React.Component <{
 										title={
 											<Box style={{flexDirection: 'row', display: 'flex'}}>
 												<Typography>{i18next.t('schedule-selected.title')}</Typography>
-												<Autocomplete disableClearable freeSolo autoHighlight
+												<Autocomplete disableClearable autoHighlight
 													filterOptions={(options, params): Timetable[] => {
 														const filter = createFilterOptions<Timetable>()
 														const filtered = filter(options, params)
