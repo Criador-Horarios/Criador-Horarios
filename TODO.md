@@ -55,6 +55,7 @@ Multiple-Timetables (Important):
 - [X] Test if there are errors and how they are displayed when parsing a timetable
 - [X] Delete button for timetables
 - [X] Fix adding timetables not showing the correct text
+- [ ] Add on autocomplete button to add new timetable
 
 Good to do but not important
 - [ ] Store course color for consistent usage
