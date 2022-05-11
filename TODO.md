@@ -62,3 +62,4 @@ Good to do but not important
 - [X] Academic terms are being loaded way too much!
 - [ ] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times) (related to above)
 - [ ] Allow editing timetables' name
+- [ ] Implement forceUpdate on timetable fetching
