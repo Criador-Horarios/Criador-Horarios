@@ -49,6 +49,14 @@
 			"save": "Save"
 		}
 	},
+	"confirm-delete-timetable-dialog": {
+		"title": "Delete timetable",
+		"content": "Do you want to delete the timetable with the name: {{timetable}}",
+		"actions": {
+			"cancel": "Cancel",
+			"confirm": "Confirm"
+		}
+	},
 	"help-dialog": {
 		"actions": {
 			"close-button": "Back"
@@ -193,5 +201,6 @@
 	},
 	"add": "Add",
 	"default-timetable": "Timetable 1",
-	"unsaved": "Unsaved"
+	"unsaved": "Unsaved",
+	"timetables": "Timetables"
 }

@@ -48,6 +48,14 @@
 			"save": "Guardar"
 		}
 	},
+	"confirm-delete-timetable-dialog": {
+		"title": "Apagar horário",
+		"content": "Deseja apagar o horário com o nome: {{timetable}}",
+		"actions": {
+			"cancel": "Cancelar",
+			"confirm": "Confirmar"
+		}
+	},
 	"help-dialog": {
 		"actions": {
 			"close-button": "Voltar"
@@ -192,5 +200,6 @@
 	},
 	"add": "Acrescentar",
 	"default-timetable": "Horário 1",
-	"unsaved": "Não guardado"
+	"unsaved": "Não guardado",
+	"timetables": "Horários"
 }

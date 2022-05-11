@@ -53,7 +53,8 @@ Multiple-Timetables (Important):
 - [X] Allow sharing the timetable with the URL
 - [X] Remove stored states not necessary anymore~
 - [X] Test if there are errors and how they are displayed when parsing a timetable
-- [ ] Delete button for timetables (missing confirmation dialog)
+- [X] Delete button for timetables
+- [ ] Fix adding timetables not showing the correct text
 
 Good to do but not important
 - [ ] Store course color for consistent usage

@@ -89,6 +89,7 @@ class App extends React.Component <{
 		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
 		newDomainDialog: false,
+		confirmDeleteTimetable: [false, undefined] as [boolean, undefined | Timetable],
 		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false, false, ''),
 		shownTimetables: [] as Timetable[],
 		currentAcademicTerm: ''
@@ -717,22 +718,21 @@ class App extends React.Component <{
 													value={this.state.savedTimetable}
 													onChange={(_, value) => this.onSelectedTimetable(value)}
 													getOptionLabel={(option) => option.getDisplayName()}
-													renderInput={(params) => <TextField {...params} label={'Horários'} variant="outlined" />}
-													renderOption={(option, state) =>
+													renderInput={(params) => <TextField {...params} label={i18next.t('timetables')} variant="outlined" />}
+													renderOption={(option, _state) =>
 														<React.Fragment>
 															<div style={{flexGrow: 1}}>
 																{option.name}
 															</div>
-															<IconButton color="inherit" component="span"
-																// FUTURE: Maybe this should just be hidden
-																disabled={this.state.shownTimetables.length === 0}
-																onClick={() => {
-																	// TODO: Make dialog to confirm this
-																	console.log('delete!')
-																}}
-															>
-																<Icon>delete</Icon>
-															</IconButton>
+															{this.state.shownTimetables.length > 1 &&
+																<IconButton color="inherit" component="span"
+																	// FUTURE: Maybe this should just be hidden
+																	disabled={this.state.shownTimetables.length <= 1}
+																	onClick={() => this.setState({confirmDeleteTimetable: [true, option]})}
+																>
+																	<Icon>delete</Icon>
+																</IconButton>
+															}
 														</React.Fragment>
 													}
 													style={{width: '100%'}}
@@ -960,6 +960,30 @@ class App extends React.Component <{
 							<DialogActions>
 								<div />
 								<Button onClick={() => {this.setState({changelogDialog: false})}} color="primary">{i18next.t('changelog-dialog.actions.back') as string}</Button>
+							</DialogActions>
+						</Dialog>
+						<Dialog open={this.state.confirmDeleteTimetable[0]}>
+							<DialogTitle>{i18next.t('confirm-delete-timetable-dialog.title')}</DialogTitle>
+							<DialogContent style={{whiteSpace: 'pre-line'}}>
+								{i18next.t('confirm-delete-timetable-dialog.content', {timetable: this.state.confirmDeleteTimetable[1]?.name})}
+							</DialogContent>
+							<DialogActions>
+								<Button onClick={() => this.setState({confirmDeleteTimetable: [false, this.state.confirmDeleteTimetable[1]]})}
+									color="primary">
+									{i18next.t('confirm-delete-timetable-dialog.actions.cancel')}
+								</Button>
+								<div />
+								<Button color="secondary"
+									onClick={() => {
+										const prevTimetables = this.savedStateHandler.getCurrentTimetables()
+										// Delete the timetable!
+										const newTimetables = prevTimetables.filter((t) => t !== this.state.confirmDeleteTimetable[1])
+										this.savedStateHandler.setSavedTimetables(newTimetables)
+										this.setState({confirmDeleteTimetable: [false, this.state.confirmDeleteTimetable[1]]})
+										this.updateToNewTimetable(newTimetables[0])
+									}}>
+									{i18next.t('confirm-delete-timetable-dialog.actions.confirm')}
+								</Button>
 							</DialogActions>
 						</Dialog>
 						<ColorPicker ref={this.colorPicker} onUpdatedColor={(course: Course) => {
