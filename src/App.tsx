@@ -701,8 +701,9 @@ class App extends React.Component <{
 										className={classes.cardTitle as string}
 										title={
 											<Box style={{flexDirection: 'row', display: 'flex'}}>
-												<Typography>{i18next.t('schedule-selected.title')}</Typography>
-												<Autocomplete disableClearable autoHighlight
+												<span style={{flexGrow: 1, width: '23%'}}></span>
+												<Typography variant='h6' align='center' style={{flexGrow: 1}}>{i18next.t('schedule-selected.title')}</Typography>
+												<Autocomplete disableClearable autoHighlight size='small'
 													filterOptions={(options, params): Timetable[] => {
 														const filter = createFilterOptions<Timetable>()
 														const filtered = filter(options, params)
@@ -720,10 +721,10 @@ class App extends React.Component <{
 													value={this.state.savedTimetable}
 													onChange={(_, value) => this.onSelectedTimetable(value)}
 													getOptionLabel={(option) => option.getDisplayName()}
-													renderInput={(params) => <TextField {...params} label={i18next.t('timetables')} variant="outlined" />}
+													renderInput={(params) => <TextField {...params} variant="standard" />}
 													renderOption={(option, _state) =>
 														<React.Fragment>
-															<div style={{flexGrow: 1}}>
+															<div style={{flexGrow: 1, overflow: 'clip'}}>
 																{option.getDisplayName()}
 															</div>
 															{this.state.shownTimetables.length > 1 &&
@@ -737,7 +738,7 @@ class App extends React.Component <{
 															}
 														</React.Fragment>
 													}
-													style={{width: '100%'}}
+													style={{width: '23%', flexGrow: 1}}
 												/>
 											</Box>
 										}
