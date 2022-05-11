@@ -40,6 +40,7 @@
 		"title": "Add new timetable",
 		"chosen-term": "Chosen term:",
 		"timetable-name": "Timetable name",
+		"preview-warning": "To change the semester, a new timetable will be created.",
 		"warning": "Changing semester will create a new timetable, please choose its name.",
 		"errors": {
 			"not-empty": "This field can't be empty."

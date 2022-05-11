@@ -39,6 +39,7 @@
 		"title": "Adicionar novo horário",
 		"chosen-term": "Semestre escolhido:",
 		"timetable-name": "Nome do horário",
+		"preview-warning": "Para alterar o semestre irá ser criado um novo horário.",
 		"warning": "Alterar o semestre fará com que seja criado um novo horário, escolha o seu nome.",
 		"errors": {
 			"not-empty": "Não pode estar vazio."

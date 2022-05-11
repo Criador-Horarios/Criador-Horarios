@@ -347,6 +347,9 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 									</MenuItem>
 								)}
 							</Select>
+							<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
+								{i18next.t('timetable-dialog.preview-warning') as string}
+							</Typography>
 						</FormControl>
 						<div style={{display: 'none'}}>
 							<Typography style={{margin: '10px 0'}}>This is not working, so do not try it :)</Typography>
