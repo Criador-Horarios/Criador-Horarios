@@ -127,6 +127,10 @@ export default class Timetable implements Comparable {
 		return true
 	}
 
+	setAcademicTerm(academicTerm: string): void {
+		if (this.academicTerm === '') this.academicTerm = academicTerm
+	}
+
 	setMultiShiftMode(mode: boolean): void {
 		this.isMultiShift = mode
 	}

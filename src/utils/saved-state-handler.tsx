@@ -132,8 +132,9 @@ export default class SavedStateHandler {
 
 	getCurrentTimetables(): Timetable[] {
 		const current = this.savedTimetables
-		return current.length === 0 ?
-			[new Timetable(i18next.t('default-timetable'), [], false, false, '')] : this.savedTimetables
+		const newTimetable = new Timetable(i18next.t('default-timetable'), [], false, false, '')
+		newTimetable.save()
+		return current.length === 0 ? [newTimetable] : this.savedTimetables
 	}
 	
 	async getSavedTimetables(forceUpdate = false): Promise<Timetable[]> {

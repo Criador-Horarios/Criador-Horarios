@@ -304,6 +304,9 @@ class App extends React.Component <{
 			if (selectedAcademicTerm !== undefined) {
 				const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
 				if (parsedTerm !== undefined) this.savedStateHandler.setTerm(parsedTerm)
+				if (this.state.savedTimetable.academicTerm === '') { 
+					this.state.savedTimetable.setAcademicTerm(selectedAcademicTerm)
+				}
 			}
 			this.setState({
 				savedTimetable: this.state.savedTimetable,
@@ -602,7 +605,6 @@ class App extends React.Component <{
 	}
 
 	render(): ReactNode {
-		console.log('reload!')
 		const classes = this.props.classes
 
 		const StyledToggleButtonGroup = withStyles((theme) => ({
