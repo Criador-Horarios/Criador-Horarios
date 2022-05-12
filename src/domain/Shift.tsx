@@ -147,6 +147,11 @@ export default class Shift implements Comparable {
 	toString(): string {
 		return this.getFullId().join(';')
 	}
+
+	deepCopy(): Shift {
+		// TODO: Check if we want to implement
+		return this
+	}
 }
 
 export const shortenDescriptions = (shifts: Shift[]): string => {

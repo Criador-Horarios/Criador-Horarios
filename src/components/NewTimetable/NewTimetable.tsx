@@ -11,6 +11,8 @@ import { Box, TextField } from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 import Timetable from '../../domain/Timetable'
 import AcademicTerm from '../../domain/AcademicTerm'
+import { staticData } from '../../utils/api'
+import SavedStateHandler from '../../utils/saved-state-handler'
 
 
 class NewTimetable extends React.PureComponent <{
@@ -22,11 +24,16 @@ class NewTimetable extends React.PureComponent <{
 		academicTerm: undefined as AcademicTerm | undefined,
 		name: '',
 		nameError: '',
-		showWarning: false
+		showWarning: false,
+		oldTimetable: undefined as Timetable | undefined
 	}
+	previousTimetables = SavedStateHandler.getInstance().getCurrentTimetables()
 	
-	show(academicTerm: AcademicTerm, showWarning = true): void {
-		this.setState({ show: true, academicTerm, name: '', showWarning })
+	show(academicTerm: AcademicTerm, showWarning = true, oldTimetable: Timetable | undefined = undefined): void {
+		if (oldTimetable !== undefined) {
+			academicTerm = staticData.terms.find(t => t.id === oldTimetable.academicTerm) || academicTerm
+		}
+		this.setState({ show: true, academicTerm, name: '', showWarning, oldTimetable })
 	}
 
 	confirmCreation(): void {
@@ -34,7 +41,11 @@ class NewTimetable extends React.PureComponent <{
 		if (!this.validateName(this.state.name)) return
 
 		// Create new timetable with correct academic term
-		const newTimetable = new Timetable(this.state.name, [], false, false, this.state.academicTerm?.id || '')
+		let newTimetable = new Timetable(this.state.name, [], false, false, this.state.academicTerm?.id || '')
+		if (this.state.oldTimetable !== undefined) {
+			newTimetable = this.state.oldTimetable.deepCopy()
+			newTimetable.name = this.state.name
+		}
 
 		this.setState({show: false})
 		this.props.onCreatedTimetable(newTimetable)
@@ -42,12 +53,18 @@ class NewTimetable extends React.PureComponent <{
 
 	// Helpers
 	private validateName(name: string): boolean {
-		// FUTURE: Should also verify if there are any other timetables
+		// Cannot be empty
 		if (name === '') {
 			this.setState({nameError: i18next.t('timetable-dialog.errors.not-empty')})
 			return false
 		}
 
+		// Verify if there are any other timetables
+		if (this.previousTimetables.some(t => t.name === name)) {
+			this.setState({nameError: i18next.t('timetable-dialog.errors.already-exists')})
+			return false
+		}
+		
 		this.setState({nameError: ''})
 		return true
 	}
@@ -68,6 +85,11 @@ class NewTimetable extends React.PureComponent <{
 								value={this.state.name} onChange={(event) => this.setState({name: event.target.value})}
 								error={!this.validateName(this.state.name)} helperText={this.state.nameError}
 							/>
+							{ this.state.oldTimetable !== undefined &&
+								<Typography variant="caption">
+									{i18next.t('timetable-dialog.copy-of')} “{this.state.oldTimetable.name}”
+								</Typography>
+							}
 							<Typography variant="caption">
 								{i18next.t('timetable-dialog.chosen-term')} {this.state.academicTerm?.displayTitle()}
 							</Typography>
@@ -78,7 +100,7 @@ class NewTimetable extends React.PureComponent <{
 							{i18next.t('timetable-dialog.actions.cancel')}
 						</Button>
 						
-						<Button color="primary" onClick={() => this.confirmCreation()} >
+						<Button color="primary" disabled={!this.validateName(this.state.name)} onClick={() => this.confirmCreation()} >
 							{i18next.t('timetable-dialog.actions.save')}
 						</Button>
 					</DialogActions>

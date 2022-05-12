@@ -90,7 +90,7 @@ export default class API {
 			return null
 		}
 		const courses = res
-			.map((d: CourseDto) => new Course(d, degree.acronym))
+			.map((d: CourseDto) => Course.fromDto(d, degree.acronym))
 			.filter((c: Course) => {
 				return c.semester === this.SEMESTER
 			})
@@ -112,7 +112,7 @@ export default class API {
 		) {
 			courseAcronyms = res.competences[0].degrees.map(d => d.acronym).join('/')
 		}
-		const newCourse = new Course(res, courseAcronyms)
+		const newCourse = Course.fromDto(res, courseAcronyms)
 		return newCourse
 	}
 

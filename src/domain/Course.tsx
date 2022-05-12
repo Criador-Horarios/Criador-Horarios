@@ -6,12 +6,12 @@ import Comparable from './Comparable'
 import Shift from './Shift'
 
 export default class Course implements Comparable {
-	id: string
-	acronym: string
-	name: string
+	id = ''
+	acronym = ''
+	name = ''
 	semester: number
-	abbrev: string
-	degreeAcronym: string
+	abbrev = ''
+	degreeAcronym = ''
 	color = ''
 	textColor = ''
 	shiftTypes: Map<string, boolean | undefined> = new Map()
@@ -20,25 +20,31 @@ export default class Course implements Comparable {
 	showDegree = false
 	url = ''
 
-	constructor(obj: CourseDto, degreeAcronym: string) {
-		this.id = obj.id
-		this.acronym = getCourseAcronym(obj.acronym, obj.name)
-		this.name = obj.name
-		this.semester = +obj.academicTerm[0]
-		this.abbrev = this.name.split(/[- //]+/).map(d => d[0]).filter(d => {
+	private constructor() {
+		this.semester = 0
+	}
+
+	static fromDto(obj: CourseDto, degreeAcronym: string): Course {
+		const newCourse = new Course()
+		newCourse.id = obj.id
+		newCourse.acronym = getCourseAcronym(obj.acronym, obj.name)
+		newCourse.name = obj.name
+		newCourse.semester = +obj.academicTerm[0]
+		newCourse.abbrev = newCourse.name.split(/[- //]+/).map(d => d[0]).filter(d => {
 			if (!d) return false
 			return d === d.toUpperCase()
 		}).join('')
-		this.degreeAcronym = degreeAcronym
+		newCourse.degreeAcronym = degreeAcronym
 		if (obj.url !== undefined) {
-			this.url = obj.url
+			newCourse.url = obj.url
 		}
 
 		const color = getRandomDarkColor()
-		this.color = '#' + rgbHex(color.red, color.green, color.blue)
-		this.textColor = isOkWithWhite(hexRgb(this.color)) ? 'white' : 'black'
+		newCourse.color = '#' + rgbHex(color.red, color.green, color.blue)
+		newCourse.textColor = isOkWithWhite(hexRgb(newCourse.color)) ? 'white' : 'black'
+		return newCourse
 	}
-
+	
 	addShift(shift: Shift): void {
 		this.shiftTypes.set(shift.type, false)
 	}
@@ -136,6 +142,20 @@ export default class Course implements Comparable {
 				this.degreeAcronym = possibleDegrees.join('/')
 			}
 		}
+	}
+
+	deepCopy(): Course {
+		const newCourse = new Course()
+		newCourse.id = this.id
+		newCourse.acronym = this.acronym
+		newCourse.name = this.name
+		newCourse.semester = this.semester
+		newCourse.abbrev = this.abbrev
+		newCourse.degreeAcronym = this.degreeAcronym
+		newCourse.url = this.url
+		newCourse.color = this.color
+		newCourse.textColor = this.textColor
+		return newCourse
 	}
 }
 

@@ -39,10 +39,12 @@
 		"title": "Adicionar novo horário",
 		"chosen-term": "Semestre escolhido:",
 		"timetable-name": "Nome do horário",
+		"copy-of": "Cópia de:",
 		"preview-warning": "Para alterar o semestre irá ser criado um novo horário.",
 		"warning": "Alterar o semestre fará com que seja criado um novo horário, escolha o seu nome.",
 		"errors": {
-			"not-empty": "Não pode estar vazio."
+			"not-empty": "Não pode estar vazio.",
+			"already-exists": "Este nome já está em uso."
 		},
 		"actions": {
 			"cancel": "Cancelar",
@@ -110,7 +112,8 @@
 			"save-as-image": "Guardar como imagem",
 			"save-as-excel": "Guardar horário e turmas num ficheiro Excel",
 			"clear-schedule": "Limpar horário",
-			"get-calendar": "Obter ficheiro do calendário com as aulas"
+			"get-calendar": "Obter ficheiro do calendário com as aulas",
+			"duplicate-timetable": "Duplicar este horário"
 		}
 	},
 	"shift-scraper": {

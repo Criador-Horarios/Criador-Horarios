@@ -179,4 +179,35 @@ export default class Timetable implements Comparable {
 		}
 		return JSON.stringify(obj)
 	}
+
+	deepCopy(): Timetable {
+		// Deep copy courses
+		const newCourses = [...(Comparables.toUnique(this.courseUpdates.courses) as Course[])].map(c => c.deepCopy()) 
+		const coursesById: Record<string, Course> = Array.from(newCourses)
+			.reduce((acc, course) => ({ ...acc, [course.id]: course }), {})
+
+		// Deep copy shifts and associate to the new courses
+		const availableShifts = this.shiftState.availableShifts.map(s => {
+			const newShift = s.deepCopy()
+			newShift.course = coursesById[newShift.courseId]
+			return newShift
+		})
+		const selectedShifts = availableShifts.filter(s =>
+			this.shiftState.selectedShifts.find(oldS => oldS.name === s.name) !== undefined
+		)
+		const newTimetable = new Timetable(
+			this.name, selectedShifts, false,
+			this.isMultiShift, this.academicTerm
+		)
+		newTimetable.courseUpdates.degreeAcronyms = new Set(this.courseUpdates.degreeAcronyms)
+		newTimetable.degreeAcronyms = this.degreeAcronyms
+		// Stored for current usage, not kept in storage
+		newTimetable.courseUpdates = new CourseUpdates()
+		newTimetable.courseUpdates.courses = newCourses
+		newTimetable.courses = new Set(newCourses)
+		newTimetable.shiftState = { availableShifts, selectedShifts }
+		newTimetable.errors = this.errors
+		newTimetable.isImported = false
+		return newTimetable
+	}
 }

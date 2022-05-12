@@ -61,7 +61,7 @@ import { APP_STYLES } from './styles/styles'
 import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
-import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
+import { faClone, faFileExcel } from '@fortawesome/free-solid-svg-icons'
 import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
@@ -854,13 +854,15 @@ class App extends React.Component <{
 													<ListItemText>{i18next.t('schedule-selected.actions.get-calendar')}</ListItemText>
 												</MenuItem>
 											</Menu>
-											{/* <Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
+											{/* <Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
 												<IconButton
 													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
 													color="inherit"
-													onClick={() => {this.clearSelectedShifts(true)}}
+													onClick={() =>
+														this.newTimetable.current?.show(staticData.currentTerm || staticData.terms[0], false, this.state.savedTimetable)
+													}
 													component="span">
-													<Icon>delete</Icon>
+													<FontAwesomeIcon icon={faClone}/>
 												</IconButton>
 											</Tooltip> */}
 										</div>
