@@ -21,11 +21,12 @@ class NewTimetable extends React.PureComponent <{
 		show: false,
 		academicTerm: undefined as AcademicTerm | undefined,
 		name: '',
-		nameError: ''
+		nameError: '',
+		showWarning: false
 	}
 	
-	show(academicTerm: AcademicTerm): void {
-		this.setState({ show: true, academicTerm, name: '' })
+	show(academicTerm: AcademicTerm, showWarning = true): void {
+		this.setState({ show: true, academicTerm, name: '', showWarning })
 	}
 
 	confirmCreation(): void {
@@ -61,7 +62,7 @@ class NewTimetable extends React.PureComponent <{
 					<DialogContent className={styles.ColorPicker}>
 						<Box display="flex" justifyContent="center" flexDirection="column">
 							<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
-								{i18next.t('timetable-dialog.warning') as string}
+								{this.state.showWarning && i18next.t('timetable-dialog.warning') as string}
 							</Typography>
 							<TextField id="timetable-name" label={i18next.t('timetable-dialog.timetable-name')} variant="standard" fullWidth
 								value={this.state.name} onChange={(event) => this.setState({name: event.target.value})}

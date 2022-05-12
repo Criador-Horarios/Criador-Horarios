@@ -90,7 +90,7 @@ class App extends React.Component <{
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
 		newDomainDialog: false,
 		confirmDeleteTimetable: [false, undefined] as [boolean, undefined | Timetable],
-		savedTimetable: new Timetable(i18next.t('default-timetable'), [], false, false, ''),
+		savedTimetable: new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, ''),
 		shownTimetables: [] as Timetable[],
 		currentAcademicTerm: ''
 	}
@@ -257,8 +257,11 @@ class App extends React.Component <{
 	}
 
 	onSelectedTimetable(timetable: Timetable | string): void {
-		// String should not be received here
-		if (typeof timetable === 'string') return
+		// If a string is received, it is the adding new button, so we want to add a new timetable
+		if (typeof timetable === 'string') {
+			if (staticData.currentTerm !== undefined) this.newTimetable.current?.show(staticData.currentTerm, false)
+			return
+		}
 
 		const newTimetable = timetable as Timetable
 		// Store timetable if not saved
@@ -704,39 +707,46 @@ class App extends React.Component <{
 												<span style={{flexGrow: 1, width: '23%'}}></span>
 												<Typography variant='h6' align='center' style={{flexGrow: 1}}>{i18next.t('schedule-selected.title')}</Typography>
 												<Autocomplete disableClearable autoHighlight size='small'
-													filterOptions={(options, params): Timetable[] => {
-														const filter = createFilterOptions<Timetable>()
+													filterOptions={(options, params): (Timetable | string)[] => {
+														const filter = createFilterOptions<Timetable | string>()
 														const filtered = filter(options, params)
+														filtered.unshift(i18next.t('timetable-autocomplete.add-new'))
 										
 														const { inputValue } = params
 														// Suggest the creation of a new value
-														const isExisting = options.some((option) => inputValue === option.name)
+														const isExisting = options.some((option) => typeof option === 'string' || inputValue === option.name)
 														if (inputValue !== '' && !isExisting) {
 															filtered.push(new Timetable(inputValue, [], false, false, this.state.currentAcademicTerm))
 														}
 										
 														return filtered
 													}}
-													options={this.state.shownTimetables}
+													options={this.state.shownTimetables as (Timetable | string)[]}
 													value={this.state.savedTimetable}
 													onChange={(_, value) => this.onSelectedTimetable(value)}
-													getOptionLabel={(option) => option.getDisplayName()}
+													getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
 													renderInput={(params) => <TextField {...params} variant="standard" />}
-													renderOption={(option, _state) =>
-														<React.Fragment>
-															<div style={{flexGrow: 1, overflow: 'clip'}}>
-																{option.getDisplayName()}
+													renderOption={(option) =>
+														<Tooltip title={typeof option !== 'string' && option.academicTerm} placement="bottom">
+															<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+																{typeof option === 'string' &&
+																	<IconButton color="inherit" component="span" size="small" style={{marginLeft: '-8px'}}>
+																		<Icon>add</Icon>
+																	</IconButton>
+																}															
+																<Typography style={{flexGrow: 1, overflow: 'clip', marginTop: '4px'}}>
+																	{typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
+																</Typography>
+																{this.state.shownTimetables.length > 1 && typeof option !== 'string' &&
+																	<IconButton color="inherit" component="span" size="small"
+																		disabled={this.state.shownTimetables.length <= 1}
+																		onClick={() => this.setState({confirmDeleteTimetable: [true, option]})}
+																	>
+																		<Icon>delete</Icon>
+																	</IconButton>
+																}
 															</div>
-															{this.state.shownTimetables.length > 1 &&
-																<IconButton color="inherit" component="span"
-																	// FUTURE: Maybe this should just be hidden
-																	disabled={this.state.shownTimetables.length <= 1}
-																	onClick={() => this.setState({confirmDeleteTimetable: [true, option]})}
-																>
-																	<Icon>delete</Icon>
-																</IconButton>
-															}
-														</React.Fragment>
+														</Tooltip>
 													}
 													style={{width: '23%', flexGrow: 1}}
 												/>
@@ -844,7 +854,7 @@ class App extends React.Component <{
 													<ListItemText>{i18next.t('schedule-selected.actions.get-calendar')}</ListItemText>
 												</MenuItem>
 											</Menu>
-											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
+											{/* <Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
 												<IconButton
 													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
 													color="inherit"
@@ -852,7 +862,7 @@ class App extends React.Component <{
 													component="span">
 													<Icon>delete</Icon>
 												</IconButton>
-											</Tooltip>
+											</Tooltip> */}
 										</div>
 									</CardActions>
 								</Card>

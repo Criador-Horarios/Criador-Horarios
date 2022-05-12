@@ -200,7 +200,10 @@
 		"portuguese": "Português"
 	},
 	"add": "Acrescentar",
-	"default-timetable": "Horário 1",
+	"timetable-autocomplete": {
+		"default-timetable": "Horário 1",
+		"add-new": "Adicionar novo"
+	},
 	"unsaved": "Não guardado",
 	"timetables": "Horários"
 }

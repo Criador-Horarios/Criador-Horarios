@@ -330,9 +330,7 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 					<DialogTitle>{i18next.t('settings-dialog.title')}
 					</DialogTitle>
 					<DialogContent>
-						<FormControl variant='outlined'
-							fullWidth={true}
-						>
+						<FormControl variant='outlined' fullWidth={true}>
 							<InputLabel>{i18next.t('settings-dialog.select.label') as string}</InputLabel>
 							<Select
 								id="semester"

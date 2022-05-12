@@ -201,7 +201,10 @@
 		"portuguese": "Portuguese"
 	},
 	"add": "Add",
-	"default-timetable": "Timetable 1",
+	"timetable-autocomplete": {
+		"default-timetable": "Timetable 1",
+		"add-new": "Add new"
+	},
 	"unsaved": "Unsaved",
 	"timetables": "Timetables"
 }

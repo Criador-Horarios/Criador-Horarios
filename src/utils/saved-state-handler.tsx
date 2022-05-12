@@ -132,7 +132,7 @@ export default class SavedStateHandler {
 
 	getCurrentTimetables(): Timetable[] {
 		const current = this.savedTimetables
-		const newTimetable = new Timetable(i18next.t('default-timetable'), [], false, false, '')
+		const newTimetable = new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, '')
 		newTimetable.save()
 		return current.length === 0 ? [newTimetable] : this.savedTimetables
 	}
