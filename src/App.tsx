@@ -727,7 +727,7 @@ class App extends React.Component <{
 													getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
 													renderInput={(params) => <TextField {...params} variant="standard" />}
 													renderOption={(option) =>
-														<Tooltip title={typeof option !== 'string' && option.academicTerm} placement="bottom">
+														<Tooltip title={typeof option === 'string' ? '' : option.academicTerm} placement="bottom">
 															<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
 																{typeof option === 'string' &&
 																	<IconButton color="inherit" component="span" size="small" style={{marginLeft: '-8px'}}>

@@ -5,6 +5,7 @@ import { ScheduleDto } from '../domain/Schedule'
 import Shift, { ShiftDto } from '../domain/Shift'
 import StoredEntities from './stored-entities'
 import { Mutex, MutexInterface, withTimeout } from 'async-mutex'
+import SavedStateHandler from './saved-state-handler'
 
 export default class API {
 	static ACADEMIC_TERM = '2020/2021'
@@ -232,6 +233,9 @@ export async function defineCurrentTerm(): Promise<void> {
 	const currTerms = await API.getAcademicTerms()
 	const selectedTerm = currTerms.find((t) => t.semester == semester && t.term == currentTerm)
 	staticData.currentTerm = selectedTerm
+	SavedStateHandler.getInstance().getCurrentTimetables().forEach(t => {
+		if (t.academicTerm === '') t.academicTerm = selectedTerm?.id || ''
+	})
 }
 
 const languages = new Map([
