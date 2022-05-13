@@ -854,7 +854,7 @@ class App extends React.Component <{
 													<ListItemText>{i18next.t('schedule-selected.actions.get-calendar')}</ListItemText>
 												</MenuItem>
 											</Menu>
-											<Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
+											{/* <Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
 												<IconButton
 													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
 													color="inherit"
@@ -864,7 +864,7 @@ class App extends React.Component <{
 													component="span">
 													<FontAwesomeIcon icon={faClone}/>
 												</IconButton>
-											</Tooltip>
+											</Tooltip> */}
 										</div>
 									</CardActions>
 								</Card>

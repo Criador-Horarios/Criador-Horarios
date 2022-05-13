@@ -23,6 +23,7 @@ export default class SavedStateHandler {
 	static URL_SHIFTS = 's'
 	static URL_DEGREES = 'd'
 	static URL_IS_MULTISHIFT = 'm'
+	static URL_TERM = 't'
 	
 	// 
 	static DOMAIN = process.env.REACT_APP_URL
@@ -155,23 +156,31 @@ export default class SavedStateHandler {
 			if (usableTimetables.length !== 0) this.savedTimetables = usableTimetables
 		}
 
+		// Check for schedule from previous version (d, s and t)
+		const oldTimetable = await this.migrateOldScheduleToTimetable()
+		let needsSaving = false
+		if (oldTimetable) needsSaving = true
+
 		// If there are none stored
 		// FIXME: Use forceUpdate!
-		if (!localTimetables) {
+		if (!localTimetables && !needsSaving) {
 			return this.getCurrentTimetables()
 		}
 
 		// TODO: First time should only fetch the first timetable to avoid getting unused timetables
-		const moreParsedTimetables = await Promise.all(Object.values(localTimetables).map(async (unparsedTimetable: string) => {
+		const moreParsedTimetables = await Promise.all(Object.values(localTimetables || {}).map(async (unparsedTimetable: string) => {
 			return await Timetable.fromString(unparsedTimetable)
 		}))
 
 		parsedTimetables = parsedTimetables.concat(moreParsedTimetables)
+		parsedTimetables.push(oldTimetable)
 
 		const usableTimetables = parsedTimetables.filter((t) => t !== undefined) as Timetable[]
 
-		// TODO: Missing sorting :/
 		this.savedTimetables = usableTimetables
+
+		// Save the preexisting timetable if it is the only one
+		if (needsSaving && usableTimetables.length === 1) this.setSavedTimetables(this.savedTimetables)
 		return usableTimetables.length === 0 ? this.getCurrentTimetables() : usableTimetables
 	}
 
@@ -341,6 +350,34 @@ export default class SavedStateHandler {
 		}
 
 		localStorage.setItem(accessor, JSON.stringify(newRes))
+	}
+
+	private async migrateOldScheduleToTimetable(): Promise<Timetable | undefined> {
+		const dto: Record<string, string> = {}
+		const degrees = dto[SavedStateHandler.URL_DEGREES] = this.getLocalStorage('d') as string
+		const shifts = dto[SavedStateHandler.URL_SHIFTS] = this.getLocalStorage('s') as string
+		const term = dto[SavedStateHandler.URL_TERM] = encodeURI(this.getLocalStorage('term') as string)
+		const ismulti = dto[SavedStateHandler.URL_IS_MULTISHIFT] = this.getLocalStorage('ismulti') as string
+		dto[SavedStateHandler.URL_TIMETABLE_NAME] = encodeURI(i18next.t('timetable-autocomplete.default-timetable'))
+
+		// If there are no shifts, return none
+		if (shifts === '') return undefined
+		
+		const newTimetable = await Timetable.fromURLParams(dto)
+		
+		// Check degrees
+		if (newTimetable &&
+				Array.from(newTimetable.degreeAcronyms).filter(d => d.length === 0 || d.includes('\\')).length > 0) {
+			return undefined
+		}
+
+		// Should remove them, but for now makes them invalid
+		this.setLocalStorage('d', degrees, { maxAge: -1 })
+		this.setLocalStorage('s', shifts, { maxAge: -1 })
+		this.setLocalStorage('term', term, { maxAge: -1 })
+		this.setLocalStorage('ismulti', ismulti, { maxAge: -1 })
+
+		return newTimetable
 	}
 }
 

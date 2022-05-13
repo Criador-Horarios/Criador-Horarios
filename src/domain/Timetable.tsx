@@ -63,7 +63,8 @@ export default class Timetable implements Comparable {
 	static async fromURLParams(urlParams: Record<string, string>): Promise<Timetable | undefined> {
 		const neededParams = [
 			SavedStateHandler.URL_TIMETABLE_NAME, SavedStateHandler.URL_SHIFTS,
-			SavedStateHandler.URL_DEGREES, SavedStateHandler.URL_IS_MULTISHIFT
+			SavedStateHandler.URL_DEGREES, SavedStateHandler.URL_IS_MULTISHIFT,
+			SavedStateHandler.URL_TERM
 		]
 
 		// Check if needed params are there
@@ -74,7 +75,8 @@ export default class Timetable implements Comparable {
 			degrees: urlParams[SavedStateHandler.URL_DEGREES],
 			shifts: urlParams[SavedStateHandler.URL_SHIFTS],
 			isSaved: false,
-			isMultishift: urlParams[SavedStateHandler.URL_IS_MULTISHIFT]
+			isMultishift: urlParams[SavedStateHandler.URL_IS_MULTISHIFT],
+			academicTerm: decodeURI(urlParams[SavedStateHandler.URL_TERM])
 		}
 		return Timetable.fromString(JSON.stringify(objToParse), true)
 	}
@@ -156,7 +158,6 @@ export default class Timetable implements Comparable {
 	}
 
 	toURLParams(): string[] {
-		// FIXME: Missing academic term
 		const shifts = shortenDescriptions(this.shiftState.selectedShifts)
 		const degrees = this.getDegreesString()?.join(SavedStateHandler.PARAMS_SEP)
 		const isMultishift = this.isMultiShift.toString()
@@ -164,7 +165,8 @@ export default class Timetable implements Comparable {
 			`${SavedStateHandler.URL_TIMETABLE_NAME}=${encodeURI(this.name)}`,
 			`${SavedStateHandler.URL_SHIFTS}=${shifts}`,
 			`${SavedStateHandler.URL_DEGREES}=${degrees}`,
-			`${SavedStateHandler.URL_IS_MULTISHIFT}=${isMultishift}`
+			`${SavedStateHandler.URL_IS_MULTISHIFT}=${isMultishift}`,
+			`${SavedStateHandler.URL_TERM}=${encodeURI(this.academicTerm)}`,
 		]
 	}
 
