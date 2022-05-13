@@ -4,12 +4,11 @@ import './App.scss'
 
 import campiList from './domain/CampiList'
 import Course from './domain/Course'
-import Shift, { getDegreesAcronyms, ShiftType, shortenDescriptions } from './domain/Shift'
+import Shift, { ShiftType } from './domain/Shift'
 import Lesson from './domain/Lesson'
-import { Comparables } from './domain/Comparable'
 import Schedule from './components/Schedule/Schedule'
 import ColorPicker from './components/ColorPicker/ColorPicker'
-import CourseUpdates, { CourseUpdateType, getCoursesDifference, returnColor } from './utils/CourseUpdate'
+import CourseUpdates, { CourseUpdateType, getCoursesDifference } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
 
 import saveToExcel from './utils/excel'
@@ -62,18 +61,19 @@ import { APP_STYLES } from './styles/styles'
 import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
-import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
-import { ListItemIcon, ListItemText } from '@material-ui/core'
+import { faClone, faFileExcel } from '@fortawesome/free-solid-svg-icons'
+import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
+import { Autocomplete, createFilterOptions } from '@material-ui/lab'
+import Timetable from './domain/Timetable'
+import NewTimetable from './components/NewTimetable/NewTimetable'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
 	state = {
 		selectedCourses: new CourseUpdates(),
-		availableShifts: [] as Shift[],
 		shownShifts: [] as Shift[],
-		selectedShifts: [] as Shift[],
 		selectedCampi: [...campiList] as string[],
 		selectedShiftTypes: Object.values(ShiftType) as string[],
 		alertMessage: '',
@@ -86,16 +86,20 @@ class App extends React.Component <{
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false,
-		multiShiftMode: false,
 		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
-		newDomainDialog: false
+		newDomainDialog: false,
+		confirmDeleteTimetable: [false, undefined] as [boolean, undefined | Timetable],
+		savedTimetable: new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, ''),
+		shownTimetables: [] as Timetable[],
+		currentAcademicTerm: ''
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
 	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 	colorPicker: React.RefObject<ColorPicker>
+	newTimetable: React.RefObject<NewTimetable>
 	theme: Theme
 	classesByShift: [string, string][] = []
 	minimalClasses: string[] = []
@@ -125,6 +129,7 @@ class App extends React.Component <{
 		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
 		this.colorPicker = React.createRef()
+		this.newTimetable = React.createRef()
 
 		this.theme = this.getTheme(this.state.darkMode)
 
@@ -163,7 +168,7 @@ class App extends React.Component <{
 		}
 		
 		// Warn about new domain
-		const isWarnedDomain = this.savedStateHandler.getNewDomain()
+		const isWarnedDomain = this.savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
 		this.newDomainURL = await this.getSharingURL()
 		this.setState({newDomainDialog: !isWarnedDomain})
 	}
@@ -174,9 +179,12 @@ class App extends React.Component <{
 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
 		if (selectedCourses.length === 0) {
-			const currCourses = this.state.selectedCourses as CourseUpdates
+			// const currCourses = this.state.selectedCourses as CourseUpdates
+			const currCourses = this.state.savedTimetable.courseUpdates as CourseUpdates
 			currCourses.removeAllCourses()
-			if (this.selectedDegrees === []) {
+			// TODO: Change all other selected degrees for the timetable
+			this.state.savedTimetable.shiftState.availableShifts = []
+			if (this.state.savedTimetable.degreeAcronyms.size === 0) {
 				this.setState({
 					availableCourses: [],
 					selectedCourses: currCourses,
@@ -194,12 +202,14 @@ class App extends React.Component <{
 			return
 		}
 
-		const changedCourse = getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
+		// const changedCourse = getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
+		const changedCourse = getCoursesDifference(this.state.savedTimetable.courseUpdates.courses, selectedCourses)
 		if (!changedCourse) {
 			return
 		}
 
-		const currCourses = this.state.selectedCourses
+		// const currCourses = this.state.selectedCourses
+		const currCourses = this.state.savedTimetable.courseUpdates
 		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
 		if (changedCourse.course !== undefined) {
 			currCourses.toggleCourse(changedCourse.course)
@@ -214,7 +224,8 @@ class App extends React.Component <{
 		let availableShifts: Shift[] = []
 		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
 			currCourses.lastUpdate.course !== undefined) {
-			const schedule = await API.getCourseSchedules(currCourses.lastUpdate.course)
+			const schedule =
+				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.academicTerm)
 			if (schedule === null) {
 				this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
 				// Remove course if it can't get the schedules
@@ -224,13 +235,15 @@ class App extends React.Component <{
 				})
 				return
 			}
-			availableShifts = this.state.availableShifts.concat(schedule)
+			availableShifts = this.state.savedTimetable.shiftState.availableShifts.concat(schedule)
 		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Remove) {
-			availableShifts = this.state.availableShifts
+			availableShifts = this.state.savedTimetable.shiftState.availableShifts
 				.filter((shift: Shift) => shift.courseId !== currCourses.lastUpdate?.course?.id)
 		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Clear) {
 			availableShifts = []
 		}
+
+		this.state.savedTimetable.shiftState.availableShifts = availableShifts
 
 		const shownShifts = this.filterShifts({
 			selectedCampi: this.state.selectedCampi,
@@ -239,7 +252,25 @@ class App extends React.Component <{
 		})
 
 		this.topBar.current?.setSelectedCourses(currCourses)
+		this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
 		this.setState({ availableShifts, shownShifts })
+	}
+
+	onSelectedTimetable(timetable: Timetable | string): void {
+		// If a string is received, it is the adding new button, so we want to add a new timetable
+		if (typeof timetable === 'string') {
+			if (staticData.currentTerm !== undefined) this.newTimetable.current?.show(staticData.currentTerm, false)
+			return
+		}
+
+		const newTimetable = timetable as Timetable
+		// Store timetable if not saved
+		if (!newTimetable.isSaved) {
+			const prevTimetables = this.savedStateHandler.getCurrentTimetables()
+			this.savedStateHandler.setSavedTimetables(prevTimetables.concat([newTimetable]))
+		}
+
+		this.updateToNewTimetable(newTimetable)
 	}
 
 	getAllLessons(): Lesson[] {
@@ -247,103 +278,72 @@ class App extends React.Component <{
 	}
 
 	getSelectedLessons(): Lesson[] {
-		return this.state.selectedShifts.map((shift: Shift) => shift.lessons).flat()
+		return this.state.savedTimetable.shiftState.selectedShifts.map((shift: Shift) => shift.lessons).flat()
 	}
 
-	setSelectedShifts(shifts: Shift[]) {
-		this.setState({ selectedShifts: shifts })
-		this.topBar.current?.setHasSelectedShifts(shifts)
-		const selectedAcademicTerm = this.topBar.current?.state.selectedAcademicTerm
-		if (selectedAcademicTerm !== undefined) {
-			const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
-			if (parsedTerm !== undefined) this.savedStateHandler.setTerm(parsedTerm)
-		}
-		this.savedStateHandler.setShifts(shifts)
-		this.recomputeDisableMultiShiftModeChange()
-	}
-
-	private recomputeDisableMultiShiftModeChange() {
+	private recomputeDisableMultiShiftModeChange(timetable: Timetable | undefined = undefined) {
 		// Check if multi-shift can't be disabled safely
 		// if multiple shifts of the same course/type are selected, and
 		// multi-shift is disabled, chaos ensues
-		const disable = this.state.multiShiftMode && it_contains(
-			combinations2(this.state.selectedShifts),
+		const currTimetable = timetable || this.state.savedTimetable
+		const disable = currTimetable.isMultiShift && it_contains(
+			combinations2(currTimetable.shiftState.selectedShifts),
 			([a, b]) => Shift.isSameCourseAndType(a,b)
 		)
 
-		this.setState({ inhibitMultiShiftModeChange: disable })
+		if (this.state.inhibitMultiShiftModeChange !== disable) this.setState({ inhibitMultiShiftModeChange: disable })
 	}
 
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
 		const chosenShift = arr.find((s: Shift) => s.name === shiftName)
 
 		if (chosenShift) {
-			const shiftCourse = this.state.selectedCourses.courses.filter((c) => c.id === chosenShift.courseId)
-
-			const selectedShifts = this.state.selectedShifts
-
-			// Verify if shift is already selected and unselect
-			const idx = Comparables.indexOf(selectedShifts, chosenShift)
-
-			let replacingIndex
-			if (this.state.multiShiftMode) {
-				// We want to allow multiple shifts of the same type, don't replace anything
-				replacingIndex = -1
-			} else {
-				// Verify if of the same type and course to replace, but not the same
-				replacingIndex = Comparables.indexOfBy(this.state.selectedShifts, chosenShift, Shift.isSameCourseAndType)
-			}
-
-			if (idx === -1) {
-				selectedShifts.push(chosenShift)
-				if (replacingIndex !== -1) {
-					selectedShifts.splice(replacingIndex, 1)
-				} else if (shiftCourse.length === 1) {
-					shiftCourse[0].addSelectedShift(chosenShift)
-				}
-			} else {
-				selectedShifts.splice(idx, 1)
-				if (shiftCourse.length === 1) {
-					shiftCourse[0].removeSelectedShift(chosenShift)
+			// Add to current timetable and save
+			this.state.savedTimetable.toggleShift(chosenShift)
+			this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
+			this.recomputeDisableMultiShiftModeChange()
+			// Store academic term
+			const selectedAcademicTerm = this.topBar.current?.state.selectedAcademicTerm
+			if (selectedAcademicTerm !== undefined) {
+				const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
+				if (parsedTerm !== undefined) this.savedStateHandler.setTerm(parsedTerm)
+				if (this.state.savedTimetable.academicTerm === '') { 
+					this.state.savedTimetable.setAcademicTerm(selectedAcademicTerm)
 				}
 			}
-
-			this.setSelectedShifts(selectedShifts)
+			this.setState({
+				savedTimetable: this.state.savedTimetable,
+				shownTimetables: this.savedStateHandler.getCurrentTimetables()
+			})
 		}
 	}
 
 	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
-		this.savedStateHandler.setMultiShiftMode(value)
+		this.state.savedTimetable.setMultiShiftMode(value)
+		this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
 		this.setState({
-			multiShiftMode: value
+			shownTimetables: this.savedStateHandler.getCurrentTimetables(), savedTimetable: this.state.savedTimetable
 		})
 	}
 
 	clearSelectedShifts(alert: boolean): void {
-		if (this.state.selectedShifts.length !== 0) {
-			this.state.selectedCourses.courses.forEach( (c) => {
-				c.clearSelectedShifts()
-				if (!c.isSelected && !c.hasShiftsSelected) {
-					returnColor(c.removeColor())
-				}
-			})
-			this.setSelectedShifts([])
-
+		const successful = this.state.savedTimetable.clearAllShifts()
+		if (successful) {
 			if (alert) {
 				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
 			}
 
-			SavedStateHandler.changeUrl(false, [], false)
+			SavedStateHandler.changeUrl()
 		}
 	}
 
 	getCoursesBySelectedShifts(): Course[] {
-		const finalCourses = [...this.state.selectedCourses.courses]
+		const finalCourses = [...this.state.savedTimetable.courseUpdates.courses]
 
-		this.state.selectedShifts.forEach( (s) => {
+		this.state.savedTimetable.shiftState.selectedShifts.forEach( (s) => {
 			// FIXME: Includes? hmmmm
 			// finalCourses = Comparables.addToSet(finalCourses, s.course) as Record<string, Course>
-			if (!finalCourses.includes(s.course)) {
+			if (!finalCourses.find(c => c.id === c.id)) {
 				finalCourses.push(s.course)
 			}
 			// Update course shift types (if selected or not) when the course is added and there was already shifts selected
@@ -356,7 +356,7 @@ class App extends React.Component <{
 		const shownShifts = this.filterShifts({
 			selectedCampi: campi,
 			selectedShiftTypes: this.state.selectedShiftTypes,
-			availableShifts: this.state.availableShifts
+			availableShifts: this.state.savedTimetable.shiftState.availableShifts
 		})
 
 		this.setState({ selectedCampi: campi, shownShifts })
@@ -366,7 +366,7 @@ class App extends React.Component <{
 		const shownShifts = this.filterShifts({
 			selectedCampi: this.state.selectedCampi,
 			selectedShiftTypes: types,
-			availableShifts: this.state.availableShifts
+			availableShifts: this.state.savedTimetable.shiftState.availableShifts
 		})
 
 		this.setState({ selectedShiftTypes: types, shownShifts })
@@ -393,10 +393,7 @@ class App extends React.Component <{
 	}
 
 	async getSharingURL(): Promise<string> {
-		const shifts = shortenDescriptions(this.state.selectedShifts)
-		const degrees = getDegreesAcronyms(this.state.selectedShifts)
-		const isMultishift = this.state.multiShiftMode.toString()
-		const params = [`${SavedStateHandler.SHIFTS}=${shifts}`, `${SavedStateHandler.DEGREES}=${degrees}`, `${SavedStateHandler.IS_MULTISHIFT}=${isMultishift}`]
+		const params = this.state.savedTimetable.toURLParams()
 		return await SavedStateHandler.getAppURL(params)
 	}
 
@@ -415,36 +412,35 @@ class App extends React.Component <{
 	}
 
 	async buildState(forceUpdate = false): Promise<void> {
-		// Fetch multi shift mode
+		let savedTimetables: Timetable[] = []
 		try {
+			savedTimetables = await this.savedStateHandler.getSavedTimetables()
 			this.setState({
-				multiShiftMode: this.savedStateHandler.getMultiShiftMode()
+				shownTimetables: savedTimetables, 
+				savedTimetable: savedTimetables[0]
 			})
-		} catch(err) {
-			console.error(err)
-			// ignored, bad URL/cookie state
-		}
-
-
-		// Build degree
-		try {
-			// Fetch degrees from url params or cookies
-			const degreeAcronyms = this.savedStateHandler.getDegrees(forceUpdate)
+			const degreeAcronyms = savedTimetables[0].getDegreesString()
 			if (degreeAcronyms) this.topBar.current?.setSelectedDegrees(degreeAcronyms)
+			const currCourses = savedTimetables[0].courseUpdates
+			this.topBar.current?.setSelectedCourses(currCourses)
 		} catch (err) {
 			console.error(err)
-			// ignored, bad URL/cookie state
 		}
 
-		// Build shifts
+		// Update remaining logic (available shifts, campi, shift types)
+		if (savedTimetables.length > 0) this.updateToNewTimetable(savedTimetables[0])
+	}
+
+	updateToNewTimetable(newTimetable: Timetable): void {
+		// FIXME: Should not need try
 		try {
-			// Fetch shifts from url params or cookies
-			const shiftState = await this.savedStateHandler.getShifts()
-			if (!shiftState) {
+			const courseUpdates = newTimetable.courseUpdates
+			const errors = newTimetable.errors
+			const state = newTimetable.shiftState
+			
+			if (!courseUpdates || !state) {
 				return
 			}
-			const [courseUpdates, state, errors] = shiftState
-
 			// Show that there were parsing errors
 			if (errors !== '') {
 				this.showAlert(i18next.t('alert.error-parsing'), 'warning')
@@ -459,10 +455,12 @@ class App extends React.Component <{
 					selectedShiftTypes: this.state.selectedShiftTypes,
 					availableShifts: state.availableShifts
 				}),
+				shownTimetables: this.savedStateHandler.getCurrentTimetables(),
+				savedTimetable: newTimetable,
+				multiShiftMode: this.state.savedTimetable.isMultiShift
 			})
-			this.topBar.current?.setHasSelectedShifts(state.selectedShifts)
-			this.recomputeDisableMultiShiftModeChange()
-			SavedStateHandler.changeUrl(false, [], false)
+			this.recomputeDisableMultiShiftModeChange(newTimetable)
+			SavedStateHandler.changeUrl()
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL/cookie state
@@ -470,12 +468,12 @@ class App extends React.Component <{
 	}
 
 	saveSchedule(): void {
-		if (this.state.selectedShifts.length === 0) {
+		if (this.state.savedTimetable.shiftState.selectedShifts.length === 0) {
 			this.showAlert(i18next.t('alert.no-shift-selected'), 'info')
 			return
 		}
 
-		downloadAsImage(this.state.selectedShifts, this.state.darkMode)
+		downloadAsImage(this.state.savedTimetable.shiftState.selectedShifts, this.state.darkMode)
 		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
 
@@ -485,8 +483,6 @@ class App extends React.Component <{
 			i18next.changeLanguage(language).then(() => i18next.options.lng = language)
 			API.setLanguage(language)
 
-			// Clear shifts?
-			// this.clearSelectedShifts(false)
 			this.savedStateHandler.setLanguage(language)
 
 			await afterChange()
@@ -518,14 +514,18 @@ class App extends React.Component <{
 	}
 
 	async getClasses(): Promise<void> {
-		if (this.selectedDegrees.length === 0) {
+		if (this.state.savedTimetable.degreeAcronyms.size === 0) {
 			this.showAlert(i18next.t('alert.minimal-classes-no-degrees'), 'error')
 			return
 		}
 
-		this.setState({loading: true})
+		this.setState({ loading: true })
 		
-		const [classesByShift, minimalClasses] = await getMinimalClasses(this.state.selectedShifts, this.selectedDegrees)
+		const [classesByShift, minimalClasses] = await getMinimalClasses(
+			this.state.savedTimetable.shiftState.selectedShifts,
+			Array.from(this.state.savedTimetable.degreeAcronyms),
+			this.state.savedTimetable.academicTerm
+		)
 
 		this.classesByShift = Object.entries(classesByShift)
 		this.minimalClasses = minimalClasses
@@ -541,16 +541,17 @@ class App extends React.Component <{
 
 	async exportToExcel(): Promise<void> {
 		this.setState({loading: true})
-		const classes = await getClasses(this.state.selectedShifts)
+		const classes =
+			await getClasses(this.state.savedTimetable.shiftState.selectedShifts, this.state.savedTimetable.academicTerm)
 
-		await saveToExcel(this.state.selectedShifts, classes)
+		await saveToExcel(this.state.savedTimetable.shiftState.selectedShifts, classes)
 
 		this.setState({loading: false})
 		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
 	}
 
 	downloadCalendar(): void {
-		getCalendar(this.state.selectedShifts)
+		getCalendar(this.state.savedTimetable.shiftState.selectedShifts)
 
 		this.showAlert(i18next.t('alert.calendar-obtained'), 'success')
 	}
@@ -572,13 +573,14 @@ class App extends React.Component <{
 		const coursesToBeFetched = new Set<Course>()
 		
 		// NOTICE: For now we update only the selected shifts
-		this.state.selectedShifts.forEach((s) => {
+		this.state.savedTimetable.shiftState.selectedShifts.forEach((s) => {
 			shiftsById[s.getStoredId()] = s
 			coursesToBeFetched.add(s.course)
 		})
 
 		const updatedShifts = await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
-			let newShifts: Shift[] | null | undefined = await API.getCourseSchedules(c)
+			let newShifts: Shift[] | null | undefined =
+				await API.getCourseSchedules(c, this.state.savedTimetable.academicTerm)
 
 			newShifts = newShifts?.filter((s) => {
 				const toUpdateShift = shiftsById[s.getStoredId()]
@@ -632,11 +634,12 @@ class App extends React.Component <{
 						onSelectedCourse={this.onSelectedCourse}
 						onSelectedDegree={this.onSelectedDegree}
 						onClearShifts={this.clearSelectedShifts}
-						onGetLink={this.getLink}
 						showAlert={this.showAlert}
 						onChangeLanguage={this.changeLanguage}
 						darkMode={this.state.darkMode}
 						onChangeDarkMode={this.onChangeDarkMode}
+						currentTimetable={this.state.savedTimetable}
+						onChangeAcademicTerm={(at) => this.newTimetable.current?.show(at)}
 					>
 					</TopBar>
 					<div className="main">
@@ -660,7 +663,8 @@ class App extends React.Component <{
 									/>
 									<CardContent className={classes.cardContent as string}>
 										<Schedule
-											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.availableShifts)}
+											onSelectedEvent={(id: string) =>
+												this.onSelectedShift(id, this.state.savedTimetable.shiftState.availableShifts)}
 											events={this.getAllLessons()} lang={this.state.lang}
 											darkMode={this.state.darkMode}
 										/>
@@ -695,13 +699,63 @@ class App extends React.Component <{
 									</CardActions>
 								</Card>
 								<Card className={classes.card as string}>
-									<CardHeader title={i18next.t('schedule-selected.title') as string}
+									<CardHeader //title={i18next.t('schedule-selected.title') as string}
 										titleTypographyProps={{ variant: 'h6', align: 'center' }}
 										className={classes.cardTitle as string}
+										title={
+											<Box style={{flexDirection: 'row', display: 'flex'}}>
+												<span style={{flexGrow: 1, width: '23%'}}></span>
+												<Typography variant='h6' align='center' style={{flexGrow: 1}}>{i18next.t('schedule-selected.title')}</Typography>
+												<Autocomplete disableClearable autoHighlight size='small'
+													filterOptions={(options, params): (Timetable | string)[] => {
+														const filter = createFilterOptions<Timetable | string>()
+														const filtered = filter(options, params)
+														filtered.unshift(i18next.t('timetable-autocomplete.add-new'))
+										
+														const { inputValue } = params
+														// Suggest the creation of a new value
+														const isExisting = options.some((option) => typeof option === 'string' || inputValue === option.name)
+														if (inputValue !== '' && !isExisting) {
+															filtered.push(new Timetable(inputValue, [], false, false, this.state.currentAcademicTerm))
+														}
+										
+														return filtered
+													}}
+													options={this.state.shownTimetables as (Timetable | string)[]}
+													value={this.state.savedTimetable}
+													onChange={(_, value) => this.onSelectedTimetable(value)}
+													getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
+													renderInput={(params) => <TextField {...params} variant="standard" />}
+													renderOption={(option) =>
+														<Tooltip title={typeof option === 'string' ? '' : option.academicTerm} placement="bottom">
+															<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+																{typeof option === 'string' &&
+																	<IconButton color="inherit" component="span" size="small" style={{marginLeft: '-8px'}}>
+																		<Icon>add</Icon>
+																	</IconButton>
+																}															
+																<Typography style={{flexGrow: 1, overflow: 'clip', marginTop: '4px'}}>
+																	{typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
+																</Typography>
+																{this.state.shownTimetables.length > 1 && typeof option !== 'string' &&
+																	<IconButton color="inherit" component="span" size="small"
+																		disabled={this.state.shownTimetables.length <= 1}
+																		onClick={() => this.setState({confirmDeleteTimetable: [true, option]})}
+																	>
+																		<Icon>delete</Icon>
+																	</IconButton>
+																}
+															</div>
+														</Tooltip>
+													}
+													style={{width: '23%', flexGrow: 1}}
+												/>
+											</Box>
+										}
 									/>
 									<CardContent className={classes.cardContent as string}>
 										<Schedule
-											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.selectedShifts)}
+											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.savedTimetable.shiftState.selectedShifts)}
 											events={this.getSelectedLessons()} ref={this.chosenSchedule} lang={this.state.lang}
 											darkMode={this.state.darkMode}
 										/>
@@ -742,7 +796,7 @@ class App extends React.Component <{
 													labelPlacement="top"
 													control={
 														<Switch
-															checked={this.state.multiShiftMode}
+															checked={this.state.savedTimetable.isMultiShift}
 															disabled={this.state.inhibitMultiShiftModeChange}
 															onChange={this.onChangeMultiShiftMode}
 															size="small"
@@ -752,16 +806,21 @@ class App extends React.Component <{
 											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.get-classes') as string}>
 												<IconButton
-													disabled={this.state.selectedShifts.length === 0}
+													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
 													color="inherit"
 													onClick={() => this.getClasses()}
 													component="span">
 													<Icon>list</Icon>
 												</IconButton>
 											</Tooltip>
+											<Tooltip title={i18next.t('link-button.tooltip') as string}>
+												<IconButton disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0} color="inherit" onClick={this.getLink} component="span">
+													<Icon>share</Icon>
+												</IconButton>
+											</Tooltip>
 											<Tooltip title={i18next.t('schedule-selected.actions.save-to-file') as string}>
 												<IconButton
-													disabled={this.state.selectedShifts.length === 0}
+													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
 													color="inherit"
 													onClick={(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {this.onSaveMenuClick(e, true)}}
 													component="span">
@@ -795,15 +854,17 @@ class App extends React.Component <{
 													<ListItemText>{i18next.t('schedule-selected.actions.get-calendar')}</ListItemText>
 												</MenuItem>
 											</Menu>
-											<Tooltip title={i18next.t('schedule-selected.actions.clear-schedule') as string}>
+											{/* <Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
 												<IconButton
-													disabled={this.state.selectedShifts.length === 0}
+													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
 													color="inherit"
-													onClick={() => {this.clearSelectedShifts(true)}}
+													onClick={() =>
+														this.newTimetable.current?.show(staticData.currentTerm || staticData.terms[0], false, this.state.savedTimetable)
+													}
 													component="span">
-													<Icon>delete</Icon>
+													<FontAwesomeIcon icon={faClone}/>
 												</IconButton>
-											</Tooltip>
+											</Tooltip> */}
 										</div>
 									</CardActions>
 								</Card>
@@ -916,15 +977,44 @@ class App extends React.Component <{
 								<Button onClick={() => {this.setState({changelogDialog: false})}} color="primary">{i18next.t('changelog-dialog.actions.back') as string}</Button>
 							</DialogActions>
 						</Dialog>
+						<Dialog open={this.state.confirmDeleteTimetable[0]}>
+							<DialogTitle>{i18next.t('confirm-delete-timetable-dialog.title')}</DialogTitle>
+							<DialogContent style={{whiteSpace: 'pre-line'}}>
+								{i18next.t('confirm-delete-timetable-dialog.content', {timetable: this.state.confirmDeleteTimetable[1]?.name})}
+							</DialogContent>
+							<DialogActions>
+								<Button onClick={() => this.setState({confirmDeleteTimetable: [false, this.state.confirmDeleteTimetable[1]]})}
+									color="primary">
+									{i18next.t('confirm-delete-timetable-dialog.actions.cancel')}
+								</Button>
+								<div />
+								<Button color="secondary"
+									onClick={() => {
+										const prevTimetables = this.savedStateHandler.getCurrentTimetables()
+										// Delete the timetable!
+										const newTimetables = prevTimetables.filter((t) => t !== this.state.confirmDeleteTimetable[1])
+										this.savedStateHandler.setSavedTimetables(newTimetables)
+										this.setState({confirmDeleteTimetable: [false, this.state.confirmDeleteTimetable[1]]})
+										this.updateToNewTimetable(newTimetables[0])
+									}}>
+									{i18next.t('confirm-delete-timetable-dialog.actions.confirm')}
+								</Button>
+							</DialogActions>
+						</Dialog>
 						<ColorPicker ref={this.colorPicker} onUpdatedColor={(course: Course) => {
-							this.state.availableShifts.forEach(shift => {
+							this.state.savedTimetable.shiftState.availableShifts.forEach(shift => {
 								if (shift.courseId === course.id) {
 									shift.updateColorFromCourse()
 									this.savedStateHandler.setCoursesColor([course])
 								}
 							})
-							this.setState({ availableShifts: this.state.availableShifts })
+							this.setState({ availableShifts: this.state.savedTimetable.shiftState.availableShifts })
 						}}/>
+						<NewTimetable ref={this.newTimetable}
+							onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
+							onCancel={() =>
+								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.academicTerm, false)}
+						/>
 					</div>
 				</div>
 			</ThemeProvider>

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Changed position of link share to next to download buttons
+- Allow selecting multiple timetables
+- Mutexes for API requests to avoid multiple equal requests
+
 ### Fixed
 
 ### Removed
