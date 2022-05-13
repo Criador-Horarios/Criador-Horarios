@@ -155,6 +155,7 @@ export default class Course implements Comparable {
 		newCourse.url = this.url
 		newCourse.color = this.color
 		newCourse.textColor = this.textColor
+		newCourse.shiftTypes = new Map(this.shiftTypes)
 		return newCourse
 	}
 }

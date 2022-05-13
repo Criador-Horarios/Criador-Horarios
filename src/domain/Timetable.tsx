@@ -9,7 +9,7 @@ import { staticData } from '../utils/api'
 
 export default class Timetable implements Comparable {
 	name: string
-	shiftState: ShiftState = { 	availableShifts: [], selectedShifts: [] }
+	shiftState: ShiftState = { availableShifts: [], selectedShifts: [] }
 	degreeAcronyms: Set<string> = new Set()
 	isSaved: boolean
 	isMultiShift: boolean

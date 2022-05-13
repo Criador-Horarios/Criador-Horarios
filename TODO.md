@@ -57,8 +57,9 @@ Multiple-Timetables (Important):
 - [X] Fix adding timetables not showing the correct text
 - [X] Add on autocomplete button to add new timetable
 - [ ] When merged, change domain back to horarios.dang.pt
-- [ ] Fix duplicating schedule
+- [X] Fix duplicating schedule
 - [ ] When duplicating the timetable name is ignored for duplication
+- [ ] Deep copy shift or store stuff on timetable and use pointers for courses and shifts (because changing a course color changes the color of the shifts of the other timetables)
 
 Good to do but not important
 - [ ] Store course color for consistent usage
