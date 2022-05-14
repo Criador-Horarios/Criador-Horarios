@@ -5,10 +5,8 @@ import API, { staticData, defineCurrentTerm } from '../../utils/api'
 import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
-import Shift from '../../domain/Shift'
 import CourseUpdates from '../../utils/CourseUpdate'
 
-import Divider from '@material-ui/core/Divider'
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
 import TextField from '@material-ui/core/TextField'
@@ -35,10 +33,10 @@ import Menu from '@material-ui/core/Menu'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
-import SavedStateHandler from '../../utils/saved-state-handler'
 import AcademicTerm from '../../domain/AcademicTerm'
+import Timetable from '../../domain/Timetable'
 
-class TopBar extends React.Component <{
+interface TopBarProps {
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
@@ -46,13 +44,16 @@ class TopBar extends React.Component <{
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
-}, unknown>{
+	currentTimetable: Timetable
+	onChangeAcademicTerm: (newAcademicTerm: AcademicTerm) => void
+}
+
+class TopBar extends React.Component<TopBarProps, unknown>{
 	state = {
 		degrees: [] as Degree[],
 		availableCourses: [] as Course[],
 		selectedAcademicTerm: '',
 		selectedCourses: new CourseUpdates(),
-		hasSelectedShifts: false,
 		settingsDialog: false,
 		helpDialog: false,
 		warningDialog: false,
@@ -64,7 +65,7 @@ class TopBar extends React.Component <{
 	hasPreviousDegrees = false
 
 	// eslint-disable-next-line
-	constructor(props: any) {
+	constructor(props: TopBarProps) {
 		super(props)
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
@@ -73,11 +74,12 @@ class TopBar extends React.Component <{
 	}
 
 	async componentDidMount(): Promise<void> {
-		// Update term
-		const currTermId = await defineCurrentTerm()
+		// Fetch all terms
+		await defineCurrentTerm()
+		const currTermId = this.props.currentTimetable.academicTerm
 		this.onSelectedAcademicTerm(currTermId, false)
 
-		const degrees = await API.getDegrees()
+		const degrees = await API.getDegrees(undefined)
 		this.setState({
 			degrees: degrees ?? []
 		})
@@ -90,12 +92,25 @@ class TopBar extends React.Component <{
 		}
 	}
 
+	async componentDidUpdate(prevProps: TopBarProps): Promise<void> {
+		if (prevProps.currentTimetable !== this.props.currentTimetable) {
+			const degreeAcronyms = Array.from(this.props.currentTimetable.degreeAcronyms)
+			this.setSelectedDegrees(degreeAcronyms)
+			const courses = this.props.currentTimetable.courseUpdates
+			this.setSelectedCourses(courses)
+
+			if (this.props.currentTimetable.academicTerm !== this.state.selectedAcademicTerm) {
+				this.setState({ selectedAcademicTerm: this.props.currentTimetable.academicTerm })
+			}
+		}
+	}
+	// ----
 	async onSelectedDegree(degrees: Degree[]): Promise<void> {
 		this.selectedDegrees = degrees
 		if (degrees.length > 0) {
 			let degreeCourses: Course[] = []
 			for (const degree of degrees) {
-				const tempCourses = await API.getCourses(degree)
+				const tempCourses = await API.getCourses(degree, this.state.selectedAcademicTerm)
 				if (tempCourses === null) {
 					// TODO: Test when this cannot be obtained
 					this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
@@ -120,12 +135,6 @@ class TopBar extends React.Component <{
 			})
 		}
 		this.props.onSelectedDegree(this.selectedDegrees)
-	}
-
-	setHasSelectedShifts(shifts: Shift[]): void {
-		this.setState({
-			hasSelectedShifts: shifts.length > 0
-		})
 	}
 
 	//FIXME: Available courses not updating when a course from another degree is removed
@@ -154,31 +163,13 @@ class TopBar extends React.Component <{
 		})
 	}
 
-	async onSelectedAcademicTerm(s: string, fetchDegrees: boolean): Promise<void> {
+	async onSelectedAcademicTerm(s: string, openDialog: boolean): Promise<void> {
 		const foundArr = staticData.terms.filter( (at) => at.id === s)
 		let chosenAT: AcademicTerm | undefined = undefined
 		if (foundArr.length > 0) {
 			chosenAT = foundArr[0]
-			API.ACADEMIC_TERM = chosenAT.term
-			API.SEMESTER = chosenAT.semester
-		}
-
-		this.onSelectedCourse([])
-		this.onSelectedDegree([])
-		this.props.onClearShifts(false)
-		// Store in storage
-		if (chosenAT) {
-			const stateInstance = SavedStateHandler.getInstance()
-			stateInstance.setTerm(chosenAT)
-		}
-		if (fetchDegrees) {
-			const degrees = await API.getDegrees()
-			this.setState({
-				selectedAcademicTerm: s,
-				degrees: degrees ?? []
-			})
-		} else {
-			this.setState({ selectedAcademicTerm: s })
+			this.setState({ selectedAcademicTerm: s, settingsDialog: false })
+			if (openDialog) this.props.onChangeAcademicTerm(chosenAT)
 		}
 	}
 
@@ -200,14 +191,11 @@ class TopBar extends React.Component <{
 		// The inner function will only run if the language changes
 		await this.props.onChangeLanguage(language, async () => {
 			// Get degrees with correct language and erase courses
-			const degrees = await API.getDegrees()
+			const degrees = await API.getDegrees(this.state.selectedAcademicTerm)
 			this.setState({
 				degrees: degrees ?? []
 			})
 		})
-
-		// this.selectedDegrees = []
-		// this.onSelectedCourse([])
 	}
 
 	onChangeDarkMode(): void {
@@ -342,9 +330,7 @@ class TopBar extends React.Component <{
 					<DialogTitle>{i18next.t('settings-dialog.title')}
 					</DialogTitle>
 					<DialogContent>
-						<FormControl variant='outlined'
-							fullWidth={true}
-						>
+						<FormControl variant='outlined' fullWidth={true}>
 							<InputLabel>{i18next.t('settings-dialog.select.label') as string}</InputLabel>
 							<Select
 								id="semester"
@@ -359,11 +345,10 @@ class TopBar extends React.Component <{
 									</MenuItem>
 								)}
 							</Select>
+							<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
+								{i18next.t('timetable-dialog.preview-warning') as string}
+							</Typography>
 						</FormControl>
-						<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
-							{i18next.t('settings-dialog.select.warning') as string}
-						</Typography>
-						<Divider orientation="horizontal" style={{ marginTop: '30px' }} />
 						<div style={{display: 'none'}}>
 							<Typography style={{margin: '10px 0'}}>This is not working, so do not try it :)</Typography>
 							<FormControl variant='outlined'

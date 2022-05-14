@@ -1,23 +1,29 @@
-import Cookies from 'universal-cookie'
 import AcademicTerm from '../domain/AcademicTerm'
-import { Comparables } from '../domain/Comparable'
 import Course from '../domain/Course'
-import Shift, { getDegreesAcronyms, shortenDescriptions } from '../domain/Shift'
-import API from './api'
+import Shift from '../domain/Shift'
+import Timetable from '../domain/Timetable'
+import API, { defineCurrentTerm, staticData } from './api'
 import CourseUpdates from './CourseUpdate'
+
+import i18next from 'i18next'
 
 export default class SavedStateHandler {
 	// CONSTANTS
 	// Storage keys
-	static DEGREES = 'd'
-	static SHIFTS = 's'
 	static TERM = 'term'
 	static DARK = 'dark'
 	static LANGUAGE = 'language'
 	static WARNING = 'warning'
 	static COLORS = 'colors'
-	static IS_MULTISHIFT = 'ismulti'
+	static SAVED_TIMETABLES = 'saved-timetables'
 	static DEBUG = 'debug'
+
+	// URL keys
+	static URL_TIMETABLE_NAME = 'n'
+	static URL_SHIFTS = 's'
+	static URL_DEGREES = 'd'
+	static URL_IS_MULTISHIFT = 'm'
+	static URL_TERM = 't'
 	
 	// 
 	static DOMAIN = process.env.REACT_APP_URL
@@ -31,18 +37,16 @@ export default class SavedStateHandler {
 	private static instance: SavedStateHandler
 
 	// ATTRIBUTES
-	private shifts: string
-	private degrees: string
+	public currentTerm: AcademicTerm | undefined = undefined
 	private colors: Record<string, string>
-	private multiShiftMode: boolean
-	private cookies = new Cookies()
+	private savedTimetables: Timetable[] = []
+	private urlParams: Record<string, string>
 	private debug: boolean
 
 	private constructor(urlParams: Record<string, string>) {
-		this.shifts = urlParams[SavedStateHandler.SHIFTS] ?? this.getLocalStorage(SavedStateHandler.SHIFTS)
-		this.degrees = urlParams[SavedStateHandler.DEGREES] ?? this.getLocalStorage(SavedStateHandler.DEGREES)
 		this.colors = (this.getLocalStorage(SavedStateHandler.COLORS) ?? {}) as Record<string, string>
-		this.multiShiftMode = (urlParams[SavedStateHandler.IS_MULTISHIFT] ?? this.getLocalStorage(SavedStateHandler.IS_MULTISHIFT)) === 'true'
+		this.savedTimetables = this.getCurrentTimetables()
+		this.urlParams = urlParams
 		this.debug = urlParams[SavedStateHandler.DEBUG] == 'true'
 	}
 
@@ -56,18 +60,9 @@ export default class SavedStateHandler {
 	}
 
 	// Updates user URL to use or not the state
-	static async changeUrl(toState: boolean, selectedShifts: Shift[], multiShiftMode: boolean): Promise<void> {
+	static changeUrl(): void {
 		const title: string = document.title
-		let path = API.PATH_PREFIX + '/'
-		if (toState) {
-			const shifts = shortenDescriptions(selectedShifts)
-			if (shifts !== '') path += `?${this.SHIFTS}=${shifts}`
-
-			const degrees = getDegreesAcronyms(selectedShifts)
-			if (degrees !== '') path += `&${this.DEGREES}=${degrees}`
-
-			if (multiShiftMode) path += `&${this.IS_MULTISHIFT}=true`
-		}
+		const path = API.PATH_PREFIX + '/'
 
 		if (window.history.replaceState) {
 			window.history.replaceState({}, title, path)
@@ -77,49 +72,35 @@ export default class SavedStateHandler {
 	}
 
 	static getAppURL(params: string[]): string {
-		return `${SavedStateHandler.DOMAIN}?${params.join('&')}`
+		let domain = SavedStateHandler.DOMAIN
+		if (process.env.NODE_ENV === 'development') domain = 'localhost:3000'
+		return `${domain}?${params.join('&')}`
 	}
 
 	// INSTANCE METHODS
-	// Returns the degrees acronyms, like MEIC-A
-	getDegrees(forceUpdate = false): string[] | undefined {
-		if (forceUpdate) {
-			this.degrees = this.getLocalStorage(SavedStateHandler.DEGREES) as string
-		}
-		return this.degrees?.split(SavedStateHandler.PARAMS_SEP)
-	}
-
-	setShifts(selectedShifts: Shift[]): void {
-		if (selectedShifts.length === 0) {
-			this.removeLocalStorage(SavedStateHandler.SHIFTS)
-			this.removeLocalStorage(SavedStateHandler.DEGREES)
-			this.removeLocalStorage(SavedStateHandler.COLORS)
-		} else {
-			this.shifts = shortenDescriptions(selectedShifts)
-			this.setLocalStorage(SavedStateHandler.SHIFTS, this.shifts)
-
-			this.degrees = getDegreesAcronyms(selectedShifts) || ''
-			this.setLocalStorage(SavedStateHandler.DEGREES, this.degrees)
-
-			// Store colors
-			const courses = Comparables.toUnique(selectedShifts.map(s => s.course)) as Course[]
-			this.setCoursesColor(courses)
-		}
-	}
-
-	async getShifts(): Promise<[CourseUpdates, ShiftState, string] | undefined> {
+	async getShifts(
+		unparsedShifts: string | undefined = undefined,
+		degreesChosen: Set<string> = new Set,
+		academicTermId: string
+	): Promise<[CourseUpdates, ShiftState, string] | undefined> {
 		const errors: string[] = []
-		if (!this.shifts) {
-			return undefined
+		const shiftsToParse = unparsedShifts
+		if (!shiftsToParse) {
+			const courseUpdate = new CourseUpdates()
+			courseUpdate.degreeAcronyms = degreesChosen
+			return [courseUpdate, { availableShifts: [], selectedShifts: []}, '']
 		}
-		const shifts = this.shifts.split(SavedStateHandler.PARAMS_SEP)
+
+		// TODO: Build cache of shifts to avoid asking repeatedly
+		const shifts = shiftsToParse.split(SavedStateHandler.PARAMS_SEP)
 			.map((shift: string) => shift.split(SavedStateHandler.ARGS_SEP))
 
 		const courseUpdate = new CourseUpdates()
+		courseUpdate.degreeAcronyms = degreesChosen
 
 		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
 			try {
-				return await this.buildCourse(description, courseUpdate)
+				return await this.buildCourse(description, courseUpdate, academicTermId)
 			} catch (err) {
 				// Values not well parsed, but keeps parsing the rest
 				errors.push(err as string)
@@ -139,13 +120,68 @@ export default class SavedStateHandler {
 		return [courseUpdate, state, errors.join(', ')]
 	}
 
-	setMultiShiftMode(multiShiftMode: boolean): void {
-		this.multiShiftMode = multiShiftMode
-		this.setLocalStorage(SavedStateHandler.IS_MULTISHIFT, multiShiftMode.toString())
+	setSavedTimetables(timetables: Timetable[]): void {
+		// Mark every timetable has saved
+		timetables.forEach(t => t.save())
+		
+		const convertedTimetables: Record<string, string> = {}
+		timetables.map((t, index) => convertedTimetables[index] = t.toString())
+		
+		this.setLocalStorage(SavedStateHandler.SAVED_TIMETABLES, convertedTimetables)
+		this.savedTimetables = timetables
 	}
 
-	getMultiShiftMode(): boolean {
-		return this.multiShiftMode
+	getCurrentTimetables(): Timetable[] {
+		const current = this.savedTimetables
+		const newTimetable = new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, '')
+		newTimetable.save()
+		return current.length === 0 ? [newTimetable] : this.savedTimetables
+	}
+	
+	async getSavedTimetables(forceUpdate = false): Promise<Timetable[]> {
+		// If we don't have terms, please fetch them for the timetables
+		if (staticData.currentTerm === undefined) {
+			await defineCurrentTerm()
+		}
+
+		const localTimetables = this.getLocalStorage(SavedStateHandler.SAVED_TIMETABLES)
+
+		let parsedTimetables: (Timetable | undefined)[] = []
+		if (this.urlParams !== {}) {
+			const parsedTimetable = await Timetable.fromURLParams(this.urlParams)
+			parsedTimetables = parsedTimetables.concat(parsedTimetable)
+			const usableTimetables = parsedTimetables.filter(t => t !== undefined) as Timetable[]
+			this.urlParams = {}
+			// TODO: Should we save it?
+			if (usableTimetables.length !== 0) this.savedTimetables = usableTimetables
+		}
+
+		// Check for schedule from previous version (d, s and t)
+		const oldTimetable = await this.migrateOldScheduleToTimetable()
+		let needsSaving = false
+		if (oldTimetable) needsSaving = true
+
+		// If there are none stored
+		// FIXME: Use forceUpdate!
+		if (!localTimetables && !needsSaving) {
+			return this.getCurrentTimetables()
+		}
+
+		// TODO: First time should only fetch the first timetable to avoid getting unused timetables
+		const moreParsedTimetables = await Promise.all(Object.values(localTimetables || {}).map(async (unparsedTimetable: string) => {
+			return await Timetable.fromString(unparsedTimetable)
+		}))
+
+		parsedTimetables = parsedTimetables.concat(moreParsedTimetables)
+		parsedTimetables.push(oldTimetable)
+
+		const usableTimetables = parsedTimetables.filter((t) => t !== undefined) as Timetable[]
+
+		this.savedTimetables = usableTimetables
+
+		// Save the preexisting timetable if it is the only one
+		if (needsSaving && usableTimetables.length === 1) this.setSavedTimetables(this.savedTimetables)
+		return usableTimetables.length === 0 ? this.getCurrentTimetables() : usableTimetables
 	}
 
 	// Returns if true in the right domain and false otherwise
@@ -196,9 +232,8 @@ export default class SavedStateHandler {
 	}
 
 	// HELPERS
-
-	private async buildCourse(description: string[], updates: CourseUpdates): Promise<BuiltCourse> {
-		const course = await API.getCourse(description[0])
+	private async buildCourse(description: string[], updates: CourseUpdates, academicTermId: string): Promise<BuiltCourse> {
+		const course = await API.getCourse(description[0], academicTermId)
 
 		if (!course) {
 			throw 'Could not build course'
@@ -209,7 +244,7 @@ export default class SavedStateHandler {
 		}
 		
 		// Update course to have the selected degrees
-		const selectedDegrees = this.getDegrees() ?? []
+		const selectedDegrees = Array.from(updates.degreeAcronyms)
 		course.updateDegree(selectedDegrees)
 
 		// Check if has a previous color and set it
@@ -218,12 +253,13 @@ export default class SavedStateHandler {
 		if (hasColor) {
 			course.setColor(currColor)
 		}
+		// TODO: If not, store it
 
 		// Set course as selected
 		updates.toggleCourse(course, hasColor)
 
 		// Get the course schedules
-		const availableShifts = await API.getCourseSchedules(course)
+		const availableShifts = await API.getCourseSchedules(course, academicTermId)
 		if (!availableShifts) {
 			throw 'Could not fetch course schedule'
 		}
@@ -238,14 +274,6 @@ export default class SavedStateHandler {
 			return acc
 		}, [] as Shift[])
 		return { course, availableShifts, selectedShifts }
-	}
-
-	private getCookie(accessor: string): string {
-		return this.cookies.get(accessor)
-	}
-
-	private setCookie(accessor: string, value: string | boolean, maxAge = SavedStateHandler.MAX_AGE_NORMAL) {
-		this.cookies.set(accessor, value, { maxAge })
 	}
 
 	private getLocalStorage(accessor: string): string | Record<string, string> {
@@ -322,6 +350,34 @@ export default class SavedStateHandler {
 		}
 
 		localStorage.setItem(accessor, JSON.stringify(newRes))
+	}
+
+	private async migrateOldScheduleToTimetable(): Promise<Timetable | undefined> {
+		const dto: Record<string, string> = {}
+		const degrees = dto[SavedStateHandler.URL_DEGREES] = this.getLocalStorage('d') as string
+		const shifts = dto[SavedStateHandler.URL_SHIFTS] = this.getLocalStorage('s') as string
+		const term = dto[SavedStateHandler.URL_TERM] = encodeURI(this.getLocalStorage('term') as string)
+		const ismulti = dto[SavedStateHandler.URL_IS_MULTISHIFT] = this.getLocalStorage('ismulti') as string
+		dto[SavedStateHandler.URL_TIMETABLE_NAME] = encodeURI(i18next.t('timetable-autocomplete.default-timetable'))
+
+		// If there are no shifts, return none
+		if (shifts === '') return undefined
+		
+		const newTimetable = await Timetable.fromURLParams(dto)
+		
+		// Check degrees
+		if (newTimetable &&
+				Array.from(newTimetable.degreeAcronyms).filter(d => d.length === 0 || d.includes('\\')).length > 0) {
+			return undefined
+		}
+
+		// Should remove them, but for now makes them invalid
+		this.setLocalStorage('d', degrees, { maxAge: -1 })
+		this.setLocalStorage('s', shifts, { maxAge: -1 })
+		this.setLocalStorage('term', term, { maxAge: -1 })
+		this.setLocalStorage('ismulti', ismulti, { maxAge: -1 })
+
+		return newTimetable
 	}
 }
 
