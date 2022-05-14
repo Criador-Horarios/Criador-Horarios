@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Fixed
+### Removed
+
+## [1.15.0] - 13/05/2022
+
+### Added
 
 - Changed position of link share to next to download buttons
 - Allow selecting multiple timetables
