@@ -145,6 +145,7 @@ export default class Course implements Comparable {
 	}
 
 	deepCopy(): Course {
+		return this
 		const newCourse = new Course()
 		newCourse.id = this.id
 		newCourse.acronym = this.acronym

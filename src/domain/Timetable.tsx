@@ -114,7 +114,10 @@ export default class Timetable implements Comparable {
 		}
 
 		// Mark to show the courses
-		courses.forEach(course => this.shownCourses[course.degreeAcronym].add(course.id))
+		courses.forEach(course => {
+			this.shownCourses[course.degreeAcronym] = this.shownCourses[course.degreeAcronym] || new Set()
+			this.shownCourses[course.degreeAcronym].add(course.id)
+		})
 	}
 
 	getShownCourseIds(): Record<string, Set<string>> {
