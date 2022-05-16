@@ -114,7 +114,6 @@ class App extends React.Component <{
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
-		this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
 		this.getLink = this.getLink.bind(this)
 		this.changeCampi = this.changeCampi.bind(this)
 		this.saveSchedule = this.saveSchedule.bind(this)
@@ -178,6 +177,8 @@ class App extends React.Component <{
 	}
 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
+		this.state.savedTimetable.toggleCourse(selectedCourses)
+
 		if (selectedCourses.length === 0) {
 			// const currCourses = this.state.selectedCourses as CourseUpdates
 			const currCourses = this.state.savedTimetable.courseUpdates as CourseUpdates
@@ -324,17 +325,6 @@ class App extends React.Component <{
 		this.setState({
 			shownTimetables: this.savedStateHandler.getCurrentTimetables(), savedTimetable: this.state.savedTimetable
 		})
-	}
-
-	clearSelectedShifts(alert: boolean): void {
-		const successful = this.state.savedTimetable.clearAllShifts()
-		if (successful) {
-			if (alert) {
-				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
-			}
-
-			SavedStateHandler.changeUrl()
-		}
 	}
 
 	getCoursesBySelectedShifts(): Course[] {
@@ -633,7 +623,6 @@ class App extends React.Component <{
 						ref={this.topBar}
 						onSelectedCourse={this.onSelectedCourse}
 						onSelectedDegree={this.onSelectedDegree}
-						onClearShifts={this.clearSelectedShifts}
 						showAlert={this.showAlert}
 						onChangeLanguage={this.changeLanguage}
 						darkMode={this.state.darkMode}

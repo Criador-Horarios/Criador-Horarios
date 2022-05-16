@@ -1,5 +1,5 @@
 import Comparable, { Comparables } from './Comparable'
-import Shift, { shortenDescriptions } from './Shift'
+import Shift, { ShiftRef, ShiftType, shortenDescriptions } from './Shift'
 
 import i18next from 'i18next'
 import SavedStateHandler, { ShiftState } from '../utils/saved-state-handler'
@@ -19,6 +19,11 @@ export default class Timetable implements Comparable {
 	courses: Set<Course> = new Set()
 	courseUpdates: CourseUpdates = new CourseUpdates()
 	errors = ''
+	// { degree: { course : { shiftType: Set<string> }}}
+	currDegreeCourseShifts: Record<string, Record<string, Record<ShiftType, Set<string>>>> = {}
+	shiftRefs: Record<string, ShiftRef> = {}
+	// { degree: Set<string>(Courses) }
+	private shownCourses: Record<string, Set<string>> = {}
 
 	constructor(name: string, shifts: Shift[], isSaved: boolean, isMultishift: boolean, academicTerm: string) {
 		this.name = name
@@ -26,6 +31,19 @@ export default class Timetable implements Comparable {
 		this.isSaved = isSaved
 		this.isMultiShift = isMultishift
 		this.academicTerm = academicTerm
+		shifts.forEach(s => {
+			const degreeAcronym = s.course.degreeAcronym
+			const courses = this.currDegreeCourseShifts[degreeAcronym] = this.currDegreeCourseShifts[degreeAcronym] || {}
+			const courseId = s.courseId
+			this.shownCourses[degreeAcronym] = this.shownCourses[degreeAcronym] || new Set()
+			this.shownCourses[degreeAcronym].add(courseId)
+			const shifts = courses[courseId] = courses[courseId] || {}
+			const shiftType = s.type
+			const shiftTypes = shifts[shiftType] = shifts[shiftType] || new Set<string>()
+			const storingShift: ShiftRef = { courseId: s.courseId, type: s.type, id: s.shiftId, fullId: s.name }
+			shiftTypes.add(s.name)
+			this.shiftRefs[s.name] = storingShift
+		})
 
 		if (academicTerm === '' || academicTerm === undefined) {
 			this.academicTerm = staticData.currentTerm?.id || ''
@@ -86,9 +104,27 @@ export default class Timetable implements Comparable {
 		return this.isSaved ? this.name : `${i18next.t('add')}: “${this.name}”`
 	}
 
+	// =================
+	// Courses management
+	toggleCourse(courses: Course[]): void {
+		// There are no courses to be shown, so 
+		Object.values(this.shownCourses).forEach(set => set.clear())
+		if (courses.length === 0) {
+			return
+		}
+
+		// Mark to show the courses
+		courses.forEach(course => this.shownCourses[course.degreeAcronym].add(course.id))
+	}
+
+	getShownCourseIds(): Record<string, Set<string>> {
+		return this.shownCourses
+	}
+
+	// =================
+	// Shifts management
 	toggleShift(chosenShift: Shift): void {
 		const idx = Comparables.indexOf(this.shiftState.selectedShifts, chosenShift)
-		// if (idx !== -1 && !multiShiftMode) return
 		const shiftCourse = this.courseUpdates.courses.filter(c => c.id === chosenShift.courseId)
 
 		let replacingIndex
@@ -119,16 +155,67 @@ export default class Timetable implements Comparable {
 				shiftCourse[0].removeSelectedShift(chosenShift)
 			}
 		}
+
+		// -- ShiftRef
+		const degreeAcronym = chosenShift.course.degreeAcronym
+		const courseId = chosenShift.courseId
+		const shiftId = chosenShift.name
+		const shiftType = chosenShift.type
+
+		// Check for degree, course and shift types
+		const courses = this.currDegreeCourseShifts[degreeAcronym] = this.currDegreeCourseShifts[degreeAcronym] || {}
+		const shiftTypes = courses[courseId] = courses[courseId] || {}
+		const shifts = shiftTypes[shiftType] = shiftTypes[shiftType] || new Set()
+
+		const storingShift: ShiftRef =
+			{ courseId: chosenShift.courseId, type: chosenShift.type, id: chosenShift.shiftId, fullId: chosenShift.name }
+
+		// Has clicked to remove the specific shift of specific type
+		if (shifts.has(shiftId)) {
+			shifts.delete(shiftId)
+			delete this.shiftRefs[shiftId]
+			// Clear course if there are no shifts, clear degree if there are no courses, etc...
+			if (shifts.size === 0) delete shiftTypes[shiftType]
+			if (Object.entries(shiftTypes).length === 0) delete courses[courseId]
+			if (Object.entries(courses).length === 0) delete this.currDegreeCourseShifts[degreeAcronym]
+		}
+		// Has shifts for this type but does not have this specific shift
+		else if (shifts.size > 0) {
+			// If not multishift, remove the other one
+			if (!this.isMultiShift) {
+				shifts.forEach(shiftId => delete this.shiftRefs[shiftId])
+				shifts.clear()
+			}
+			shifts.add(shiftId)
+			this.shiftRefs[shiftId] = storingShift
+		}
+		// Does not have shifts for this type, so it is a new one :)
+		else {
+			shifts.add(shiftId)
+			this.shiftRefs[shiftId] = storingShift
+		}
+	}
+
+	getSelectedShiftIds(): string[] {
+		return Object.values(this.currDegreeCourseShifts) // Degrees
+			.map(r => Object.values(r)).flat() // Course
+			.map(st => Object.values(st)).flat() // Shift Types
+			.map(set => Array.from(set.values())).flat() // Shifts
 	}
 
 	// Returns true if any shifts were cleared, false otherwise
 	clearAllShifts(): boolean {
+		// TODO: Check currDegreeCourseShifts
 		if (this.shiftState.selectedShifts.length === 0) return false
 		this.courseUpdates.courses.forEach(c => c.clearSelectedShifts())
 		this.shiftState.selectedShifts = []
+
+		// TODO: ShiftRef
+		// Object.keys(this.currDegreeCourseShifts).map((c) => this.currDegreeCourseShifts[c] = {})
 		return true
 	}
 
+	// =================
 	setAcademicTerm(academicTerm: string): void {
 		if (this.academicTerm === '') this.academicTerm = academicTerm
 	}

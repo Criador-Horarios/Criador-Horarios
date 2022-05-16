@@ -40,7 +40,6 @@ interface TopBarProps {
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
-	onClearShifts: (alert: boolean) => void
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
