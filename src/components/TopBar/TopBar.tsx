@@ -75,10 +75,10 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 	async componentDidMount(): Promise<void> {
 		// Fetch all terms
 		await defineCurrentTerm()
-		const currTermId = this.props.currentTimetable.academicTerm
-		this.onSelectedAcademicTerm(currTermId, false)
+		const currTermId = staticData.currentTerm
+		this.onSelectedAcademicTerm(currTermId?.id || '', false)
 
-		const degrees = await API.getDegrees(undefined)
+		const degrees = await API.getDegrees(currTermId?.id || '')
 		this.setState({
 			degrees: degrees ?? []
 		})

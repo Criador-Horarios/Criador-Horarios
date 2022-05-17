@@ -19,6 +19,7 @@ export default class Course implements Comparable {
 	isSelected = false
 	showDegree = false
 	url = ''
+	randomId = (Math.random() * 10000).toFixed(0)
 
 	private constructor() {
 		this.semester = 0
@@ -98,7 +99,7 @@ export default class Course implements Comparable {
 	}
 
 	hashString(): string {
-		return this.name + this.semester + this.id
+		return this.randomId + this.name + this.semester + this.id
 	}
 
 	static compare(a: Course, b: Course): number {

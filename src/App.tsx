@@ -327,19 +327,14 @@ class App extends React.Component <{
 		})
 	}
 
-	getCoursesBySelectedShifts(): Course[] {
-		const finalCourses = [...this.state.savedTimetable.courseUpdates.courses]
+	getCoursesBySelectedShifts(): [Course, Record<ShiftType, boolean | undefined>][] {
+		const coursesShifts = this.state.savedTimetable.getCoursesWithShiftTypes()
+		const coursesWithTypes: [Course, Record<ShiftType, boolean | undefined>][] = Object.entries(coursesShifts)
+			.map(([courseId, types]) =>
+				[API.REQUEST_CACHE.getCourse(courseId, this.state.savedTimetable.academicTerm), types] as [Course, Record<ShiftType, boolean>]
+			).filter(([course]) => course !== undefined)
 
-		this.state.savedTimetable.shiftState.selectedShifts.forEach( (s) => {
-			// FIXME: Includes? hmmmm
-			// finalCourses = Comparables.addToSet(finalCourses, s.course) as Record<string, Course>
-			if (!finalCourses.find(c => c.id === c.id)) {
-				finalCourses.push(s.course)
-			}
-			// Update course shift types (if selected or not) when the course is added and there was already shifts selected
-			s.course.addSelectedShift(s)
-		})
-		return finalCourses.sort(Course.compare)
+		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
 	}
 
 	changeCampi(campi: string[]): void {
@@ -751,7 +746,7 @@ class App extends React.Component <{
 									</CardContent>
 									<CardActions>
 										<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
-											{this.getCoursesBySelectedShifts().map((c) => (
+											{this.getCoursesBySelectedShifts().map(([c, types]) => (
 												<Paper elevation={0} variant={'outlined'} key={c.hashString()}
 													style={{padding: '4px', margin: '4px', display: 'flex'}}
 												>
@@ -763,17 +758,20 @@ class App extends React.Component <{
 															onClick={() => this.colorPicker.current?.show(c)} // Toggle colorPicker on click
 														/>
 													</Tooltip>
-													{Array.from(c.getShiftsDisplay()).map((s) => (
-														<Paper elevation={0} key={s[0]}
-															className={ ( (s[1]) ? classes.checklistSelected : classes.checklistUnselected) as string }
-															style={{
-																marginLeft: '4px', marginRight: '4px',
-																color: `${(s[1]) ? this.theme.palette.text.primary : this.theme.palette.text.hint}`
-															}}
-														>
-															<Typography variant='body1' style={{ fontWeight: 500 }}>{s[0]}</Typography>
-														</Paper>
-													))}
+													{ Array.from(c.shiftTypes.entries()).map(([type]) => {
+														const shown = types[type as ShiftType] !== undefined
+														return (
+															<Paper elevation={0} key={type}
+																className={ (shown ? classes.checklistSelected : classes.checklistUnselected) as string }
+																style={{
+																	marginLeft: '4px', marginRight: '4px',
+																	color: `${shown ? this.theme.palette.text.primary : this.theme.palette.text.hint}`
+																}}
+															>
+																<Typography variant='body1' style={{ fontWeight: 500 }}>{type}</Typography>
+															</Paper>
+														)
+													})}
 												</Paper>
 											))}
 										</div>

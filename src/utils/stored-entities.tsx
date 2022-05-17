@@ -14,7 +14,13 @@ export default class StoredEntities {
 
 	// CLASS METHODS
 	private static getInstance(academicTermId: string | undefined): StoredEntities {
+		// if (academicTermId === '') console.trace('academicTermId: ' + academicTermId)
 		const usedId = typeof academicTermId === 'string' ? academicTermId : ''
+
+		// if (academicTermId !== undefined && this.instance[''] !== undefined) {
+		// 	StoredEntities.setMissingAcademicTermId(academicTermId)
+		// }
+
 		if (!StoredEntities.instance[usedId]) {
 			StoredEntities.instance[usedId] = new StoredEntities()
 		}
@@ -23,29 +29,29 @@ export default class StoredEntities {
 	}
 
 	public static setMissingAcademicTermId(academicTermId: string): void {
-		const missingInstance = StoredEntities.getInstance('')
+		// if (Object.keys(this.instance).length > 1) return
 		// delete this.instance[''] // Should delete it I guess
 		// TODO: Check if we need to merge both
-		this.instance[academicTermId] = missingInstance
+		// this.instance[academicTermId] = this.instance['']
 	}
 
 	// Degrees
-	public static storeDegree(degree: Degree, academicTermId: string | undefined = undefined): void {
+	public static storeDegree(degree: Degree, academicTermId: string): void {
 		const degrees = this.getInstance(academicTermId).degrees
 		degrees[degree.id] = degree
 	}
 
-	public static getDegrees(degreeIds: string[], academicTermId: string | undefined = undefined): Degree[] {
+	public static getDegrees(degreeIds: string[], academicTermId: string): Degree[] {
 		const degrees = this.getInstance(academicTermId).degrees
 		return degreeIds.map(id => degrees[id]).filter(d => d !== undefined)
 	}
 
-	public static getAllDegrees(academicTermId: string | undefined = undefined): Degree[] {
+	public static getAllDegrees(academicTermId: string): Degree[] {
 		return Object.values(this.getInstance(academicTermId).degrees)
 	}
 
 	// Courses
-	public static storeCourse(course: Course, academicTermId: string | undefined = undefined): void {
+	public static storeCourse(course: Course, academicTermId: string): void {
 		const currInstance = this.getInstance(academicTermId)
 		const courses = currInstance.courses
 		courses[course.id] = course
@@ -54,17 +60,17 @@ export default class StoredEntities {
 		currInstance.coursesByDegree[course.degreeAcronym].add(course.id)
 	}
 
-	public static getCourses(coursesIds: string[], academicTermId: string | undefined = undefined): Course[] {
+	public static getCourses(coursesIds: string[], academicTermId: string): Course[] {
 		const courses = this.getInstance(academicTermId).courses
 		return coursesIds.map(id => courses[id]).filter(c => c !== undefined)
 	}
 
-	public static getCourse(courseId: string, academicTermId: string | undefined = undefined): Course | undefined {
+	public static getCourse(courseId: string, academicTermId: string): Course | undefined {
 		const courses = this.getInstance(academicTermId).courses
 		return courses[courseId]
 	}
 
-	public static getDegreeCourses(degree: Degree, academicTermId: string | undefined = undefined): Course[] {
+	public static getDegreeCourses(degree: Degree, academicTermId: string): Course[] {
 		const currInstance = this.getInstance(academicTermId)
 		const courses = currInstance.coursesByDegree[degree.acronym] =
 			currInstance.coursesByDegree[degree.acronym] || new Set()
@@ -75,19 +81,19 @@ export default class StoredEntities {
 			else return existingCourses
 		}
 	}
-	
+
 	// Shifts
-	public static storeShift(shift: Shift, courseId: string, academicTermId: string | undefined = undefined): void {
+	public static storeShift(shift: Shift, courseId: string, academicTermId: string): void {
 		const currInstance = this.getInstance(academicTermId)
 		const courseShifts = currInstance.courseShifts[courseId] = currInstance.courseShifts[courseId] || {}
 		courseShifts[shift.name] = shift
 	}
 
-	public static getShift(courseId: string, shiftId: string, academicTermId: string | undefined = undefined): Shift | undefined {
+	public static getShift(courseId: string, shiftId: string, academicTermId: string): Shift | undefined {
 		return this.getInstance(academicTermId).courseShifts[courseId][shiftId]
 	}
 
-	public static getShifts(courseShiftIds: Record<string, string[]>, academicTermId: string | undefined = undefined): Shift[] {
+	public static getShifts(courseShiftIds: Record<string, string[]>, academicTermId: string): Shift[] {
 		let returnedShifts: Shift[] = []
 		const currInstance = this.getInstance(academicTermId)
 		Object.entries(courseShiftIds).forEach(([courseId, shiftIds]) => {
@@ -98,7 +104,7 @@ export default class StoredEntities {
 		return returnedShifts
 	}
 
-	public static getCourseShifts(course: Course, academicTermId: string | undefined = undefined): Shift[] {
+	public static getCourseShifts(course: Course, academicTermId: string): Shift[] {
 		return Object.values(this.getInstance(academicTermId).courseShifts[course.id] || {}).filter(s => s !== undefined)
 	}
 

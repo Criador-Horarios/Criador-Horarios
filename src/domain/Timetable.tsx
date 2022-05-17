@@ -124,6 +124,20 @@ export default class Timetable implements Comparable {
 		return this.shownCourses
 	}
 
+	// Returns a Record with the courseId and the shiftTypes selected for the course
+	getCoursesWithShiftTypes(): Record<string, Record<ShiftType, boolean>> {
+		const coursesShifts = Object.values(this.currDegreeCourseShifts)
+		const res: Record<string, Record<ShiftType, boolean>> = {}
+		coursesShifts.forEach(record =>
+			Object.entries(record)
+				.forEach(([courseId, shiftTypeRecord]) => {
+					res[courseId] = res[courseId] || {}
+					Object.keys(shiftTypeRecord).forEach((type) => (res[courseId][type as ShiftType] = true))
+				})
+		)
+		return res
+	}
+
 	// =================
 	// Shifts management
 	toggleShift(chosenShift: Shift): void {

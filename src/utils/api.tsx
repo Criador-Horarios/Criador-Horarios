@@ -102,7 +102,7 @@ export default class API {
 
 	public static async getDegrees(academicTermId: string | undefined): Promise<Degree[] | null> {
 		// Check if degrees already exist for this academicTerm
-		let prevDegrees = this.REQUEST_CACHE.getAllDegrees(academicTermId)
+		let prevDegrees = this.REQUEST_CACHE.getAllDegrees(academicTermId || '')
 		if (prevDegrees.length > 0) return prevDegrees
 
 		// LOCK HERE to avoid repeating the same request N times
@@ -117,7 +117,7 @@ export default class API {
 		}
 
 		// Check if degrees already exist for this academicTerm
-		prevDegrees = this.REQUEST_CACHE.getAllDegrees()
+		prevDegrees = this.REQUEST_CACHE.getAllDegrees(academicTermId || '')
 		if (prevDegrees.length > 0) {
 			releaser()
 			return prevDegrees
@@ -135,7 +135,7 @@ export default class API {
 		const sortedDegrees = degrees.sort(Degree.compare)
 
 		// Store degrees
-		sortedDegrees.forEach(degree => this.REQUEST_CACHE.storeDegree(degree, academicTermId))
+		sortedDegrees.forEach(degree => this.REQUEST_CACHE.storeDegree(degree, academicTermId || ''))
 
 		// RELEASE LOCK HERE
 		releaser()
@@ -144,7 +144,7 @@ export default class API {
 
 	public static async getCourses(degree: Degree, academicTermId: string | undefined): Promise<Course[] | null> {
 		// Check if courses already exist for this academicTerm and degree
-		let prevCourses = this.REQUEST_CACHE.getDegreeCourses(degree, academicTermId)
+		let prevCourses = this.REQUEST_CACHE.getDegreeCourses(degree, academicTermId || '')
 		if (prevCourses.length > 0) return prevCourses
 
 		// LOCK HERE to avoid repeating the same request N times
@@ -161,7 +161,7 @@ export default class API {
 		}
 
 		// Check if courses already exist for this academicTerm and degree
-		prevCourses = this.REQUEST_CACHE.getDegreeCourses(degree, academicTermId)
+		prevCourses = this.REQUEST_CACHE.getDegreeCourses(degree, academicTermId || '')
 		if (prevCourses.length > 0) {
 			releaser()
 			return prevCourses
@@ -181,16 +181,16 @@ export default class API {
 		const sortedCourses = courses.sort(Course.compare)
 
 		// Store in cache for future use
-		sortedCourses.forEach(c => this.REQUEST_CACHE.storeCourse(c, academicTermId))
+		sortedCourses.forEach(c => this.REQUEST_CACHE.storeCourse(c, academicTermId || ''))
 
 		// RELEASE LOCK HERE
 		releaser()
 		return sortedCourses
 	}
 
-	public static async getCourse(course: string, academicTermId: string | undefined): Promise<Course | null> {
+	public static async getCourse(course: string, degreeAcronyms: string[], academicTermId: string | undefined): Promise<Course | null> {
 		// Check if courses already exist for this academicTerm and degree
-		let prevCourse = this.REQUEST_CACHE.getCourse(course, academicTermId)
+		let prevCourse = this.REQUEST_CACHE.getCourse(course, academicTermId || '')
 		if (prevCourse !== undefined) return prevCourse
 
 		// LOCK HERE to avoid repeating the same request N times
@@ -207,7 +207,7 @@ export default class API {
 		}
 
 		// Check if courses already exist for this academicTerm and degree
-		prevCourse = this.REQUEST_CACHE.getCourse(course, academicTermId)
+		prevCourse = this.REQUEST_CACHE.getCourse(course, academicTermId || '')
 		if (prevCourse !== undefined) {
 			releaser()
 			return prevCourse
@@ -226,9 +226,11 @@ export default class API {
 			courseAcronyms = res.competences[0].degrees.map(d => d.acronym).join('/')
 		}
 		const newCourse = Course.fromDto(res, courseAcronyms)
+		// Update degree acronyms
+		newCourse.updateDegree(degreeAcronyms)
 
 		// Store in cache for future use
-		this.REQUEST_CACHE.storeCourse(newCourse, academicTermId)
+		this.REQUEST_CACHE.storeCourse(newCourse, academicTermId || '')
 
 		// RELEASE LOCK HERE
 		releaser()
@@ -237,7 +239,7 @@ export default class API {
 
 	public static async getCourseSchedules(course: Course, academicTermId: string | undefined, forceUpdate = false): Promise<Shift[] | null> {
 		// Check if courses already exist for this academicTerm and degree
-		let prevSchedules = this.REQUEST_CACHE.getCourseShifts(course, academicTermId)
+		let prevSchedules = this.REQUEST_CACHE.getCourseShifts(course, academicTermId || '')
 		if (!forceUpdate && prevSchedules.length > 0) return prevSchedules
 
 		// LOCK HERE to avoid repeating the same request N times
@@ -253,7 +255,7 @@ export default class API {
 			return null
 		}
 
-		prevSchedules = this.REQUEST_CACHE.getCourseShifts(course, academicTermId)
+		prevSchedules = this.REQUEST_CACHE.getCourseShifts(course, academicTermId || '')
 		if (!forceUpdate && prevSchedules.length > 0) {
 			releaser()
 			return prevSchedules
@@ -287,7 +289,7 @@ export default class API {
 		course.saveShifts()
 
 		// Store in cache for future use
-		shifts.forEach(shift => shift !== null && this.REQUEST_CACHE.storeShift(shift, course.id, academicTermId))
+		shifts.forEach(shift => shift !== null && this.REQUEST_CACHE.storeShift(shift, course.id, academicTermId || ''))
 
 		// RELEASE LOCK HERE
 		releaser()
