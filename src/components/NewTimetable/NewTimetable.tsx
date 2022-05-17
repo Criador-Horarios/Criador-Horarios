@@ -31,7 +31,7 @@ class NewTimetable extends React.PureComponent <{
 	
 	show(academicTerm: AcademicTerm, showWarning = true, oldTimetable: Timetable | undefined = undefined): void {
 		if (oldTimetable !== undefined) {
-			academicTerm = staticData.terms.find(t => t.id === oldTimetable.academicTerm) || academicTerm
+			academicTerm = staticData.terms.find(t => t.id === oldTimetable.getAcademicTerm()) || academicTerm
 		}
 		this.previousTimetables = SavedStateHandler.getInstance().getCurrentTimetables()
 		this.setState({ show: true, academicTerm, name: '', showWarning, oldTimetable })

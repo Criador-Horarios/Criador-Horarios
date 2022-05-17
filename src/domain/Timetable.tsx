@@ -13,7 +13,7 @@ export default class Timetable implements Comparable {
 	degreeAcronyms: Set<string> = new Set()
 	isSaved: boolean
 	isMultiShift: boolean
-	academicTerm: string
+	private academicTerm: string
 	// Not stored
 	isImported = false
 	courses: Set<Course> = new Set()
@@ -233,6 +233,10 @@ export default class Timetable implements Comparable {
 	}
 
 	// =================
+	getAcademicTerm(): string {
+		return this.academicTerm
+	}
+
 	setAcademicTerm(academicTerm: string): void {
 		if (this.academicTerm === '') this.academicTerm = academicTerm
 	}

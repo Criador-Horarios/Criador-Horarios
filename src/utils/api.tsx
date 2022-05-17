@@ -389,7 +389,7 @@ export async function defineCurrentTerm(): Promise<void> {
 	staticData.currentTerm = selectedTerm
 	StoredEntities.setMissingAcademicTermId(selectedTerm?.id || '')
 	SavedStateHandler.getInstance().getCurrentTimetables().forEach(t => {
-		if (t.academicTerm === '') t.academicTerm = selectedTerm?.id || ''
+		if (t.getAcademicTerm() === '') t.setAcademicTerm(selectedTerm?.id || '')
 	})
 }
 

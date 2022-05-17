@@ -226,7 +226,7 @@ class App extends React.Component <{
 		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
 			currCourses.lastUpdate.course !== undefined) {
 			const schedule =
-				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.academicTerm)
+				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.getAcademicTerm())
 			if (schedule === null) {
 				this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
 				// Remove course if it can't get the schedules
@@ -308,7 +308,7 @@ class App extends React.Component <{
 			if (selectedAcademicTerm !== undefined) {
 				const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
 				if (parsedTerm !== undefined) this.savedStateHandler.setTerm(parsedTerm)
-				if (this.state.savedTimetable.academicTerm === '') { 
+				if (this.state.savedTimetable.getAcademicTerm() === '') { 
 					this.state.savedTimetable.setAcademicTerm(selectedAcademicTerm)
 				}
 			}
@@ -331,7 +331,7 @@ class App extends React.Component <{
 		const coursesShifts = this.state.savedTimetable.getCoursesWithShiftTypes()
 		const coursesWithTypes: [Course, Record<ShiftType, boolean | undefined>][] = Object.entries(coursesShifts)
 			.map(([courseId, types]) =>
-				[API.REQUEST_CACHE.getCourse(courseId, this.state.savedTimetable.academicTerm), types] as [Course, Record<ShiftType, boolean>]
+				[API.REQUEST_CACHE.getCourse(courseId, this.state.savedTimetable.getAcademicTerm()), types] as [Course, Record<ShiftType, boolean>]
 			).filter(([course]) => course !== undefined)
 
 		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
@@ -509,7 +509,7 @@ class App extends React.Component <{
 		const [classesByShift, minimalClasses] = await getMinimalClasses(
 			this.state.savedTimetable.shiftState.selectedShifts,
 			Array.from(this.state.savedTimetable.degreeAcronyms),
-			this.state.savedTimetable.academicTerm
+			this.state.savedTimetable.getAcademicTerm()
 		)
 
 		this.classesByShift = Object.entries(classesByShift)
@@ -527,7 +527,7 @@ class App extends React.Component <{
 	async exportToExcel(): Promise<void> {
 		this.setState({loading: true})
 		const classes =
-			await getClasses(this.state.savedTimetable.shiftState.selectedShifts, this.state.savedTimetable.academicTerm)
+			await getClasses(this.state.savedTimetable.shiftState.selectedShifts, this.state.savedTimetable.getAcademicTerm())
 
 		await saveToExcel(this.state.savedTimetable.shiftState.selectedShifts, classes)
 
@@ -565,7 +565,7 @@ class App extends React.Component <{
 
 		const updatedShifts = await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
 			let newShifts: Shift[] | null | undefined =
-				await API.getCourseSchedules(c, this.state.savedTimetable.academicTerm)
+				await API.getCourseSchedules(c, this.state.savedTimetable.getAcademicTerm())
 
 			newShifts = newShifts?.filter((s) => {
 				const toUpdateShift = shiftsById[s.getStoredId()]
@@ -711,7 +711,7 @@ class App extends React.Component <{
 													getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
 													renderInput={(params) => <TextField {...params} variant="standard" />}
 													renderOption={(option) =>
-														<Tooltip title={typeof option === 'string' ? '' : option.academicTerm} placement="bottom">
+														<Tooltip title={typeof option === 'string' ? '' : option.getAcademicTerm()} placement="bottom">
 															<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
 																{typeof option === 'string' &&
 																	<IconButton color="inherit" component="span" size="small" style={{marginLeft: '-8px'}}>
@@ -1000,7 +1000,7 @@ class App extends React.Component <{
 						<NewTimetable ref={this.newTimetable}
 							onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
 							onCancel={() =>
-								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.academicTerm, false)}
+								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.getAcademicTerm(), false)}
 						/>
 					</div>
 				</div>

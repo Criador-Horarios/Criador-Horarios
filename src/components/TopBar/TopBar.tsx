@@ -75,10 +75,13 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 	async componentDidMount(): Promise<void> {
 		// Fetch all terms
 		await defineCurrentTerm()
-		const currTermId = staticData.currentTerm
-		this.onSelectedAcademicTerm(currTermId?.id || '', false)
+		const currTermId = staticData.currentTerm?.id || ''
+		this.onSelectedAcademicTerm(currTermId, false)
 
-		const degrees = await API.getDegrees(currTermId?.id || '')
+		// Update current timetable to use the current academic term if does not have
+		this.props.currentTimetable.setAcademicTerm(currTermId)
+
+		const degrees = await API.getDegrees(currTermId)
 		this.setState({
 			degrees: degrees ?? []
 		})
@@ -92,14 +95,15 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 	}
 
 	async componentDidUpdate(prevProps: TopBarProps): Promise<void> {
+		console.log('update!', this.props.currentTimetable.getAcademicTerm())
 		if (prevProps.currentTimetable !== this.props.currentTimetable) {
 			const degreeAcronyms = Array.from(this.props.currentTimetable.degreeAcronyms)
 			this.setSelectedDegrees(degreeAcronyms)
 			const courses = this.props.currentTimetable.courseUpdates
 			this.setSelectedCourses(courses)
 
-			if (this.props.currentTimetable.academicTerm !== this.state.selectedAcademicTerm) {
-				this.setState({ selectedAcademicTerm: this.props.currentTimetable.academicTerm })
+			if (this.props.currentTimetable.getAcademicTerm() !== this.state.selectedAcademicTerm) {
+				this.setState({ selectedAcademicTerm: this.props.currentTimetable.getAcademicTerm() })
 			}
 		}
 	}
