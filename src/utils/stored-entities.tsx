@@ -29,10 +29,10 @@ export default class StoredEntities {
 	}
 
 	public static setMissingAcademicTermId(academicTermId: string): void {
-		// if (Object.keys(this.instance).length > 1) return
+		if (Object.keys(this.instance).length > 1) return
 		// delete this.instance[''] // Should delete it I guess
 		// TODO: Check if we need to merge both
-		// this.instance[academicTermId] = this.instance['']
+		this.instance[academicTermId] = this.instance['']
 	}
 
 	// Degrees
@@ -55,9 +55,15 @@ export default class StoredEntities {
 		const currInstance = this.getInstance(academicTermId)
 		const courses = currInstance.courses
 		courses[course.id] = course
-
-		currInstance.coursesByDegree[course.degreeAcronym] = currInstance.coursesByDegree[course.degreeAcronym] || new Set
-		currInstance.coursesByDegree[course.degreeAcronym].add(course.id)
+	}
+	
+	public static storeDegreeCourses(degree: Degree, courses: Course[], academicTermId: string): void {
+		const currInstance = this.getInstance(academicTermId)
+		courses.forEach(course => {
+			currInstance.coursesByDegree[degree.acronym] = currInstance.coursesByDegree[degree.acronym] || new Set
+			currInstance.coursesByDegree[degree.acronym].add(course.id)
+			StoredEntities.storeCourse(course, academicTermId)
+		})
 	}
 
 	public static getCourses(coursesIds: string[], academicTermId: string): Course[] {

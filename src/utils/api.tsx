@@ -178,10 +178,18 @@ export default class API {
 				return c.semester === this.SEMESTER
 			})
 
-		const sortedCourses = courses.sort(Course.compare)
+		// Replace with previous courses already cached and store new ones
+		const returnedCourses: Course[] = []
+		courses.forEach(course => {
+			const prevCourse = this.REQUEST_CACHE.getCourse(course.id, academicTermId || '')
+			if (prevCourse === undefined) returnedCourses.push(course)
+			else returnedCourses.push(prevCourse)
+		})
+
+		const sortedCourses = returnedCourses.sort(Course.compare)
 
 		// Store in cache for future use
-		sortedCourses.forEach(c => this.REQUEST_CACHE.storeCourse(c, academicTermId || ''))
+		this.REQUEST_CACHE.storeDegreeCourses(degree, sortedCourses, academicTermId || '')
 
 		// RELEASE LOCK HERE
 		releaser()

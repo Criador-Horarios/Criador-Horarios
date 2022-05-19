@@ -95,7 +95,6 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 	}
 
 	async componentDidUpdate(prevProps: TopBarProps): Promise<void> {
-		console.log('update!', this.props.currentTimetable.getAcademicTerm())
 		if (prevProps.currentTimetable !== this.props.currentTimetable) {
 			const degreeAcronyms = Array.from(this.props.currentTimetable.degreeAcronyms)
 			this.setSelectedDegrees(degreeAcronyms)
