@@ -106,18 +106,46 @@ export default class Timetable implements Comparable {
 
 	// =================
 	// Courses management
-	toggleCourse(courses: Course[]): void {
+	toggleCourse(courses: Course[]): CourseChange | undefined {
+		const prevCourseIds = Object.values(this.shownCourses)
+			.reduce((acc, value) => new Set([...acc, ...value]), new Set())
+
 		// There are no courses to be shown, so 
 		Object.values(this.shownCourses).forEach(set => set.clear())
 		if (courses.length === 0) {
-			return
+			return { type: CourseChangeType.Clear } as CourseChange
 		}
 
+		const currCourseIds = new Set<string>()
+		// const coursesChanged: CourseChange[] = []
+		let courseIdChanged: CourseChange | undefined = undefined
+
 		// Mark to show the courses
+		let newCoursesCount = 0
 		courses.forEach(course => {
 			this.shownCourses[course.degreeAcronym] = this.shownCourses[course.degreeAcronym] || new Set()
 			this.shownCourses[course.degreeAcronym].add(course.id)
+			currCourseIds.add(course.id)
+			newCoursesCount += 1
+
+			// Check if is a new course added
+			if (!prevCourseIds.has(course.id)) {
+				courseIdChanged = { course: course.id, type: CourseChangeType.Add } as CourseChange
+				return
+				// coursesChanged.push({ course: course.id, type: CourseChangeType.Add } as CourseChange)
+			}
 		})
+
+		if (courseIdChanged !== undefined) return courseIdChanged
+
+		// Check which course was removed
+		if (prevCourseIds.size === newCoursesCount + 1) {
+			const newCourseId = [...prevCourseIds].find((courseId => !currCourseIds.has(courseId)))
+			return { course: newCourseId, type: CourseChangeType.Remove } as CourseChange
+			// coursesChanged.push({ course: newCourseId, type: CourseChangeType.Remove } as CourseChange)
+		}
+
+		return undefined // coursesChanged
 	}
 
 	getShownCourseIds(): Record<string, Set<string>> {
@@ -128,6 +156,11 @@ export default class Timetable implements Comparable {
 	getCoursesWithShiftTypes(): Record<string, Record<ShiftType, boolean>> {
 		const coursesShifts = Object.values(this.currDegreeCourseShifts)
 		const res: Record<string, Record<ShiftType, boolean>> = {}
+		// Object.values(this.shownCourses).reduce((acc, newSet) => {
+		// 	Array.from(newSet).forEach(courseId => acc[courseId] = {} as Record<ShiftType, boolean>)
+		// 	return acc
+		// }, {} as Record<string, Record<ShiftType, boolean>>)
+
 		coursesShifts.forEach(record =>
 			Object.entries(record)
 				.forEach(([courseId, shiftTypeRecord]) => {
@@ -320,4 +353,15 @@ export default class Timetable implements Comparable {
 		newTimetable.isImported = false
 		return newTimetable
 	}
+}
+
+export enum CourseChangeType {
+	Add,
+	Remove,
+	Clear
+}
+
+export type CourseChange = {
+	type: CourseChangeType
+	courseId?: string
 }

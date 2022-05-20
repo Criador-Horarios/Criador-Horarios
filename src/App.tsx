@@ -65,7 +65,7 @@ import { faClone, faFileExcel } from '@fortawesome/free-solid-svg-icons'
 import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
-import Timetable from './domain/Timetable'
+import Timetable, { CourseChangeType } from './domain/Timetable'
 import NewTimetable from './components/NewTimetable/NewTimetable'
 
 class App extends React.Component <{
@@ -177,10 +177,14 @@ class App extends React.Component <{
 	}
 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
-		this.state.savedTimetable.toggleCourse(selectedCourses)
+		// this.state.savedTimetable.toggleCourse(selectedCourses) // For future use
+		// const courseChange = this.state.savedTimetable.toggleCourse(selectedCourses)
 
-		if (selectedCourses.length === 0) {
-			// const currCourses = this.state.selectedCourses as CourseUpdates
+		// // If there was no change for whatever reason, ignore
+		// if (!courseChange) return
+	
+		// // Cleared all courses
+		if (selectedCourses.length === 0) { // || courseChange.type === CourseChangeType.Clear) {
 			const currCourses = this.state.savedTimetable.courseUpdates as CourseUpdates
 			currCourses.removeAllCourses()
 			// TODO: Change all other selected degrees for the timetable
@@ -202,12 +206,32 @@ class App extends React.Component <{
 			this.topBar.current?.setSelectedCourses(currCourses)
 			return
 		}
+		//  else {
+		// 		this.setState({
+		// 			selectedCourses: currCourses,
+		// 			availableShifts: [],
+		// 			shownShifts: []
+		// 		})
+		// 	}
+		// 	this.topBar.current?.setSelectedCourses(currCourses)
+		// 	return
+		// }
+		// else if (courseChange.type === CourseChangeType.Add && courseChange.courseId) {
+		// 	// TODO: Implement
+		// }
+		// else if (courseChange.type === CourseChangeType.Remove && courseChange.courseId) {
+		// 	// TODO: Implement
+		// }
 
-		// const changedCourse = getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
 		const changedCourse = getCoursesDifference(this.state.savedTimetable.courseUpdates.courses, selectedCourses)
 		if (!changedCourse) {
 			return
 		}
+
+		// this.setState({ selectedCourses })
+		// const newCourse = selectedCourses.find(course => course.id === courseChange.courseId)
+		// if (newCourse) currCourses.toggleCourse(newCourse)
+		// this.topBar.current?.setSelectedCourses(selectedCourses)
 
 		// const currCourses = this.state.selectedCourses
 		const currCourses = this.state.savedTimetable.courseUpdates
