@@ -202,3 +202,10 @@ export type ShiftOccupation = {
 	current: number
 	max: number
 }
+
+export type ShiftRef = {
+	courseId: string,
+	type: string,
+	id: string,
+	fullId: string
+}

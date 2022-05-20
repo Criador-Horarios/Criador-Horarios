@@ -40,7 +40,6 @@ interface TopBarProps {
 	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
-	onClearShifts: (alert: boolean) => void
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
 	darkMode: boolean
 	onChangeDarkMode: (dark: boolean) => void
@@ -76,10 +75,13 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 	async componentDidMount(): Promise<void> {
 		// Fetch all terms
 		await defineCurrentTerm()
-		const currTermId = this.props.currentTimetable.academicTerm
+		const currTermId = staticData.currentTerm?.id || ''
 		this.onSelectedAcademicTerm(currTermId, false)
 
-		const degrees = await API.getDegrees(undefined)
+		// Update current timetable to use the current academic term if does not have
+		this.props.currentTimetable.setAcademicTerm(currTermId)
+
+		const degrees = await API.getDegrees(currTermId)
 		this.setState({
 			degrees: degrees ?? []
 		})
@@ -99,8 +101,8 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 			const courses = this.props.currentTimetable.courseUpdates
 			this.setSelectedCourses(courses)
 
-			if (this.props.currentTimetable.academicTerm !== this.state.selectedAcademicTerm) {
-				this.setState({ selectedAcademicTerm: this.props.currentTimetable.academicTerm })
+			if (this.props.currentTimetable.getAcademicTerm() !== this.state.selectedAcademicTerm) {
+				this.setState({ selectedAcademicTerm: this.props.currentTimetable.getAcademicTerm() })
 			}
 		}
 	}

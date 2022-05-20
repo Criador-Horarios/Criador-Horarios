@@ -54,8 +54,8 @@ export default class CourseUpdates {
 		} else {
 			// Add color
 			if (!course.hasShiftsSelected() && !skipColor) {
-				const color = getColor()
-				course.setColor(color)
+				// const color = getColor()
+				// course.setColor(color)
 			}
 
 			course.isSelected = true

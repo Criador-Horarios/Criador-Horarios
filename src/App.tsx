@@ -65,7 +65,7 @@ import { faClone, faFileExcel } from '@fortawesome/free-solid-svg-icons'
 import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
-import Timetable from './domain/Timetable'
+import Timetable, { CourseChangeType } from './domain/Timetable'
 import NewTimetable from './components/NewTimetable/NewTimetable'
 
 class App extends React.Component <{
@@ -114,7 +114,6 @@ class App extends React.Component <{
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
-		this.clearSelectedShifts = this.clearSelectedShifts.bind(this)
 		this.getLink = this.getLink.bind(this)
 		this.changeCampi = this.changeCampi.bind(this)
 		this.saveSchedule = this.saveSchedule.bind(this)
@@ -178,8 +177,14 @@ class App extends React.Component <{
 	}
 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
-		if (selectedCourses.length === 0) {
-			// const currCourses = this.state.selectedCourses as CourseUpdates
+		// this.state.savedTimetable.toggleCourse(selectedCourses) // For future use
+		// const courseChange = this.state.savedTimetable.toggleCourse(selectedCourses)
+
+		// // If there was no change for whatever reason, ignore
+		// if (!courseChange) return
+	
+		// // Cleared all courses
+		if (selectedCourses.length === 0) { // || courseChange.type === CourseChangeType.Clear) {
 			const currCourses = this.state.savedTimetable.courseUpdates as CourseUpdates
 			currCourses.removeAllCourses()
 			// TODO: Change all other selected degrees for the timetable
@@ -201,12 +206,32 @@ class App extends React.Component <{
 			this.topBar.current?.setSelectedCourses(currCourses)
 			return
 		}
+		//  else {
+		// 		this.setState({
+		// 			selectedCourses: currCourses,
+		// 			availableShifts: [],
+		// 			shownShifts: []
+		// 		})
+		// 	}
+		// 	this.topBar.current?.setSelectedCourses(currCourses)
+		// 	return
+		// }
+		// else if (courseChange.type === CourseChangeType.Add && courseChange.courseId) {
+		// 	// TODO: Implement
+		// }
+		// else if (courseChange.type === CourseChangeType.Remove && courseChange.courseId) {
+		// 	// TODO: Implement
+		// }
 
-		// const changedCourse = getCoursesDifference(this.state.selectedCourses.courses, selectedCourses)
 		const changedCourse = getCoursesDifference(this.state.savedTimetable.courseUpdates.courses, selectedCourses)
 		if (!changedCourse) {
 			return
 		}
+
+		// this.setState({ selectedCourses })
+		// const newCourse = selectedCourses.find(course => course.id === courseChange.courseId)
+		// if (newCourse) currCourses.toggleCourse(newCourse)
+		// this.topBar.current?.setSelectedCourses(selectedCourses)
 
 		// const currCourses = this.state.selectedCourses
 		const currCourses = this.state.savedTimetable.courseUpdates
@@ -225,7 +250,7 @@ class App extends React.Component <{
 		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
 			currCourses.lastUpdate.course !== undefined) {
 			const schedule =
-				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.academicTerm)
+				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.getAcademicTerm())
 			if (schedule === null) {
 				this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
 				// Remove course if it can't get the schedules
@@ -307,7 +332,7 @@ class App extends React.Component <{
 			if (selectedAcademicTerm !== undefined) {
 				const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
 				if (parsedTerm !== undefined) this.savedStateHandler.setTerm(parsedTerm)
-				if (this.state.savedTimetable.academicTerm === '') { 
+				if (this.state.savedTimetable.getAcademicTerm() === '') { 
 					this.state.savedTimetable.setAcademicTerm(selectedAcademicTerm)
 				}
 			}
@@ -326,30 +351,14 @@ class App extends React.Component <{
 		})
 	}
 
-	clearSelectedShifts(alert: boolean): void {
-		const successful = this.state.savedTimetable.clearAllShifts()
-		if (successful) {
-			if (alert) {
-				this.showAlert(i18next.t('alert.cleared-schedule'), 'success')
-			}
+	getCoursesBySelectedShifts(): [Course, Record<ShiftType, boolean | undefined>][] {
+		const coursesShifts = this.state.savedTimetable.getCoursesWithShiftTypes()
+		const coursesWithTypes: [Course, Record<ShiftType, boolean | undefined>][] = Object.entries(coursesShifts)
+			.map(([courseId, types]) =>
+				[API.REQUEST_CACHE.getCourse(courseId, this.state.savedTimetable.getAcademicTerm()), types] as [Course, Record<ShiftType, boolean>]
+			).filter(([course]) => course !== undefined)
 
-			SavedStateHandler.changeUrl()
-		}
-	}
-
-	getCoursesBySelectedShifts(): Course[] {
-		const finalCourses = [...this.state.savedTimetable.courseUpdates.courses]
-
-		this.state.savedTimetable.shiftState.selectedShifts.forEach( (s) => {
-			// FIXME: Includes? hmmmm
-			// finalCourses = Comparables.addToSet(finalCourses, s.course) as Record<string, Course>
-			if (!finalCourses.find(c => c.id === c.id)) {
-				finalCourses.push(s.course)
-			}
-			// Update course shift types (if selected or not) when the course is added and there was already shifts selected
-			s.course.addSelectedShift(s)
-		})
-		return finalCourses.sort(Course.compare)
+		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
 	}
 
 	changeCampi(campi: string[]): void {
@@ -524,7 +533,7 @@ class App extends React.Component <{
 		const [classesByShift, minimalClasses] = await getMinimalClasses(
 			this.state.savedTimetable.shiftState.selectedShifts,
 			Array.from(this.state.savedTimetable.degreeAcronyms),
-			this.state.savedTimetable.academicTerm
+			this.state.savedTimetable.getAcademicTerm()
 		)
 
 		this.classesByShift = Object.entries(classesByShift)
@@ -542,7 +551,7 @@ class App extends React.Component <{
 	async exportToExcel(): Promise<void> {
 		this.setState({loading: true})
 		const classes =
-			await getClasses(this.state.savedTimetable.shiftState.selectedShifts, this.state.savedTimetable.academicTerm)
+			await getClasses(this.state.savedTimetable.shiftState.selectedShifts, this.state.savedTimetable.getAcademicTerm())
 
 		await saveToExcel(this.state.savedTimetable.shiftState.selectedShifts, classes)
 
@@ -580,7 +589,7 @@ class App extends React.Component <{
 
 		const updatedShifts = await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
 			let newShifts: Shift[] | null | undefined =
-				await API.getCourseSchedules(c, this.state.savedTimetable.academicTerm)
+				await API.getCourseSchedules(c, this.state.savedTimetable.getAcademicTerm())
 
 			newShifts = newShifts?.filter((s) => {
 				const toUpdateShift = shiftsById[s.getStoredId()]
@@ -633,7 +642,6 @@ class App extends React.Component <{
 						ref={this.topBar}
 						onSelectedCourse={this.onSelectedCourse}
 						onSelectedDegree={this.onSelectedDegree}
-						onClearShifts={this.clearSelectedShifts}
 						showAlert={this.showAlert}
 						onChangeLanguage={this.changeLanguage}
 						darkMode={this.state.darkMode}
@@ -727,7 +735,7 @@ class App extends React.Component <{
 													getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
 													renderInput={(params) => <TextField {...params} variant="standard" />}
 													renderOption={(option) =>
-														<Tooltip title={typeof option === 'string' ? '' : option.academicTerm} placement="bottom">
+														<Tooltip title={typeof option === 'string' ? '' : option.getAcademicTerm()} placement="bottom">
 															<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
 																{typeof option === 'string' &&
 																	<IconButton color="inherit" component="span" size="small" style={{marginLeft: '-8px'}}>
@@ -762,7 +770,7 @@ class App extends React.Component <{
 									</CardContent>
 									<CardActions>
 										<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
-											{this.getCoursesBySelectedShifts().map((c) => (
+											{this.getCoursesBySelectedShifts().map(([c, types]) => (
 												<Paper elevation={0} variant={'outlined'} key={c.hashString()}
 													style={{padding: '4px', margin: '4px', display: 'flex'}}
 												>
@@ -774,17 +782,20 @@ class App extends React.Component <{
 															onClick={() => this.colorPicker.current?.show(c)} // Toggle colorPicker on click
 														/>
 													</Tooltip>
-													{Array.from(c.getShiftsDisplay()).map((s) => (
-														<Paper elevation={0} key={s[0]}
-															className={ ( (s[1]) ? classes.checklistSelected : classes.checklistUnselected) as string }
-															style={{
-																marginLeft: '4px', marginRight: '4px',
-																color: `${(s[1]) ? this.theme.palette.text.primary : this.theme.palette.text.hint}`
-															}}
-														>
-															<Typography variant='body1' style={{ fontWeight: 500 }}>{s[0]}</Typography>
-														</Paper>
-													))}
+													{ Array.from(c.shiftTypes.entries()).map(([type]) => {
+														const shown = types[type as ShiftType] !== undefined
+														return (
+															<Paper elevation={0} key={type}
+																className={ (shown ? classes.checklistSelected : classes.checklistUnselected) as string }
+																style={{
+																	marginLeft: '4px', marginRight: '4px',
+																	color: `${shown ? this.theme.palette.text.primary : this.theme.palette.text.hint}`
+																}}
+															>
+																<Typography variant='body1' style={{ fontWeight: 500 }}>{type}</Typography>
+															</Paper>
+														)
+													})}
 												</Paper>
 											))}
 										</div>
@@ -854,7 +865,7 @@ class App extends React.Component <{
 													<ListItemText>{i18next.t('schedule-selected.actions.get-calendar')}</ListItemText>
 												</MenuItem>
 											</Menu>
-											{/* <Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
+											<Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
 												<IconButton
 													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
 													color="inherit"
@@ -864,7 +875,7 @@ class App extends React.Component <{
 													component="span">
 													<FontAwesomeIcon icon={faClone}/>
 												</IconButton>
-											</Tooltip> */}
+											</Tooltip>
 										</div>
 									</CardActions>
 								</Card>
@@ -1013,7 +1024,7 @@ class App extends React.Component <{
 						<NewTimetable ref={this.newTimetable}
 							onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
 							onCancel={() =>
-								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.academicTerm, false)}
+								this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.getAcademicTerm(), false)}
 						/>
 					</div>
 				</div>
