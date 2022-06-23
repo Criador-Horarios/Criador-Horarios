@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [1.15.1] - 23/06/2022
+
+### Added
+
+### Fixed
+- At first usage, the clean schedule was not obtaining a correct academic term
+### Removed
+
 ## [1.15.0] - 13/05/2022
 
 ### Added
