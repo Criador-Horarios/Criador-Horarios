@@ -65,7 +65,7 @@ import { faClone, faFileExcel } from '@fortawesome/free-solid-svg-icons'
 import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 import { Autocomplete, createFilterOptions } from '@material-ui/lab'
-import Timetable, { CourseChangeType } from './domain/Timetable'
+import Timetable from './domain/Timetable'
 import NewTimetable from './components/NewTimetable/NewTimetable'
 
 class App extends React.Component <{
@@ -420,7 +420,7 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.link-obtained'), 'success')
 	}
 
-	async buildState(forceUpdate = false): Promise<void> {
+	async buildState(_forceUpdate = false): Promise<void> {
 		let savedTimetables: Timetable[] = []
 		try {
 			savedTimetables = await this.savedStateHandler.getSavedTimetables()

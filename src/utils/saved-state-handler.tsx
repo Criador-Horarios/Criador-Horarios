@@ -137,7 +137,7 @@ export default class SavedStateHandler {
 		return current.length === 0 ? [newTimetable] : this.savedTimetables
 	}
 	
-	async getSavedTimetables(forceUpdate = false): Promise<Timetable[]> {
+	async getSavedTimetables(_forceUpdate = false): Promise<Timetable[]> {
 		// If we don't have terms, please fetch them for the timetables
 		if (staticData.currentTerm === undefined) {
 			await defineCurrentTerm()
@@ -146,7 +146,7 @@ export default class SavedStateHandler {
 		const localTimetables = this.getLocalStorage(SavedStateHandler.SAVED_TIMETABLES)
 
 		let parsedTimetables: (Timetable | undefined)[] = []
-		if (this.urlParams !== {}) {
+		if (!!this.urlParams && Object.keys({}).length !== 0) {
 			const parsedTimetable = await Timetable.fromURLParams(this.urlParams)
 			parsedTimetables = parsedTimetables.concat(parsedTimetable)
 			const usableTimetables = parsedTimetables.filter(t => t !== undefined) as Timetable[]
@@ -356,7 +356,7 @@ export default class SavedStateHandler {
 		dto[SavedStateHandler.URL_TIMETABLE_NAME] = encodeURI(i18next.t('timetable-autocomplete.default-timetable'))
 
 		// If there are no shifts, return none
-		if (shifts === '') return undefined
+		if (!shifts) return undefined
 		
 		const newTimetable = await Timetable.fromURLParams(dto)
 		
