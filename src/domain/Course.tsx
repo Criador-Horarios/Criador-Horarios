@@ -179,18 +179,19 @@ export type CourseDto = {
 }
 
 function getCourseAcronym(acronym: string, name: string): string {
-	let newAcronym = trimTrailingNumbers(acronym)
-	const match = name.match(/ (III|II|I|IV|V|VIII|VII|VI|)$/)
-	if (match) {
-		newAcronym += `-${match[1]}`
+	let newAcronym = trimTrailingCharacters(acronym)
+	const acronymMatch = newAcronym.match(/[^A-Za-z]+(III|II|IV|I|V|VIII|VII|VI|)[^A-Za-z]*$/)
+	const nameMatch = name.match(/ (III|II|IV|I|V|VIII|VII|VI|)$/)
+	if (nameMatch && !acronymMatch) {
+		newAcronym += `-${nameMatch[1]}`
 	}
 	return newAcronym
 }
 
-export const trimTrailingNumbers = (id: string): string => {
+export const trimTrailingCharacters = (id: string): string => {
 	let i: number
 	for (i = id.length-1; i >= 0; i--) {
-		if (!(id[i] >= '0' && id[i] <= '9')) {
+		if (id[i].match(/[a-zA-Z]/)) {
 			break
 		}
 	}

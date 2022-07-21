@@ -172,11 +172,7 @@ export default class API {
 			releaser()
 			return null
 		}
-		const courses = res
-			.map((d: CourseDto) => Course.fromDto(d, degree.acronym))
-			.filter((c: Course) => {
-				return c.semester === this.SEMESTER
-			})
+		const courses = res.map((d: CourseDto) => Course.fromDto(d, degree.acronym))
 
 		// Replace with previous courses already cached and store new ones
 		const returnedCourses: Course[] = []
@@ -271,7 +267,7 @@ export default class API {
 
 		const res = await this.getRequest(`/api/courses/${course.id}/schedule`, academicTermId) as ScheduleDto | null
 		if (res === null) {
-			console.error('can\'t get course schedule')
+			console.error('Can\'t get course schedule')
 			releaser()
 			return null
 		}

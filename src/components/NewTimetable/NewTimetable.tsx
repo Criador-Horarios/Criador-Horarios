@@ -52,6 +52,10 @@ class NewTimetable extends React.PureComponent <{
 		this.props.onCreatedTimetable(newTimetable)
 	}
 
+	closeDialog(): void {
+		this.setState({show: false})
+	}
+
 	// Helpers
 	private validateName(name: string): boolean {
 		// Cannot be empty
@@ -73,38 +77,40 @@ class NewTimetable extends React.PureComponent <{
 	render(): React.ReactNode {
 		return (
 			<div>
-				<Dialog open={this.state.show} fullWidth={true} maxWidth='xs'>
-					<DialogTitle>
-						<Typography>{i18next.t('timetable-dialog.title')}</Typography>
-					</DialogTitle>
-					<DialogContent className={styles.ColorPicker}>
-						<Box display="flex" justifyContent="center" flexDirection="column">
-							<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
-								{this.state.showWarning && i18next.t('timetable-dialog.warning') as string}
-							</Typography>
-							<TextField id="timetable-name" label={i18next.t('timetable-dialog.timetable-name')} variant="standard" fullWidth
-								value={this.state.name} onChange={(event) => this.setState({name: event.target.value})}
-								error={!this.validateName(this.state.name)} helperText={this.state.nameError}
-							/>
-							{ this.state.oldTimetable !== undefined &&
-								<Typography variant="caption">
-									{i18next.t('timetable-dialog.copy-of')} “{this.state.oldTimetable.name}”
+				<Dialog open={this.state.show} fullWidth={true} maxWidth='xs' onClose={() => this.closeDialog()}>
+					<form onSubmit={(event) => { event.stopPropagation(); event.preventDefault(); return false}}>
+						<DialogTitle>
+							<Typography>{i18next.t('timetable-dialog.title')}</Typography>
+						</DialogTitle>
+						<DialogContent className={styles.ColorPicker}>
+							<Box display="flex" justifyContent="center" flexDirection="column">
+								<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
+									{this.state.showWarning && i18next.t('timetable-dialog.warning') as string}
 								</Typography>
-							}
-							<Typography variant="caption">
-								{i18next.t('timetable-dialog.chosen-term')} {this.state.academicTerm?.displayTitle()}
-							</Typography>
-						</Box>
-					</DialogContent>
-					<DialogActions>
-						<Button color="default" onClick={() => { this.setState({ show: false }); this.props.onCancel() }}>
-							{i18next.t('timetable-dialog.actions.cancel')}
-						</Button>
-						
-						<Button color="primary" disabled={!this.validateName(this.state.name)} onClick={() => this.confirmCreation()} >
-							{i18next.t('timetable-dialog.actions.save')}
-						</Button>
-					</DialogActions>
+								<TextField id="timetable-name" label={i18next.t('timetable-dialog.timetable-name')} variant="standard" fullWidth
+									value={this.state.name} onChange={(event) => this.setState({name: event.target.value})}
+									error={!this.validateName(this.state.name)} helperText={this.state.nameError}
+								/>
+								{ this.state.oldTimetable !== undefined &&
+									<Typography variant="caption">
+										{i18next.t('timetable-dialog.copy-of')} “{this.state.oldTimetable.name}”
+									</Typography>
+								}
+								<Typography variant="caption">
+									{i18next.t('timetable-dialog.chosen-term')} {this.state.academicTerm?.displayTitle()}
+								</Typography>
+							</Box>
+						</DialogContent>
+						<DialogActions>
+							<Button color="default" onClick={() => { this.setState({ show: false }); this.props.onCancel() }}>
+								{i18next.t('timetable-dialog.actions.cancel')}
+							</Button>
+							
+							<Button color="primary" disabled={!this.validateName(this.state.name)} onClick={() => this.confirmCreation()} type="submit">
+								{i18next.t('timetable-dialog.actions.save')}
+							</Button>
+						</DialogActions>
+					</form>
 				</Dialog>
 			</div>
 		)
