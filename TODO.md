@@ -56,15 +56,20 @@ Multiple-Timetables (Important):
 - [X] Delete button for timetables
 - [X] Fix adding timetables not showing the correct text
 - [X] Add on autocomplete button to add new timetable
-- [ ] When merged, change domain back to horarios.dang.pt
+- [X] When merged, change domain back to horarios.dang.pt
 - [X] Fix duplicating schedule
-- [ ] When duplicating the timetable name is ignored for duplication
-- [ ] Deep copy shift or store stuff on timetable and use pointers for courses and shifts (because changing a course color changes the color of the shifts of the other timetables)
+- [X] When duplicating the timetable name is ignored for duplication
+- [X] Store degrees, courses and shifts to avoid repeating requests and use references for all timetables
+- [ ] Remove all real shifts from Timetable and use references
+- [X] Allow usage of "enter" and "escape" buttons for control of the timetables creation
+- [ ] Order timetables by semesters and divide them with a divider
+- [ ] New timetable should use the semester of the current selected timetable
+
 
 Good to do but not important
 - [ ] Store course color for consistent usage
 - [ ] Don't load all timetables at once, only load the first one and then the ones used (lazy load)
 - [X] Academic terms are being loaded way too much!
-- [ ] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times) (related to above)
+- [X] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times) (related to above)
 - [ ] Allow editing timetables' name
 - [ ] Implement forceUpdate on timetable fetching

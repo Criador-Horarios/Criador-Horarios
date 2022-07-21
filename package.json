@@ -1,6 +1,6 @@
 {
   "name": "horarios",
-  "version": "1.15.1",
+  "version": "1.16.0",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.34",

@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [1.16.0] - 21/07/2022
+
+### Added
+
+- Escape and enter buttons now work on new timetable dialogs
+
+### Fixed
+
+- Course semester filter not letting the courses being fetched
+- Improved course acronyms for new semesters
+
+### Removed
+
 ## [1.15.1] - 23/06/2022
 
 ### Added
