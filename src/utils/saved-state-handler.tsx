@@ -146,7 +146,7 @@ export default class SavedStateHandler {
 		const localTimetables = this.getLocalStorage(SavedStateHandler.SAVED_TIMETABLES)
 
 		let parsedTimetables: (Timetable | undefined)[] = []
-		if (!!this.urlParams && Object.keys({}).length !== 0) {
+		if (!!this.urlParams && Object.keys(this.urlParams).length !== 0) {
 			const parsedTimetable = await Timetable.fromURLParams(this.urlParams)
 			parsedTimetables = parsedTimetables.concat(parsedTimetable)
 			const usableTimetables = parsedTimetables.filter(t => t !== undefined) as Timetable[]
