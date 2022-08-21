@@ -137,6 +137,7 @@ export default class SavedStateHandler {
 		return current.length === 0 ? [newTimetable] : this.savedTimetables
 	}
 	
+	// eslint-disable-next-line 
 	async getSavedTimetables(_forceUpdate = false): Promise<Timetable[]> {
 		// If we don't have terms, please fetch them for the timetables
 		if (staticData.currentTerm === undefined) {
