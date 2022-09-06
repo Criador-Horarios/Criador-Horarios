@@ -6,6 +6,7 @@ import API, { defineCurrentTerm, staticData } from './api'
 import CourseUpdates from './CourseUpdate'
 
 import i18next from 'i18next'
+import i18n from '../i18n/i18n'
 
 export default class SavedStateHandler {
 	// CONSTANTS
@@ -24,11 +25,11 @@ export default class SavedStateHandler {
 	static URL_DEGREES = 'd'
 	static URL_IS_MULTISHIFT = 'm'
 	static URL_TERM = 't'
-	
+
 	// 
 	static DOMAIN = process.env.REACT_APP_URL
-	static MAX_AGE_NORMAL = 60*60*24*31*3 // 3 months - UNUSED
-	static AGE_WARNING = 60*60*24*2 // 2 days
+	static MAX_AGE_NORMAL = 60 * 60 * 24 * 31 * 3 // 3 months - UNUSED
+	static AGE_WARNING = 60 * 60 * 24 * 2 // 2 days
 
 	static PARAMS_SEP = ';'
 	static ARGS_SEP = '~'
@@ -88,7 +89,7 @@ export default class SavedStateHandler {
 		if (!shiftsToParse) {
 			const courseUpdate = new CourseUpdates()
 			courseUpdate.degreeAcronyms = degreesChosen
-			return [courseUpdate, { availableShifts: [], selectedShifts: []}, '']
+			return [courseUpdate, { availableShifts: [], selectedShifts: [] }, '']
 		}
 
 		const shifts = shiftsToParse.split(SavedStateHandler.PARAMS_SEP)
@@ -122,21 +123,39 @@ export default class SavedStateHandler {
 	setSavedTimetables(timetables: Timetable[]): void {
 		// Mark every timetable has saved
 		timetables.forEach(t => t.save())
-		
+
 		const convertedTimetables: Record<string, string> = {}
 		timetables.map((t, index) => convertedTimetables[index] = t.toString())
-		
+
 		this.setLocalStorage(SavedStateHandler.SAVED_TIMETABLES, convertedTimetables)
 		this.savedTimetables = timetables
 	}
 
+	createCurrentTimetable(name = i18next.t('timetable-autocomplete.default-timetable')): Timetable {
+		const newTimetable = new Timetable(name, [], false, false, '')
+		newTimetable.save()
+		return newTimetable
+	}
+
 	getCurrentTimetables(): Timetable[] {
 		const current = this.savedTimetables
-		const newTimetable = new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, '')
-		newTimetable.save()
-		return current.length === 0 ? [newTimetable] : this.savedTimetables
+		return current.length === 0 ? [this.createCurrentTimetable()] : current
 	}
-	
+
+	getAvailableTimetableName(timetables: Timetable[]): string {
+		const allNames = timetables.map(t => t.name)
+		const prefix = i18next.t('timetable-autocomplete.default-timetable').split(' ')[0]
+		let n = 1
+
+		let name = prefix + ` ${n}`
+		while (allNames.includes(name)) {
+			name = prefix + ` ${++n}`
+		}
+
+		return name
+	}
+
+	// eslint-disable-next-line
 	async getSavedTimetables(_forceUpdate = false): Promise<Timetable[]> {
 		// If we don't have terms, please fetch them for the timetables
 		if (staticData.currentTerm === undefined) {
@@ -157,8 +176,7 @@ export default class SavedStateHandler {
 
 		// Check for schedule from previous version (d, s and t)
 		const oldTimetable = await this.migrateOldScheduleToTimetable()
-		let needsSaving = false
-		if (oldTimetable) needsSaving = true
+		const needsSaving = !!oldTimetable
 
 		// If there are none stored
 		// FIXME: Use forceUpdate!
@@ -179,7 +197,17 @@ export default class SavedStateHandler {
 		this.savedTimetables = usableTimetables
 
 		// Save the preexisting timetable if it is the only one
-		if (needsSaving && usableTimetables.length === 1) this.setSavedTimetables(this.savedTimetables)
+		if (needsSaving && usableTimetables.length === 1) {
+			this.setSavedTimetables(this.savedTimetables)
+		}
+		if (usableTimetables.length === 0) {
+			return this.getCurrentTimetables()
+		} else {
+			if (usableTimetables.filter(t => t.getAcademicTerm() === staticData.currentTerm?.id)) {
+				const newName = this.getAvailableTimetableName(usableTimetables)
+				usableTimetables.splice(0, 0, this.createCurrentTimetable(newName))
+			}
+		}
 		return usableTimetables.length === 0 ? this.getCurrentTimetables() : usableTimetables
 	}
 
@@ -237,7 +265,7 @@ export default class SavedStateHandler {
 		if (!course) {
 			throw 'Could not build course'
 		}
-		
+
 		if (updates.has(course)) {
 			throw 'Repeated course on URL'
 		}
@@ -319,7 +347,7 @@ export default class SavedStateHandler {
 
 		const createdDate = Date.parse(value.createdDate as unknown as string)
 		const diff = (today.valueOf() - createdDate.valueOf()) / 1000 // in seconds
-		
+
 		return diff < value.maxAge
 	}
 
@@ -334,7 +362,7 @@ export default class SavedStateHandler {
 		if (value) {
 			try {
 				const storedValue = JSON.parse(value)
-				
+
 				// It is JSON, but not in the new version
 				if (storedValue.version == undefined) newRes.value = storedValue
 			}
@@ -357,12 +385,12 @@ export default class SavedStateHandler {
 
 		// If there are no shifts, return none
 		if (!shifts) return undefined
-		
+
 		const newTimetable = await Timetable.fromURLParams(dto)
-		
+
 		// Check degrees
 		if (newTimetable &&
-				Array.from(newTimetable.degreeAcronyms).filter(d => d.length === 0 || d.includes('\\')).length > 0) {
+			Array.from(newTimetable.degreeAcronyms).filter(d => d.length === 0 || d.includes('\\')).length > 0) {
 			return undefined
 		}
 
