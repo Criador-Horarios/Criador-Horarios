@@ -72,7 +72,7 @@ async function getMinimalClasses(shifts: Shift[], selectedDegreesAcronyms: strin
 					filteredClasses.push(c)
 				}
 			})
-			currClasses[shift] = filteredClasses
+			currClasses[shift] = filteredClasses.sort()
 		})
 	}
 

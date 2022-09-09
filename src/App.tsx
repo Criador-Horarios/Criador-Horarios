@@ -420,6 +420,7 @@ class App extends React.Component <{
 		this.showAlert(i18next.t('alert.link-obtained'), 'success')
 	}
 
+	// eslint-disable-next-line 
 	async buildState(_forceUpdate = false): Promise<void> {
 		let savedTimetables: Timetable[] = []
 		try {

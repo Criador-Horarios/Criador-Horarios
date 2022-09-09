@@ -373,8 +373,8 @@ export async function defineCurrentTerm(): Promise<void> {
 	const currentMonth = today.getMonth() + 1 // Month starts at 0
 
 	let currentTerm = '', semester = 0
-	// First semester (Between September and January)
-	if (currentMonth <= 1 || currentMonth >= 9) {
+	// First semester (Between August and January)
+	if (currentMonth <= 1 || currentMonth >= 8) {
 		if (currentMonth <= 1) currentYear -= 1
 		currentTerm = `${currentYear}/${currentYear + 1}`
 		semester = 1
