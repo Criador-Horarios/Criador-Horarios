@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Always show a timetable for the current/new semester at first
 
 ### Fixed
+- New timetable was always set to the current academic term
 ### Removed
 
 ## [1.16.0] - 21/07/2022
