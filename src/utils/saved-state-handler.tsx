@@ -202,7 +202,8 @@ export default class SavedStateHandler {
 		if (usableTimetables.length === 0) {
 			return this.getCurrentTimetables()
 		} else {
-			if (!usableTimetables.filter(t => t.getAcademicTerm() === staticData.currentTerm?.id)) {
+			const existingCurrTimetables = usableTimetables.filter(t => t.getAcademicTerm() === staticData.currentTerm?.id)
+			if (existingCurrTimetables.length === 0) {
 				const newName = this.getAvailableTimetableName(usableTimetables)
 				usableTimetables.splice(0, 0, this.createCurrentTimetable(newName))
 			}
