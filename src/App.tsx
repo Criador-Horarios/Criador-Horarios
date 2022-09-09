@@ -284,7 +284,12 @@ class App extends React.Component <{
 	onSelectedTimetable(timetable: Timetable | string): void {
 		// If a string is received, it is the adding new button, so we want to add a new timetable
 		if (typeof timetable === 'string') {
-			if (staticData.currentTerm !== undefined) this.newTimetable.current?.show(staticData.currentTerm, false)
+			// let currAcademicTerm = this.state.savedTimetable.
+			const currAcademicTerm = staticData.terms
+				.find(t => t.id === this.state.savedTimetable.getAcademicTerm()) || staticData.currentTerm
+			if (currAcademicTerm !== undefined) {
+				this.newTimetable.current?.show(currAcademicTerm, false)
+			}
 			return
 		}
 
