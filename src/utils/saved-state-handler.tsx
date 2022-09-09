@@ -6,7 +6,6 @@ import API, { defineCurrentTerm, staticData } from './api'
 import CourseUpdates from './CourseUpdate'
 
 import i18next from 'i18next'
-import i18n from '../i18n/i18n'
 
 export default class SavedStateHandler {
 	// CONSTANTS
@@ -203,7 +202,7 @@ export default class SavedStateHandler {
 		if (usableTimetables.length === 0) {
 			return this.getCurrentTimetables()
 		} else {
-			if (usableTimetables.filter(t => t.getAcademicTerm() === staticData.currentTerm?.id)) {
+			if (!usableTimetables.filter(t => t.getAcademicTerm() === staticData.currentTerm?.id)) {
 				const newName = this.getAvailableTimetableName(usableTimetables)
 				usableTimetables.splice(0, 0, this.createCurrentTimetable(newName))
 			}
