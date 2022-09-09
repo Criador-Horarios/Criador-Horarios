@@ -63,7 +63,7 @@ Multiple-Timetables (Important):
 - [ ] Remove all real shifts from Timetable and use references
 - [X] Allow usage of "enter" and "escape" buttons for control of the timetables creation
 - [ ] Order timetables by semesters and divide them with a divider
-- [ ] New timetable should use the semester of the current selected timetable
+- [X] New timetable should use the semester of the current selected timetable
 
 
 Good to do but not important

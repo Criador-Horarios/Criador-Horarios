@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [1.17.0] - 09/09/2022
+
+### Added
+- Sort shift's class on minimal classes
+- Always show a timetable for the current/new semester at first
+
+### Fixed
+- New timetable was always set to the current academic term
+### Removed
+
 ## [1.16.0] - 21/07/2022
 
 ### Added

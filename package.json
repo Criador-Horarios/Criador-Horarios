@@ -1,6 +1,6 @@
 {
   "name": "horarios",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
@@ -42,7 +42,7 @@
   "scripts": {
     "lint": "eslint src/",
     "lintFix": "eslint src/ --fix",
-    "start": "react-scripts start",
+    "start": "CHOKIDAR_USEPOLLING=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
