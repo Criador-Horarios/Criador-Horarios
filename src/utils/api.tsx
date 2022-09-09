@@ -185,7 +185,8 @@ export default class API {
 		const sortedCourses = returnedCourses.sort(Course.compare)
 
 		// Store in cache for future use
-		this.REQUEST_CACHE.storeDegreeCourses(degree, sortedCourses, academicTermId || '')
+		// FIXME: We should not store this because this endpoint does not return the completed courses (missing URL)
+		// this.REQUEST_CACHE.storeDegreeCourses(degree, sortedCourses, academicTermId || '')
 
 		// RELEASE LOCK HERE
 		releaser()
