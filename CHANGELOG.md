@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [1.17.1] - 09/09/2022
+
+### Added
+
+### Fixed
+- New timetable was not being created for the current semester
+- Not showing the classes for all the shifts (course was cached without URL)
+
+### Removed
+
 ## [1.17.0] - 09/09/2022
 
 ### Added
