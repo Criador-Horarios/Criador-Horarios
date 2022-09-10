@@ -73,3 +73,8 @@ Good to do but not important
 - [X] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times) (related to above)
 - [ ] Allow editing timetables' name
 - [ ] Implement forceUpdate on timetable fetching
+
+
+## Refactoring needs
+- [ ] src/App.tsx
+- [ ] Add barrel for components (for better import)
