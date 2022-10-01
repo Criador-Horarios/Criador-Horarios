@@ -19,13 +19,9 @@ import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import { createTheme, ThemeProvider, Theme } from '@material-ui/core/styles'
 
-import Avatar from '@material-ui/core/Avatar'
 import IconButton from '@material-ui/core/IconButton'
 import Tooltip from '@material-ui/core/Tooltip'
-import Toolbar from '@material-ui/core/Toolbar'
 import Alert from '@material-ui/lab/Alert'
-import AppBar from '@material-ui/core/AppBar'
-import TopBar from './components/TopBar/TopBar'
 import Icon from '@material-ui/core/Icon'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
@@ -41,14 +37,14 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import downloadAsImage from './utils/save-as-image'
 import Snackbar from '@material-ui/core/Snackbar'
-import Link from '@material-ui/core/Link'
-import GitHubIcon from '@material-ui/icons/GitHub'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPaypal } from '@fortawesome/free-brands-svg-icons'
 import SavedStateHandler from './utils/saved-state-handler'
 import CardHeader from '@material-ui/core/CardHeader'
+
+import Footer from './components/Footer/Footer'
+import TopBar from './components/TopBar/TopBar'
 
 import getClasses, { getMinimalClasses } from './utils/shift-scraper'
 import Dialog from '@material-ui/core/Dialog'
@@ -81,7 +77,6 @@ class App extends React.Component <{
 		hasAlert: false as boolean,
 		classesDialog: false,
 		warningDialog: false,
-		changelogDialog: false,
 		saveMenuAnchor: null,
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
@@ -888,51 +883,7 @@ class App extends React.Component <{
 							</div>
 						</div>
 					</div>
-					<div className="footer">
-						<AppBar className={classes.footer as string} color="default" position="sticky">
-							<Toolbar>
-								<Tooltip title={i18next.t('footer.support-button.tooltip') as string}>
-									<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" onClick={() => {return}} color="inherit">
-										<Button color='default' variant='outlined'
-											startIcon={<FontAwesomeIcon icon={faPaypal}/>}
-											size='small'
-										>{i18next.t('footer.support-button.content') as string}
-										</Button>
-									</Link>
-								</Tooltip>
-								<Tooltip title={i18next.t('footer.changelog-button.tooltip') as string} style={{marginLeft: '8px'}}>
-									<Button color='default' variant='outlined'
-										startIcon={<Icon>new_releases</Icon>}
-										size='small'
-										onClick={() => {this.setState({changelogDialog: true})}}
-									>{i18next.t('footer.changelog-button.content') as string}
-									</Button>
-								</Tooltip>
-								<div className={classes.grow as string} />
-								<Tooltip title={i18next.t('footer.repository.tooltip') as string}>
-									<Link href="https://github.com/joaocmd/Criador-Horarios" target="_blank" onClick={() => {return}} color="inherit">
-										<IconButton color="inherit" onClick={() => {return}} component="span">
-											<GitHubIcon></GitHubIcon>
-										</IconButton>
-									</Link>
-								</Tooltip>
-								<Tooltip title="João David">
-									<Link href="https://github.com/joaocmd" target="_blank" onClick={() => {return}} color="inherit">
-										<IconButton size="small" title="João David" onClick={() => {return}}>
-											<Avatar alt="Joao David" src={`${process.env.PUBLIC_URL}/img/joao.png`} />
-										</IconButton>
-									</Link>
-								</Tooltip>
-								<Tooltip title="Daniel Gonçalves">
-									<Link href="https://dang.pt" target="_blank" onClick={() => {return}} color="inherit">
-										<IconButton size="small" title="Daniel Gonçalves" onClick={() => {return}}>
-											<Avatar alt="Daniel Goncalves" src={`${process.env.PUBLIC_URL}/img/daniel.png`} />
-										</IconButton>
-									</Link>
-								</Tooltip>
-							</Toolbar>
-						</AppBar>
-					</div>
+					<Footer />
 					<div className="dialogs">
 						<Dialog open={this.state.classesDialog}>
 							<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>
@@ -984,14 +935,6 @@ class App extends React.Component <{
 							<DialogActions>
 								<div />
 								<Button onClick={() => {this.setState({newDomainDialog: false})}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
-							</DialogActions>
-						</Dialog>
-						<Dialog open={this.state.changelogDialog}>
-							<DialogTitle>{i18next.t('changelog-dialog.title') as string}</DialogTitle>
-							<DialogContent style={{whiteSpace: 'pre-line'}}>{(i18next.t('changelog-dialog.content', {returnObjects: true}) as string[]).join('\n\n')}</DialogContent>
-							<DialogActions>
-								<div />
-								<Button onClick={() => {this.setState({changelogDialog: false})}} color="primary">{i18next.t('changelog-dialog.actions.back') as string}</Button>
 							</DialogActions>
 						</Dialog>
 						<Dialog open={this.state.confirmDeleteTimetable[0]}>
