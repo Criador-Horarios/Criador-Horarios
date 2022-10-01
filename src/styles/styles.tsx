@@ -17,17 +17,6 @@ export const APP_STYLES = (theme: any) => ({
 		// color: theme.palette.text.hint
 		opacity: 0.8
 	},
-	paper: {
-		display: 'flex',
-		flexWrap: 'wrap' as const,
-		// border: `1px solid ${theme.palette.divider}`,
-	},
-	divider: {
-		margin: theme.spacing(1, 0.5),
-	},
-	toggleGroup: {
-		flexWrap: 'wrap' as const
-	},
 	card: {
 		margin: '1% 1% 2% 1%'
 	},
@@ -48,13 +37,6 @@ export const APP_STYLES = (theme: any) => ({
 		'& .MuiTypography-root': {
 			lineHeight: 0.5
 		}
-	},
-	footer: {
-		bottom: '0px',
-		top: 'auto',
-	},
-	grow: {
-		flexGrow: 1,
 	},
 	centered: {
 		margin: 'auto'

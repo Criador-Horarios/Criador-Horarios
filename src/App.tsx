@@ -2,7 +2,6 @@ import React, { ReactNode } from 'react'
 import API, { staticData } from './utils/api'
 import './App.scss'
 
-import campiList from './domain/CampiList'
 import Course from './domain/Course'
 import Shift, { ShiftType } from './domain/Shift'
 import Lesson from './domain/Lesson'
@@ -30,11 +29,8 @@ import Chip from '@material-ui/core/Chip'
 import Paper from '@material-ui/core/Paper'
 import Switch from '@material-ui/core/Switch'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import ToggleButton from '@material-ui/lab/ToggleButton'
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import Divider from '@material-ui/core/Divider'
 import downloadAsImage from './utils/save-as-image'
 import Snackbar from '@material-ui/core/Snackbar'
 import Typography from '@material-ui/core/Typography'
@@ -44,6 +40,7 @@ import SavedStateHandler from './utils/saved-state-handler'
 import CardHeader from '@material-ui/core/CardHeader'
 
 import Footer from './components/Footer/Footer'
+import AvaliableScheduleCard from './components/Schedule/AvaliableScheduleCard'
 import TopBar from './components/TopBar/TopBar'
 
 import getClasses, { getMinimalClasses } from './utils/shift-scraper'
@@ -69,9 +66,6 @@ class App extends React.Component <{
 }>{
 	state = {
 		selectedCourses: new CourseUpdates(),
-		shownShifts: [] as Shift[],
-		selectedCampi: [...campiList] as string[],
-		selectedShiftTypes: Object.values(ShiftType) as string[],
 		alertMessage: '',
 		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
 		hasAlert: false as boolean,
@@ -110,7 +104,6 @@ class App extends React.Component <{
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.getLink = this.getLink.bind(this)
-		this.changeCampi = this.changeCampi.bind(this)
 		this.saveSchedule = this.saveSchedule.bind(this)
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
 		this.showAlert = this.showAlert.bind(this)
@@ -265,15 +258,9 @@ class App extends React.Component <{
 
 		this.state.savedTimetable.shiftState.availableShifts = availableShifts
 
-		const shownShifts = this.filterShifts({
-			selectedCampi: this.state.selectedCampi,
-			selectedShiftTypes: this.state.selectedShiftTypes,
-			availableShifts: availableShifts
-		})
-
 		this.topBar.current?.setSelectedCourses(currCourses)
 		this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
-		this.setState({ availableShifts, shownShifts })
+		this.setState({ availableShifts })
 	}
 
 	onSelectedTimetable(timetable: Timetable | string): void {
@@ -296,10 +283,6 @@ class App extends React.Component <{
 		}
 
 		this.updateToNewTimetable(newTimetable)
-	}
-
-	getAllLessons(): Lesson[] {
-		return this.state.shownShifts.map((shift: Shift) => shift.lessons).flat()
 	}
 
 	getSelectedLessons(): Lesson[] {
@@ -359,34 +342,6 @@ class App extends React.Component <{
 			).filter(([course]) => course !== undefined)
 
 		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
-	}
-
-	changeCampi(campi: string[]): void {
-		const shownShifts = this.filterShifts({
-			selectedCampi: campi,
-			selectedShiftTypes: this.state.selectedShiftTypes,
-			availableShifts: this.state.savedTimetable.shiftState.availableShifts
-		})
-
-		this.setState({ selectedCampi: campi, shownShifts })
-	}
-
-	changeShiftTypes(types: string[]): void {
-		const shownShifts = this.filterShifts({
-			selectedCampi: this.state.selectedCampi,
-			selectedShiftTypes: types,
-			availableShifts: this.state.savedTimetable.shiftState.availableShifts
-		})
-
-		this.setState({ selectedShiftTypes: types, shownShifts })
-	}
-
-	filterShifts(state: {selectedCampi: string[], selectedShiftTypes: string[], availableShifts: Shift[]}): Shift[] {
-		return state.availableShifts.filter( (s) => {
-			const campi = state.selectedCampi.includes(s.campus) || s.campus === undefined
-			const type = state.selectedShiftTypes.includes(s.type)
-			return campi && type
-		})
 	}
 
 	showAlert(message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined): void {
@@ -460,11 +415,6 @@ class App extends React.Component <{
 			this.setState({
 				...state,
 				selectedCourses: courseUpdates,
-				shownShifts: this.filterShifts({
-					selectedCampi: this.state.selectedCampi,
-					selectedShiftTypes: this.state.selectedShiftTypes,
-					availableShifts: state.availableShifts
-				}),
 				shownTimetables: this.savedStateHandler.getCurrentTimetables(),
 				savedTimetable: newTimetable,
 				multiShiftMode: this.state.savedTimetable.isMultiShift
@@ -620,19 +570,6 @@ class App extends React.Component <{
 	render(): ReactNode {
 		const classes = this.props.classes
 
-		const StyledToggleButtonGroup = withStyles((theme) => ({
-			grouped: {
-				margin: theme.spacing(0.5),
-				border: 'none',
-				'&:not(:first-child)': {
-					borderRadius: theme.shape.borderRadius,
-				},
-				'&:first-child': {
-					borderRadius: theme.shape.borderRadius,
-				},
-			}
-		}))(ToggleButtonGroup)
-
 		return (
 			<ThemeProvider theme={this.theme}>
 				<div className="App">
@@ -665,48 +602,7 @@ class App extends React.Component <{
 						</Snackbar>
 						<div className={classes.body as string}>
 							<div className="schedules">
-								<Card className={classes.card as string}>
-									<CardHeader title={i18next.t('schedule-available.title') as string}
-										titleTypographyProps={{ variant: 'h6', align: 'center' }}
-										className={classes.cardTitle as string}
-									/>
-									<CardContent className={classes.cardContent as string}>
-										<Schedule
-											onSelectedEvent={(id: string) =>
-												this.onSelectedShift(id, this.state.savedTimetable.shiftState.availableShifts)}
-											events={this.getAllLessons()} lang={this.state.lang}
-											darkMode={this.state.darkMode}
-										/>
-									</CardContent>
-									<CardActions>
-										<Paper elevation={0} className={`${classes.paper as string} ${classes.centered as string}`}
-											style={{ border: `1px solid ${this.theme.palette.divider}` }}
-										>
-											<StyledToggleButtonGroup
-												className={classes.toggleGroup as string}
-												size="small"
-												value={this.state.selectedCampi}
-												onChange={(_, value) => this.changeCampi(value as string[])}
-												aria-label="text alignment"
-											>
-												{campiList.map((name: string) => (
-													<ToggleButton key={name} value={name}>{name}</ToggleButton>
-												))}
-											</StyledToggleButtonGroup>
-											<Divider flexItem orientation="vertical" className={classes.divider as string}/>
-											<StyledToggleButtonGroup
-												className={classes.toggleGroup as string}
-												size="small"
-												value={this.state.selectedShiftTypes}
-												onChange={(_, value) => this.changeShiftTypes(value as string[])}
-											>
-												{Object.entries(ShiftType).map((name) => (
-													<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
-												))}
-											</StyledToggleButtonGroup>
-										</Paper>
-									</CardActions>
-								</Card>
+								<AvaliableScheduleCard savedTimetable={this.state.savedTimetable} onSelectedShift={this.onSelectedShift} />
 								<Card className={classes.card as string}>
 									<CardHeader //title={i18next.t('schedule-selected.title') as string}
 										titleTypographyProps={{ variant: 'h6', align: 'center' }}

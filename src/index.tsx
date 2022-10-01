@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals'
 import API from './utils/api'
 import i18n from './i18n/i18n'
 import {I18nextProvider} from 'react-i18next'
+import { StylesProvider } from '@material-ui/core'
 
 API.setMutexes()
 API.setPrefix()
@@ -13,7 +14,9 @@ API.setPrefix()
 ReactDOM.render(
 	<React.StrictMode>
 		<I18nextProvider i18n={i18n}>
-			<App />
+			<StylesProvider injectFirst>
+				<App />
+			</StylesProvider>
 		</I18nextProvider>
 	</React.StrictMode>,
 	document.getElementById('root')

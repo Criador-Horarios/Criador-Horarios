@@ -15,8 +15,8 @@ import hexRgb from 'hex-rgb'
 class Schedule extends React.PureComponent <{
 	onSelectedEvent: (id: string) => void
 	events: Lesson[]
-	lang: string
-	darkMode: boolean
+	lang: string // TODO use hook instead
+	darkMode: boolean // TODO use hook instead
 }, unknown>{
 	renderEventContent(eventInfo: {event: EventApi, backgroundColor: string}): JSX.Element {
 		const occupation = Object.values(eventInfo.event.extendedProps.occupation as ShiftOccupation)

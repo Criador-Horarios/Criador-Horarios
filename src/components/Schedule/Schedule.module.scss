@@ -1,2 +1,25 @@
-.Schedule {
+.ScheduleCard {
+	margin: 1% 1% 2% 1%;
+}
+
+.ScheduleCardTitle {
+	padding: 8px 16px 2px 16px;
+}
+
+.ScheduleCardContent {
+	padding-top: 4px;
+	padding-bottom: 0px;
+}
+
+.SchedulePaper {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.ScheduleCentered {
+	margin: auto;
+}
+
+.ScheduleToggleGroup {
+	flex-wrap: wrap;
 }
