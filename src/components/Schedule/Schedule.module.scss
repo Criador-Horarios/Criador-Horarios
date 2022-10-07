@@ -23,3 +23,19 @@
 .ScheduleToggleGroup {
 	flex-wrap: wrap;
 }
+
+.ShiftChecklistSelected {
+	// color: theme.palette.text.primary
+}
+
+.ShiftChecklistUnselected {
+	// color: theme.palette.text.hint
+	opacity: 0.8;
+}
+
+.ScheduleFormLabel {
+	margin: 0;
+	& .MuiTypography-root {
+		line-height: 0.5;
+	}
+}

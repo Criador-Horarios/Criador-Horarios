@@ -177,7 +177,7 @@ export default class Timetable implements Comparable {
 		const idx = Comparables.indexOf(this.shiftState.selectedShifts, chosenShift)
 		const shiftCourse = this.courseUpdates.courses.filter(c => c.id === chosenShift.courseId)
 
-		let replacingIndex
+		let replacingIndex: number
 		if (this.isMultiShift) {
 			// We want to allow multiple shifts of the same type, don't replace anything
 			replacingIndex = -1
@@ -190,16 +190,17 @@ export default class Timetable implements Comparable {
 			// Add course if not existing
 			if (!this.courseUpdates.has(chosenShift.course)) this.courseUpdates.toggleCourse(chosenShift.course)
 			
-			this.shiftState.selectedShifts.push(chosenShift)
+			// We must change this array immutably, otherwise useMemo will not detect the change
+			this.shiftState.selectedShifts = [...this.shiftState.selectedShifts, chosenShift]
 			if (replacingIndex !== -1) {
-				this.shiftState.selectedShifts.splice(replacingIndex, 1)
+				this.shiftState.selectedShifts = this.shiftState.selectedShifts.filter((_, i) => i !== replacingIndex)
 			} else if (shiftCourse.length === 1) {
 				// Change on the course for the selected shift types
 				shiftCourse[0].addSelectedShift(chosenShift)
 			}
 			this.degreeAcronyms.add(chosenShift.course.degreeAcronym)
 		} else {
-			this.shiftState.selectedShifts.splice(idx, 1)
+			this.shiftState.selectedShifts = this.shiftState.selectedShifts.filter((_, i) => i !== idx)
 			if (shiftCourse.length === 1) {
 				// Change on the course for the selected shift types
 				shiftCourse[0].removeSelectedShift(chosenShift)

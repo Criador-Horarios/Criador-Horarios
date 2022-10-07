@@ -4,46 +4,29 @@ import './App.scss'
 
 import Course from './domain/Course'
 import Shift, { ShiftType } from './domain/Shift'
-import Lesson from './domain/Lesson'
-import Schedule from './components/Schedule/Schedule'
 import ColorPicker from './components/ColorPicker/ColorPicker'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference } from './utils/CourseUpdate'
 import Degree from './domain/Degree'
-
-import saveToExcel from './utils/excel'
-import getCalendar from './utils/calendar-generator'
-import { combinations2, it_contains } from './utils/itertools'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 import { createTheme, ThemeProvider, Theme } from '@material-ui/core/styles'
 
 import IconButton from '@material-ui/core/IconButton'
-import Tooltip from '@material-ui/core/Tooltip'
 import Alert from '@material-ui/lab/Alert'
 import Icon from '@material-ui/core/Icon'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardActions from '@material-ui/core/CardActions'
-import Chip from '@material-ui/core/Chip'
-import Paper from '@material-ui/core/Paper'
-import Switch from '@material-ui/core/Switch'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import downloadAsImage from './utils/save-as-image'
 import Snackbar from '@material-ui/core/Snackbar'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import SavedStateHandler from './utils/saved-state-handler'
-import CardHeader from '@material-ui/core/CardHeader'
 
 import Footer from './components/Footer/Footer'
 import AvaliableScheduleCard from './components/Schedule/AvaliableScheduleCard'
+import SelectedScheduleCard from './components/Schedule/SelectedScheduleCard/SelectedScheduleCard'
 import TopBar from './components/TopBar/TopBar'
 
-import getClasses, { getMinimalClasses } from './utils/shift-scraper'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
@@ -51,13 +34,7 @@ import DialogContent from '@material-ui/core/DialogContent'
 import Box from '@material-ui/core/Box'
 import { APP_STYLES } from './styles/styles'
 
-import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import { faClone, faFileExcel } from '@fortawesome/free-solid-svg-icons'
-import { ListItemIcon, ListItemText, TextField } from '@material-ui/core'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
-import { Autocomplete, createFilterOptions } from '@material-ui/lab'
 import Timetable from './domain/Timetable'
 import NewTimetable from './components/NewTimetable/NewTimetable'
 
@@ -75,7 +52,6 @@ class App extends React.Component <{
 		loading: true as boolean,
 		lang: i18next.options.lng as string,
 		darkMode: false,
-		inhibitMultiShiftModeChange: false,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course)  },
 		newDomainDialog: false,
 		confirmDeleteTimetable: [false, undefined] as [boolean, undefined | Timetable],
@@ -85,7 +61,6 @@ class App extends React.Component <{
 	}
 	savedStateHandler: SavedStateHandler
 	selectedDegrees: Degree[] = []
-	chosenSchedule: React.RefObject<Schedule>
 	topBar: React.RefObject<TopBar>
 	colorPicker: React.RefObject<ColorPicker>
 	newTimetable: React.RefObject<NewTimetable>
@@ -104,16 +79,13 @@ class App extends React.Component <{
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.getLink = this.getLink.bind(this)
-		this.saveSchedule = this.saveSchedule.bind(this)
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
 		this.showAlert = this.showAlert.bind(this)
 		this.changeLanguage = this.changeLanguage.bind(this)
 		this.onChangeDarkMode = this.onChangeDarkMode.bind(this)
 		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
-		this.exportToExcel = this.exportToExcel.bind(this)
 		this.updateShiftOccupancies = this.updateShiftOccupancies.bind(this)
 
-		this.chosenSchedule = React.createRef()
 		this.topBar = React.createRef()
 		this.colorPicker = React.createRef()
 		this.newTimetable = React.createRef()
@@ -285,23 +257,6 @@ class App extends React.Component <{
 		this.updateToNewTimetable(newTimetable)
 	}
 
-	getSelectedLessons(): Lesson[] {
-		return this.state.savedTimetable.shiftState.selectedShifts.map((shift: Shift) => shift.lessons).flat()
-	}
-
-	private recomputeDisableMultiShiftModeChange(timetable: Timetable | undefined = undefined) {
-		// Check if multi-shift can't be disabled safely
-		// if multiple shifts of the same course/type are selected, and
-		// multi-shift is disabled, chaos ensues
-		const currTimetable = timetable || this.state.savedTimetable
-		const disable = currTimetable.isMultiShift && it_contains(
-			combinations2(currTimetable.shiftState.selectedShifts),
-			([a, b]) => Shift.isSameCourseAndType(a,b)
-		)
-
-		if (this.state.inhibitMultiShiftModeChange !== disable) this.setState({ inhibitMultiShiftModeChange: disable })
-	}
-
 	onSelectedShift(shiftName: string, arr: Shift[]): void {
 		const chosenShift = arr.find((s: Shift) => s.name === shiftName)
 
@@ -309,7 +264,6 @@ class App extends React.Component <{
 			// Add to current timetable and save
 			this.state.savedTimetable.toggleShift(chosenShift)
 			this.savedStateHandler.setSavedTimetables(this.savedStateHandler.getCurrentTimetables())
-			this.recomputeDisableMultiShiftModeChange()
 			// Store academic term
 			const selectedAcademicTerm = this.topBar.current?.state.selectedAcademicTerm
 			if (selectedAcademicTerm !== undefined) {
@@ -417,24 +371,12 @@ class App extends React.Component <{
 				selectedCourses: courseUpdates,
 				shownTimetables: this.savedStateHandler.getCurrentTimetables(),
 				savedTimetable: newTimetable,
-				multiShiftMode: this.state.savedTimetable.isMultiShift
 			})
-			this.recomputeDisableMultiShiftModeChange(newTimetable)
 			SavedStateHandler.changeUrl()
 		} catch (err) {
 			console.error(err)
 			// ignored, bad URL/cookie state
 		}
-	}
-
-	saveSchedule(): void {
-		if (this.state.savedTimetable.shiftState.selectedShifts.length === 0) {
-			this.showAlert(i18next.t('alert.no-shift-selected'), 'info')
-			return
-		}
-
-		downloadAsImage(this.state.savedTimetable.shiftState.selectedShifts, this.state.darkMode)
-		this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
 	}
 
 	async changeLanguage(language: string, afterChange: () => Promise<void>): Promise<void> {
@@ -473,47 +415,11 @@ class App extends React.Component <{
 		})
 	}
 
-	async getClasses(): Promise<void> {
-		if (this.state.savedTimetable.degreeAcronyms.size === 0) {
-			this.showAlert(i18next.t('alert.minimal-classes-no-degrees'), 'error')
-			return
-		}
-
-		this.setState({ loading: true })
-		
-		const [classesByShift, minimalClasses] = await getMinimalClasses(
-			this.state.savedTimetable.shiftState.selectedShifts,
-			Array.from(this.state.savedTimetable.degreeAcronyms),
-			this.state.savedTimetable.getAcademicTerm()
-		)
-
-		this.classesByShift = Object.entries(classesByShift)
-		this.minimalClasses = minimalClasses
-		this.setState({classesDialog: true, loading: false})
-	}
-
 	setWarningDialog(): void {
 		this.warningTitle = i18next.t('warning.title')
 		this.warningContent = (i18next.t('warning.content', {returnObjects: true}) as string[]).join('\n\n')
 		this.warningContinue = () => {return}
 		this.setState({warningDialog: true})
-	}
-
-	async exportToExcel(): Promise<void> {
-		this.setState({loading: true})
-		const classes =
-			await getClasses(this.state.savedTimetable.shiftState.selectedShifts, this.state.savedTimetable.getAcademicTerm())
-
-		await saveToExcel(this.state.savedTimetable.shiftState.selectedShifts, classes)
-
-		this.setState({loading: false})
-		this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
-	}
-
-	downloadCalendar(): void {
-		getCalendar(this.state.savedTimetable.shiftState.selectedShifts)
-
-		this.showAlert(i18next.t('alert.calendar-obtained'), 'success')
 	}
 
 	onSaveMenuClick(event: React.MouseEvent<HTMLSpanElement, MouseEvent> | null, open: boolean): void {
@@ -586,8 +492,7 @@ class App extends React.Component <{
 						onChangeDarkMode={this.onChangeDarkMode}
 						currentTimetable={this.state.savedTimetable}
 						onChangeAcademicTerm={(at) => this.newTimetable.current?.show(at)}
-					>
-					</TopBar>
+					/>
 					<div className="main">
 						<Snackbar
 							open={this.state.hasAlert}
@@ -603,179 +508,13 @@ class App extends React.Component <{
 						<div className={classes.body as string}>
 							<div className="schedules">
 								<AvaliableScheduleCard savedTimetable={this.state.savedTimetable} onSelectedShift={this.onSelectedShift} />
-								<Card className={classes.card as string}>
-									<CardHeader //title={i18next.t('schedule-selected.title') as string}
-										titleTypographyProps={{ variant: 'h6', align: 'center' }}
-										className={classes.cardTitle as string}
-										title={
-											<Box style={{flexDirection: 'row', display: 'flex'}}>
-												<span style={{flexGrow: 1, width: '23%'}}></span>
-												<Typography variant='h6' align='center' style={{flexGrow: 1}}>{i18next.t('schedule-selected.title')}</Typography>
-												<Autocomplete disableClearable autoHighlight size='small'
-													filterOptions={(options, params): (Timetable | string)[] => {
-														const filter = createFilterOptions<Timetable | string>()
-														const filtered = filter(options, params)
-														filtered.unshift(i18next.t('timetable-autocomplete.add-new'))
-										
-														const { inputValue } = params
-														// Suggest the creation of a new value
-														const isExisting = options.some((option) => typeof option === 'string' || inputValue === option.name)
-														if (inputValue !== '' && !isExisting) {
-															filtered.push(new Timetable(inputValue, [], false, false, this.state.currentAcademicTerm))
-														}
-										
-														return filtered
-													}}
-													options={this.state.shownTimetables as (Timetable | string)[]}
-													value={this.state.savedTimetable}
-													onChange={(_, value) => this.onSelectedTimetable(value)}
-													getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
-													renderInput={(params) => <TextField {...params} variant="standard" />}
-													renderOption={(option) =>
-														<Tooltip title={typeof option === 'string' ? '' : option.getAcademicTerm()} placement="bottom">
-															<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-																{typeof option === 'string' &&
-																	<IconButton color="inherit" component="span" size="small" style={{marginLeft: '-8px'}}>
-																		<Icon>add</Icon>
-																	</IconButton>
-																}															
-																<Typography style={{flexGrow: 1, overflow: 'clip', marginTop: '4px'}}>
-																	{typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
-																</Typography>
-																{this.state.shownTimetables.length > 1 && typeof option !== 'string' &&
-																	<IconButton color="inherit" component="span" size="small"
-																		disabled={this.state.shownTimetables.length <= 1}
-																		onClick={() => this.setState({confirmDeleteTimetable: [true, option]})}
-																	>
-																		<Icon>delete</Icon>
-																	</IconButton>
-																}
-															</div>
-														</Tooltip>
-													}
-													style={{width: '23%', flexGrow: 1}}
-												/>
-											</Box>
-										}
-									/>
-									<CardContent className={classes.cardContent as string}>
-										<Schedule
-											onSelectedEvent={(id: string) => this.onSelectedShift(id, this.state.savedTimetable.shiftState.selectedShifts)}
-											events={this.getSelectedLessons()} ref={this.chosenSchedule} lang={this.state.lang}
-											darkMode={this.state.darkMode}
-										/>
-									</CardContent>
-									<CardActions>
-										<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
-											{this.getCoursesBySelectedShifts().map(([c, types]) => (
-												<Paper elevation={0} variant={'outlined'} key={c.hashString()}
-													style={{padding: '4px', margin: '4px', display: 'flex'}}
-												>
-													<Tooltip title={i18next.t('color-picker-dialog.title', { course: c.acronym}) as string}
-														key={c.hashString()}>
-														<Chip size="small" color='primary'
-															style={{backgroundColor: c.color}}
-															label={<span style={{color: c.textColor}}>{c.acronym}</span>}
-															onClick={() => this.colorPicker.current?.show(c)} // Toggle colorPicker on click
-														/>
-													</Tooltip>
-													{ Array.from(c.shiftTypes.entries()).map(([type]) => {
-														const shown = types[type as ShiftType] !== undefined
-														return (
-															<Paper elevation={0} key={type}
-																className={ (shown ? classes.checklistSelected : classes.checklistUnselected) as string }
-																style={{
-																	marginLeft: '4px', marginRight: '4px',
-																	color: `${shown ? this.theme.palette.text.primary : this.theme.palette.text.hint}`
-																}}
-															>
-																<Typography variant='body1' style={{ fontWeight: 500 }}>{type}</Typography>
-															</Paper>
-														)
-													})}
-												</Paper>
-											))}
-										</div>
-										<div className={classes.centered as string}>
-											<Tooltip title={i18next.t('multishiftmode-switch') as string}>
-												<FormControlLabel
-													className={classes.formLabel as string}
-													label={<AllInclusiveIcon fontSize="small" />}
-													labelPlacement="top"
-													control={
-														<Switch
-															checked={this.state.savedTimetable.isMultiShift}
-															disabled={this.state.inhibitMultiShiftModeChange}
-															onChange={this.onChangeMultiShiftMode}
-															size="small"
-														/>
-													}
-												/>
-											</Tooltip>
-											<Tooltip title={i18next.t('schedule-selected.actions.get-classes') as string}>
-												<IconButton
-													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
-													color="inherit"
-													onClick={() => this.getClasses()}
-													component="span">
-													<Icon>list</Icon>
-												</IconButton>
-											</Tooltip>
-											<Tooltip title={i18next.t('link-button.tooltip') as string}>
-												<IconButton disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0} color="inherit" onClick={this.getLink} component="span">
-													<Icon>share</Icon>
-												</IconButton>
-											</Tooltip>
-											<Tooltip title={i18next.t('schedule-selected.actions.save-to-file') as string}>
-												<IconButton
-													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
-													color="inherit"
-													onClick={(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {this.onSaveMenuClick(e, true)}}
-													component="span">
-													<Icon>download</Icon>
-												</IconButton>
-											</Tooltip>
-											<Menu anchorEl={this.state.saveMenuAnchor} open={Boolean(this.state.saveMenuAnchor)} keepMounted
-												onClose={() => {this.onSaveMenuClick(null, false)}}
-												anchorOrigin={{vertical:'top', horizontal:'center'}}
-												transformOrigin={{vertical:'bottom', horizontal:'center'}}
-											>
-												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.exportToExcel()}}
-													disableRipple>
-													<ListItemIcon style={{marginLeft: '4px'}}>
-														<FontAwesomeIcon size='lg' icon={faFileExcel}/>
-													</ListItemIcon>
-													<ListItemText style={{marginLeft: '-4px'}}>{i18next.t('schedule-selected.actions.save-as-excel')}</ListItemText>
-												</MenuItem>
-												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.saveSchedule()}}
-													disableRipple>
-													<ListItemIcon>
-														<Icon>image</Icon>
-													</ListItemIcon>
-													<ListItemText>{i18next.t('schedule-selected.actions.save-as-image')}</ListItemText>
-												</MenuItem>
-												<MenuItem onClick={() => {this.onSaveMenuClick(null, false); this.downloadCalendar()}}
-													disableRipple>
-													<ListItemIcon>
-														<Icon>event</Icon>
-													</ListItemIcon>
-													<ListItemText>{i18next.t('schedule-selected.actions.get-calendar')}</ListItemText>
-												</MenuItem>
-											</Menu>
-											<Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
-												<IconButton
-													disabled={this.state.savedTimetable.shiftState.selectedShifts.length === 0}
-													color="inherit"
-													onClick={() =>
-														this.newTimetable.current?.show(staticData.currentTerm || staticData.terms[0], false, this.state.savedTimetable)
-													}
-													component="span">
-													<FontAwesomeIcon icon={faClone}/>
-												</IconButton>
-											</Tooltip>
-										</div>
-									</CardActions>
-								</Card>
+								<SelectedScheduleCard
+									savedTimetable={this.state.savedTimetable}
+									shownTimetables={this.state.shownTimetables}
+									onSelectedShift={this.onSelectedShift}
+									onSelectedTimetable={this.onSelectedTimetable}
+									onChangeMultiShiftMode={this.onChangeMultiShiftMode}
+								/>
 							</div>
 						</div>
 					</div>
