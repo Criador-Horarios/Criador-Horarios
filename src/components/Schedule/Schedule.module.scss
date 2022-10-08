@@ -35,7 +35,9 @@
 
 .ScheduleFormLabel {
 	margin: 0;
-	& .MuiTypography-root {
-		line-height: 0.5;
+	:global{
+		.MuiTypography-root {
+			line-height: 0.5;
+		}
 	}
 }
