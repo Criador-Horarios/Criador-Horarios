@@ -26,6 +26,7 @@ import saveToExcel from '../../../utils/excel'
 import { combinations2, it_contains } from '../../../utils/itertools'
 import downloadAsImage from '../../../utils/save-as-image'
 import getClasses, { getMinimalClasses } from '../../../utils/shift-scraper'
+import { useAppState } from '../../../hooks/useAppState'
 
 interface ScheduleActionsProps {
 	savedTimetable: Timetable;
@@ -33,6 +34,8 @@ interface ScheduleActionsProps {
 }
 
 function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleActionsProps) : JSX.Element {
+	const { setLoading } = useAppState()
+	
 	const { isMultiShift, degreeAcronyms } = savedTimetable
 	const { selectedShifts } = savedTimetable.shiftState
 	const academicTerm = savedTimetable.getAcademicTerm()
@@ -59,7 +62,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 			return
 		}
 
-		// TODO this.setState({ loading: true })
+		setLoading(true)
 		
 		const [classesByShift, minimalClasses] = await getMinimalClasses(
 			selectedShifts,
@@ -67,20 +70,21 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 			academicTerm
 		)
 
-		// TODO this.setState({classesDialog: true, loading: false})
+		// TODO this.setState({classesDialog: true})
+		setLoading(false)
 		// TODO save this somewhere instead of returning
 		return {classesByShift: Object.entries(classesByShift), minimalClasses}
 	}, [])
 
 
 	const exportToExcel = useCallback(async () => {
-		// TODO this.setState({loading: true})
+		setLoading(true)
 		const classes =
 			await getClasses(selectedShifts, academicTerm)
 
 		await saveToExcel(selectedShifts, classes)
 
-		// TODO this.setState({loading: false})
+		setLoading(false)
 		// TODO this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
 		closeSaveMenu()
 	}, [selectedShifts, academicTerm])

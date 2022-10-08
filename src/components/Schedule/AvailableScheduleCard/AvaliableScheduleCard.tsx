@@ -47,8 +47,6 @@ function AvaliableScheduleCard ({savedTimetable, onSelectedShift} : AvaliableSch
 				<Schedule
 					onSelectedEvent={(id: string) => onSelectedShift(id, savedTimetable.shiftState.availableShifts)}
 					events={shownLessons}
-					lang="pt-PT" // FIXME
-					darkMode={true} // FIXME
 				/>
 			</CardContent>
 			<CardActions>

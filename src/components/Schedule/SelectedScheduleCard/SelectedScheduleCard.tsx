@@ -73,8 +73,6 @@ function SelectedScheduleCard ({
 				<Schedule
 					onSelectedEvent={(id: string) => onSelectedShift(id, savedTimetable.shiftState.selectedShifts)}
 					events={selectedLessons}
-					lang="pt-PT" // FIXME
-					darkMode={true} // FIXME
 				/>
 			</CardContent>
 			<CardActions>
