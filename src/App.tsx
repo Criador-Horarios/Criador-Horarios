@@ -1,12 +1,11 @@
 import React, { ReactNode } from 'react'
-import API, { staticData } from './utils/api'
+import API, { defineCurrentTerm, staticData } from './utils/api'
 import './App.scss'
 
 import Course from './domain/Course'
 import Shift, { ShiftType } from './domain/Shift'
 import ColorPicker from './components/ColorPicker/ColorPicker'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference } from './utils/CourseUpdate'
-import Degree from './domain/Degree'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -33,6 +32,7 @@ import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 import Timetable from './domain/Timetable'
 import NewTimetable from './components/NewTimetable/NewTimetable'
 import { AppStateContext } from './hooks/useAppState'
+import AcademicTerm from './domain/AcademicTerm'
 
 class App extends React.Component <{
 	classes: CreateCSSProperties
@@ -40,6 +40,7 @@ class App extends React.Component <{
 	// FIXME declare context: React.ContextType<typeof AppStateContext>;
 	context!: React.ContextType<typeof AppStateContext>;
 	state = {
+		selectedDegrees: [] as string[], // degree acronyms
 		selectedCourses: new CourseUpdates(),
 		classesDialog: false,
 		warningDialog: false,
@@ -49,10 +50,7 @@ class App extends React.Component <{
 		confirmDeleteTimetable: [false, undefined] as [boolean, undefined | Timetable],
 		savedTimetable: new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, ''),
 		shownTimetables: [] as Timetable[],
-		currentAcademicTerm: ''
 	}
-	selectedDegrees: Degree[] = []
-	topBar: React.RefObject<TopBar>
 	colorPicker: React.RefObject<ColorPicker>
 	newTimetable: React.RefObject<NewTimetable>
 	classesByShift: [string, string][] = []
@@ -65,14 +63,14 @@ class App extends React.Component <{
 	// eslint-disable-next-line
 	constructor(props: any) {
 		super(props)
-		this.onSelectedDegree = this.onSelectedDegree.bind(this)
+		this.onSelectedDegrees = this.onSelectedDegrees.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.onSelectedTimetable = this.onSelectedTimetable.bind(this)
 		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 		this.updateShiftOccupancies = this.updateShiftOccupancies.bind(this)
+		this.onChangeAcademicTerm = this.onChangeAcademicTerm.bind(this)
 
-		this.topBar = React.createRef()
 		this.colorPicker = React.createRef()
 		this.newTimetable = React.createRef()
 
@@ -82,6 +80,12 @@ class App extends React.Component <{
 	}
 
 	async componentDidMount() {
+		// Fetch all terms
+		await defineCurrentTerm()
+
+		// Update current timetable to use the current academic term if does not have
+		this.state.savedTimetable.setAcademicTerm(staticData.currentTerm?.id ?? '')
+
 		// Build state from cookies or url
 		await this.buildState()
 
@@ -100,8 +104,10 @@ class App extends React.Component <{
 		this.setState({newDomainDialog: !isWarnedDomain})
 	}
 
-	async onSelectedDegree(selectedDegree: Degree[]): Promise<void> {
-		this.selectedDegrees = selectedDegree
+	async onSelectedDegrees(selectedDegrees: string[]): Promise<void> {
+		this.setState({
+			selectedDegrees
+		})
 	}
 
 	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
@@ -131,7 +137,7 @@ class App extends React.Component <{
 					shownShifts: []
 				})
 			}
-			this.topBar.current?.setSelectedCourses(currCourses)
+			// TODO this.topBar.current?.setSelectedCourses(currCourses)
 			return
 		}
 		//  else {
@@ -198,7 +204,7 @@ class App extends React.Component <{
 
 		this.state.savedTimetable.shiftState.availableShifts = availableShifts
 
-		this.topBar.current?.setSelectedCourses(currCourses)
+		// TODO this.topBar.current?.setSelectedCourses(currCourses)
 		this.context.savedStateHandler.setSavedTimetables(this.context.savedStateHandler.getCurrentTimetables())
 		this.setState({ availableShifts })
 	}
@@ -232,15 +238,6 @@ class App extends React.Component <{
 			// Add to current timetable and save
 			this.state.savedTimetable.toggleShift(chosenShift)
 			this.context.savedStateHandler.setSavedTimetables(this.context.savedStateHandler.getCurrentTimetables())
-			// Store academic term
-			const selectedAcademicTerm = this.topBar.current?.state.selectedAcademicTerm
-			if (selectedAcademicTerm !== undefined) {
-				const parsedTerm = staticData.terms.find((t) => t.id == selectedAcademicTerm)
-				if (parsedTerm !== undefined) this.context.savedStateHandler.setTerm(parsedTerm)
-				if (this.state.savedTimetable.getAcademicTerm() === '') { 
-					this.state.savedTimetable.setAcademicTerm(selectedAcademicTerm)
-				}
-			}
 			this.setState({
 				savedTimetable: this.state.savedTimetable,
 				shownTimetables: this.context.savedStateHandler.getCurrentTimetables()
@@ -281,9 +278,14 @@ class App extends React.Component <{
 				savedTimetable: savedTimetables[0]
 			})
 			const degreeAcronyms = savedTimetables[0].getDegreesString()
-			if (degreeAcronyms) this.topBar.current?.setSelectedDegrees(degreeAcronyms)
+			if (degreeAcronyms) {
+				this.onSelectedDegrees(degreeAcronyms)
+			}
 			const currCourses = savedTimetables[0].courseUpdates
-			this.topBar.current?.setSelectedCourses(currCourses)
+			// TODO this.topBar.current?.setSelectedCourses(currCourses)
+			this.setState({
+				selectedCourses: currCourses
+			})
 		} catch (err) {
 			console.error(err)
 		}
@@ -295,6 +297,7 @@ class App extends React.Component <{
 	updateToNewTimetable(newTimetable: Timetable): void {
 		// FIXME: Should not need try
 		try {
+			const degrees = newTimetable.getDegreesString() || []
 			const courseUpdates = newTimetable.courseUpdates
 			const errors = newTimetable.errors
 			const state = newTimetable.shiftState
@@ -307,9 +310,9 @@ class App extends React.Component <{
 				// TODO this.showAlert(i18next.t('alert.error-parsing'), 'warning')
 			}
 
-			this.topBar.current?.setSelectedCourses(courseUpdates)
 			this.setState({
 				...state,
+				selectedDegrees: degrees,
 				selectedCourses: courseUpdates,
 				shownTimetables: this.context.savedStateHandler.getCurrentTimetables(),
 				savedTimetable: newTimetable,
@@ -321,7 +324,9 @@ class App extends React.Component <{
 		}
 	}
 
-
+	setSelectedAcademicTerm(academicTerm : string): void {
+		this.setState({ currentAcademicTerm : academicTerm })
+	}
 
 	setWarningDialog(): void {
 		this.warningTitle = i18next.t('warning.title')
@@ -380,6 +385,10 @@ class App extends React.Component <{
 			selectedShifts: newUpdatedShifts
 		})
 	}
+	
+	onChangeAcademicTerm(academicTerm: AcademicTerm): void {
+		this.newTimetable.current?.show(academicTerm)
+	}
 
 	render(): ReactNode {
 		const classes = this.props.classes
@@ -390,14 +399,12 @@ class App extends React.Component <{
 					<CircularProgress color="inherit" />
 				</Backdrop>
 				<TopBar
-					ref={this.topBar}
+					selectedCourses={this.state.savedTimetable.courseUpdates}
 					onSelectedCourse={this.onSelectedCourse}
-					onSelectedDegree={this.onSelectedDegree}
-					onChangeLanguage={this.context.changeLanguage}
-					darkMode={this.context.darkMode}
-					onChangeDarkMode={this.context.changeDarkMode}
-					currentTimetable={this.state.savedTimetable}
-					onChangeAcademicTerm={(at) => this.newTimetable.current?.show(at)}
+					selectedDegrees={this.state.selectedDegrees}
+					setSelectedDegrees={this.onSelectedDegrees}
+					selectedAcademicTerm={this.state.savedTimetable.getAcademicTerm()}
+					onChangeAcademicTerm={this.onChangeAcademicTerm}
 				/>
 				<div className="main">
 					<div className={classes.body as string}>
@@ -502,8 +509,7 @@ class App extends React.Component <{
 					}}/>
 					<NewTimetable ref={this.newTimetable}
 						onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
-						onCancel={() =>
-							this.topBar.current?.onSelectedAcademicTerm(this.state.savedTimetable.getAcademicTerm(), false)}
+						onCancel={() => this.setState({ selectedAcademicTerm: this.state.savedTimetable.getAcademicTerm() })}
 					/>
 				</div>
 			</div>

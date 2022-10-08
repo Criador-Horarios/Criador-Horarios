@@ -17,7 +17,7 @@ export interface AppStateContextInterface {
 }
 
 const emptyState : AppStateContextInterface = {
-	savedStateHandler: SavedStateHandler.getInstance(API.getUrlParams()),
+	savedStateHandler: null as unknown as SavedStateHandler, // If we create an instance here, caos will ensue: i18n will not be initialized on time, causing crashes
 	loading: true,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	setLoading: (loading) => {return},
@@ -54,7 +54,7 @@ function getTheme(dark: boolean): Theme {
 export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.Element {
 	const savedStateHandler = useMemo(() => {
 		return SavedStateHandler.getInstance(API.getUrlParams())
-	},[])
+	}, [])
 	const [loading, setLoading] = useState(true)
 	const [darkMode, setDarkMode] = useState(() => savedStateHandler.getDarkMode())
 	const [theme, setTheme] = useState(() => getTheme(darkMode))
@@ -79,7 +79,7 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 			// TODO this.buildState(true)
 			setLoading(false)
 		}
-	}, [lang])
+	}, [lang, savedStateHandler])
 	
 	useEffect(() => {
 		API.setLanguage(lang)
