@@ -26,6 +26,7 @@ interface SelectedScheduleCardProps {
 	shownTimetables: (Timetable | string)[];
 	onSelectedTimetable: (timetable: Timetable | string) => void;
 	onSelectedShift: (shiftName: string, arr: Shift[]) => void;
+	deleteTimetable: (timetable: Timetable) => void;
 	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void;
 }
 
@@ -34,6 +35,7 @@ function SelectedScheduleCard ({
 	shownTimetables,
 	onSelectedTimetable,
 	onSelectedShift,
+	deleteTimetable,
 	onChangeMultiShiftMode
 } : SelectedScheduleCardProps) : JSX.Element {
 	const { selectedShifts } = savedTimetable.shiftState
@@ -65,6 +67,7 @@ function SelectedScheduleCard ({
 							savedTimetable={savedTimetable}
 							shownTimetables={shownTimetables}
 							onSelectedTimetable={onSelectedTimetable}
+							deleteTimetable={deleteTimetable}
 						/>
 					</Box>
 				}

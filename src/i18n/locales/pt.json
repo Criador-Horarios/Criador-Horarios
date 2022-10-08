@@ -3,7 +3,7 @@
 		"title": "Escolha um curso",
 		"noOptions": "Sem opções"
 	},
-	"course-selector": {    
+	"course-selector": {
 		"title": "Escolha as UCs",
 		"noOptions": "Sem opções, pode ter de escolher outro curso ou semestre"
 	},
@@ -151,6 +151,7 @@
 		"cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
 		"cannot-obtain-shifts": "Não foi possível obter os turnos desta UC",
 		"error-parsing": "Houve problemas a restaurar o estado. Por favor contacte os administradores.",
+		"deleted-timetable": "Horário eliminado com sucesso",
 		"minimal-classes-no-degrees": "Não selecionou nenhum curso. Primeiro selecione pelo menos um curso."
 	},
 	"warning": {

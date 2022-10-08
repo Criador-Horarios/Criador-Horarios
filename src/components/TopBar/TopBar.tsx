@@ -15,7 +15,6 @@ import Tooltip from '@material-ui/core/Tooltip'
 import AppBar from '@material-ui/core/AppBar'
 
 import i18next from 'i18next'
-import OccupancyUpdater from '../../utils/occupancy-updater'
 import AcademicTerm from '../../domain/AcademicTerm'
 import HelpButton from './HelpButton'
 import LanguageButton from './LanguageButton'
@@ -188,59 +187,3 @@ function TopBar ({
 }
 
 export default TopBar
-
-class TopBarOld extends React.Component<TopBarProps, unknown>{
-	state = {
-		degrees: [] as Degree[],
-		availableCourses: [] as Course[],
-		selectedAcademicTerm: '',
-		selectedCourses: new CourseUpdates(),
-		settingsDialog: false,
-		languageAnchor: null,
-		currentOccupancyRate: OccupancyUpdater.getRate()
-	}
-	selectedDegrees: Degree[] = []
-	tempSelectedDegrees: string[] = []
-	hasPreviousDegrees = false
-
-	// eslint-disable-next-line
-	constructor(props: TopBarProps) {
-		super(props)
-		this.onSelectedCourse = this.onSelectedCourse.bind(this)
-	}
-
-	async componentDidUpdate(/*prevProps: TopBarProps*/): Promise<void> {
-		/*
-		if (prevProps.currentTimetable !== this.props.currentTimetable) {
-			// FIXME const degreeAcronyms = Array.from(this.props.currentTimetable.degreeAcronyms)
-			// FIXME this.setSelectedDegrees(degreeAcronyms)
-			const courses = this.props.currentTimetable.courseUpdates
-			this.setSelectedCourses(courses)
-
-			if (this.props.currentTimetable.getAcademicTerm() !== this.state.selectedAcademicTerm) {
-				this.setState({ selectedAcademicTerm: this.props.currentTimetable.getAcademicTerm() })
-			}
-		}
-		*/
-	}
-	// ----
-
-	//FIXME: Available courses not updating when a course from another degree is removed
-	private async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
-		this.props.onSelectedCourse(selectedCourses)
-	}
-
-	setSelectedCourses(selectedCourses: CourseUpdates): void {
-		// FIXME: Maybe not use toUnique?
-		const availableCourses =
-			Comparables.toUnique(this.state.availableCourses.concat(selectedCourses.courses)) as Course[]
-		this.setState({
-			selectedCourses,
-			availableCourses
-		})
-	}
-
-	render(): React.ReactNode {
-		return (<div></div>)
-	}
-}

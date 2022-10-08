@@ -47,7 +47,6 @@ class App extends React.Component <{
 		saveMenuAnchor: null,
 		colorPicker: { show: false as boolean, course: undefined as (undefined | Course) },
 		newDomainDialog: false,
-		confirmDeleteTimetable: [false, undefined] as [boolean, undefined | Timetable],
 		savedTimetable: new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, ''),
 		shownTimetables: [] as Timetable[],
 	}
@@ -70,6 +69,7 @@ class App extends React.Component <{
 		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 		this.updateShiftOccupancies = this.updateShiftOccupancies.bind(this)
 		this.onChangeAcademicTerm = this.onChangeAcademicTerm.bind(this)
+		this.deleteTimetable = this.deleteTimetable.bind(this)
 
 		this.colorPicker = React.createRef()
 		this.newTimetable = React.createRef()
@@ -389,6 +389,22 @@ class App extends React.Component <{
 	onChangeAcademicTerm(academicTerm: AcademicTerm): void {
 		this.newTimetable.current?.show(academicTerm)
 	}
+	
+	deleteTimetable(timetable: Timetable) : void {
+		const prevTimetables = this.context.savedStateHandler.getCurrentTimetables()
+		// Delete the timetable!
+		const newTimetables = prevTimetables.filter((t) => t !== timetable)
+		this.context.savedStateHandler.setSavedTimetables(newTimetables)
+		
+		if (this.state.savedTimetable === timetable) {
+			// Only change to a new timetable if we were on the deleted one
+			this.updateToNewTimetable(newTimetables[0])
+		} else {
+			this.setState({
+				shownTimetables: newTimetables
+			})
+		}
+	}
 
 	render(): ReactNode {
 		const classes = this.props.classes
@@ -415,6 +431,7 @@ class App extends React.Component <{
 								shownTimetables={this.state.shownTimetables}
 								onSelectedShift={this.onSelectedShift}
 								onSelectedTimetable={this.onSelectedTimetable}
+								deleteTimetable={this.deleteTimetable}
 								onChangeMultiShiftMode={this.onChangeMultiShiftMode}
 							/>
 						</div>
@@ -472,30 +489,6 @@ class App extends React.Component <{
 						<DialogActions>
 							<div />
 							<Button onClick={() => {this.setState({newDomainDialog: false})}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
-						</DialogActions>
-					</Dialog>
-					<Dialog open={this.state.confirmDeleteTimetable[0]}>
-						<DialogTitle>{i18next.t('confirm-delete-timetable-dialog.title')}</DialogTitle>
-						<DialogContent style={{whiteSpace: 'pre-line'}}>
-							{i18next.t('confirm-delete-timetable-dialog.content', {timetable: this.state.confirmDeleteTimetable[1]?.name})}
-						</DialogContent>
-						<DialogActions>
-							<Button onClick={() => this.setState({confirmDeleteTimetable: [false, this.state.confirmDeleteTimetable[1]]})}
-								color="primary">
-								{i18next.t('confirm-delete-timetable-dialog.actions.cancel')}
-							</Button>
-							<div />
-							<Button color="secondary"
-								onClick={() => {
-									const prevTimetables = this.context.savedStateHandler.getCurrentTimetables()
-									// Delete the timetable!
-									const newTimetables = prevTimetables.filter((t) => t !== this.state.confirmDeleteTimetable[1])
-									this.context.savedStateHandler.setSavedTimetables(newTimetables)
-									this.setState({confirmDeleteTimetable: [false, this.state.confirmDeleteTimetable[1]]})
-									this.updateToNewTimetable(newTimetables[0])
-								}}>
-								{i18next.t('confirm-delete-timetable-dialog.actions.confirm')}
-							</Button>
 						</DialogActions>
 					</Dialog>
 					<ColorPicker ref={this.colorPicker} onUpdatedColor={(course: Course) => {
