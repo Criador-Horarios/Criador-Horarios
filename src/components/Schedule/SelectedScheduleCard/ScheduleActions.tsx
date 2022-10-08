@@ -26,6 +26,7 @@ import saveToExcel from '../../../utils/excel'
 import { combinations2, it_contains } from '../../../utils/itertools'
 import downloadAsImage from '../../../utils/save-as-image'
 import getClasses, { getMinimalClasses } from '../../../utils/shift-scraper'
+import { useAlert } from '../../../hooks/useAlert'
 import { useAppState } from '../../../hooks/useAppState'
 
 interface ScheduleActionsProps {
@@ -34,7 +35,8 @@ interface ScheduleActionsProps {
 }
 
 function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleActionsProps) : JSX.Element {
-	const { setLoading } = useAppState()
+	const dispatchAlert = useAlert()
+	const { setLoading, darkMode } = useAppState()
 	
 	const { isMultiShift, degreeAcronyms } = savedTimetable
 	const { selectedShifts } = savedTimetable.shiftState
@@ -58,7 +60,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 
 	const openClassesDialog = useCallback(async () => {
 		if (degreeAcronyms.size === 0) {
-			// TODO this.showAlert(i18next.t('alert.minimal-classes-no-degrees'), 'error')
+			dispatchAlert({ message: i18next.t('alert.minimal-classes-no-degrees'), severity: 'error' })
 			return
 		}
 
@@ -79,33 +81,32 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 
 	const exportToExcel = useCallback(async () => {
 		setLoading(true)
-		const classes =
-			await getClasses(selectedShifts, academicTerm)
+		const classes = await getClasses(selectedShifts, academicTerm)
 
 		await saveToExcel(selectedShifts, classes)
 
 		setLoading(false)
-		// TODO this.showAlert(i18next.t('alert.schedule-to-excel'), 'success')
+		dispatchAlert({ message: i18next.t('alert.schedule-to-excel'), severity: 'success' })
 		closeSaveMenu()
 	}, [selectedShifts, academicTerm])
 
 	const downloadCalendar = useCallback(() => {
 		getCalendar(selectedShifts)
 
-		// TODO this.showAlert(i18next.t('alert.calendar-obtained'), 'success')
+		dispatchAlert({ message: i18next.t('alert.calendar-obtained'), severity: 'success' })
 		closeSaveMenu()
 	}, [selectedShifts])
 
 	const saveSchedule = useCallback(() => {
 		if (selectedShifts.length === 0) {
-			// TODO this.showAlert(i18next.t('alert.no-shift-selected'), 'info')
+			dispatchAlert({ message: i18next.t('alert.no-shift-selected'), severity: 'info' })
 			return
 		}
 
-		downloadAsImage(selectedShifts, /*this.state.darkMode*/ true) // FIXME
-		//this.showAlert(i18next.t('alert.schedule-to-image'), 'success')
+		downloadAsImage(selectedShifts, darkMode) // FIXME
+		dispatchAlert({ message: i18next.t('alert.schedule-to-image'), severity: 'success' })
 		closeSaveMenu()
-	}, [])
+	}, [selectedShifts, darkMode])
 
 	const copyShareLinkToClipboard = useCallback(async () => {
 		const params = savedTimetable.toURLParams()
@@ -125,7 +126,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 
 			document.body.removeChild(el)
 		}
-		// TODO this.showAlert(i18next.t('alert.link-obtained'), 'success')
+		dispatchAlert({ message: i18next.t('alert.link-obtained'), severity: 'success' })
 	}, [savedTimetable])
 	
 	return (

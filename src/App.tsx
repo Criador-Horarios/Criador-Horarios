@@ -11,12 +11,8 @@ import Degree from './domain/Degree'
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 
-import IconButton from '@material-ui/core/IconButton'
-import Alert from '@material-ui/lab/Alert'
-import Icon from '@material-ui/core/Icon'
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import Snackbar from '@material-ui/core/Snackbar'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import SavedStateHandler from './utils/saved-state-handler'
@@ -45,9 +41,6 @@ class App extends React.Component <{
 	context!: React.ContextType<typeof AppStateContext>;
 	state = {
 		selectedCourses: new CourseUpdates(),
-		alertMessage: '',
-		alertSeverity: undefined as 'success' | 'info' | 'warning' | 'error' | undefined,
-		hasAlert: false as boolean,
 		classesDialog: false,
 		warningDialog: false,
 		saveMenuAnchor: null,
@@ -76,9 +69,6 @@ class App extends React.Component <{
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
 		this.onSelectedTimetable = this.onSelectedTimetable.bind(this)
-		this.getLink = this.getLink.bind(this)
-		this.handleCloseAlert = this.handleCloseAlert.bind(this)
-		this.showAlert = this.showAlert.bind(this)
 		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
 		this.updateShiftOccupancies = this.updateShiftOccupancies.bind(this)
 
@@ -190,7 +180,7 @@ class App extends React.Component <{
 			const schedule =
 				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.getAcademicTerm())
 			if (schedule === null) {
-				this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
+				// TODO this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
 				// Remove course if it can't get the schedules
 				currCourses.toggleCourse(currCourses.lastUpdate.course)
 				this.setState({
@@ -276,35 +266,9 @@ class App extends React.Component <{
 		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
 	}
 
-	showAlert(message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined): void {
-		this.setState({
-			alertMessage: message,
-			alertSeverity: severity,
-			hasAlert: true
-		})
-	}
-
-	handleCloseAlert(): void {
-		this.setState({ hasAlert: false })
-	}
-
 	async getSharingURL(): Promise<string> {
 		const params = this.state.savedTimetable.toURLParams()
 		return await SavedStateHandler.getAppURL(params)
-	}
-
-	async getLink(): Promise<void> {
-		const shortLink = await this.getSharingURL()
-		const el = document.createElement('textarea')
-		el.value = shortLink
-		el.setAttribute('readonly', '')
-		el.style.display = 'hidden'
-		document.body.appendChild(el)
-		el.select()
-		document.execCommand('copy')
-
-		document.body.removeChild(el)
-		this.showAlert(i18next.t('alert.link-obtained'), 'success')
 	}
 
 	// eslint-disable-next-line
@@ -340,7 +304,7 @@ class App extends React.Component <{
 			}
 			// Show that there were parsing errors
 			if (errors !== '') {
-				this.showAlert(i18next.t('alert.error-parsing'), 'warning')
+				// TODO this.showAlert(i18next.t('alert.error-parsing'), 'warning')
 			}
 
 			this.topBar.current?.setSelectedCourses(courseUpdates)
@@ -429,7 +393,6 @@ class App extends React.Component <{
 					ref={this.topBar}
 					onSelectedCourse={this.onSelectedCourse}
 					onSelectedDegree={this.onSelectedDegree}
-					showAlert={this.showAlert}
 					onChangeLanguage={this.context.changeLanguage}
 					darkMode={this.context.darkMode}
 					onChangeDarkMode={this.context.changeDarkMode}
@@ -437,17 +400,6 @@ class App extends React.Component <{
 					onChangeAcademicTerm={(at) => this.newTimetable.current?.show(at)}
 				/>
 				<div className="main">
-					<Snackbar
-						open={this.state.hasAlert}
-						autoHideDuration={3000}
-						onClose={this.handleCloseAlert}
-						anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-						<Alert
-							action={<IconButton size='small' onClick={this.handleCloseAlert}><Icon>close</Icon></IconButton>}
-							severity={this.state.alertSeverity}>
-							{this.state.alertMessage}
-						</Alert>
-					</Snackbar>
 					<div className={classes.body as string}>
 						<div className="schedules">
 							<AvaliableScheduleCard savedTimetable={this.state.savedTimetable} onSelectedShift={this.onSelectedShift} />

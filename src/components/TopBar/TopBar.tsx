@@ -37,7 +37,6 @@ import AcademicTerm from '../../domain/AcademicTerm'
 import Timetable from '../../domain/Timetable'
 
 interface TopBarProps {
-	showAlert: (message: string, severity: 'success' | 'warning' | 'info' | 'error' | undefined) => void
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>
 	onSelectedDegree: (selectedDegrees: Degree[]) => Promise<void>
 	onChangeLanguage: (language: string, afterChange: () => Promise<void>) => void
@@ -86,7 +85,7 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 			degrees: degrees ?? []
 		})
 		if (degrees === null) {
-			this.props.showAlert(i18next.t('alert.cannot-obtain-degrees'), 'error')
+			// TODO this.props.showAlert(i18next.t('alert.cannot-obtain-degrees'), 'error')
 		}
 		if (this.tempSelectedDegrees.length > 0) {
 			this.setSelectedDegrees(this.tempSelectedDegrees)
@@ -115,7 +114,7 @@ class TopBar extends React.Component<TopBarProps, unknown>{
 				const tempCourses = await API.getCourses(degree, this.state.selectedAcademicTerm)
 				if (tempCourses === null) {
 					// TODO: Test when this cannot be obtained
-					this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
+					// TODO this.props.showAlert(i18next.t('alert.cannot-obtain-courses'), 'error')
 					return
 				}
 				degreeCourses = degreeCourses.concat(tempCourses)
