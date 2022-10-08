@@ -4,7 +4,6 @@ import './App.scss'
 
 import Course from './domain/Course'
 import Shift, { ShiftType } from './domain/Shift'
-import ColorPicker from './components/ColorPicker/ColorPicker'
 import CourseUpdates, { CourseUpdateType, getCoursesDifference } from './utils/CourseUpdate'
 
 import i18next from 'i18next'
@@ -37,7 +36,6 @@ import AcademicTerm from './domain/AcademicTerm'
 class App extends React.Component <{
 	classes: CreateCSSProperties
 }>{
-	// FIXME declare context: React.ContextType<typeof AppStateContext>;
 	context!: React.ContextType<typeof AppStateContext>;
 	state = {
 		selectedDegrees: [] as string[], // degree acronyms
@@ -45,12 +43,10 @@ class App extends React.Component <{
 		classesDialog: false,
 		warningDialog: false,
 		saveMenuAnchor: null,
-		colorPicker: { show: false as boolean, course: undefined as (undefined | Course) },
 		newDomainDialog: false,
 		savedTimetable: new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, ''),
 		shownTimetables: [] as Timetable[],
 	}
-	colorPicker: React.RefObject<ColorPicker>
 	newTimetable: React.RefObject<NewTimetable>
 	classesByShift: [string, string][] = []
 	minimalClasses: string[] = []
@@ -70,8 +66,8 @@ class App extends React.Component <{
 		this.updateShiftOccupancies = this.updateShiftOccupancies.bind(this)
 		this.onChangeAcademicTerm = this.onChangeAcademicTerm.bind(this)
 		this.deleteTimetable = this.deleteTimetable.bind(this)
+		this.changeCourseColor = this.changeCourseColor.bind(this)
 
-		this.colorPicker = React.createRef()
 		this.newTimetable = React.createRef()
 
 		// Set occupancy updater
@@ -137,7 +133,6 @@ class App extends React.Component <{
 					shownShifts: []
 				})
 			}
-			// TODO this.topBar.current?.setSelectedCourses(currCourses)
 			return
 		}
 		//  else {
@@ -204,7 +199,6 @@ class App extends React.Component <{
 
 		this.state.savedTimetable.shiftState.availableShifts = availableShifts
 
-		// TODO this.topBar.current?.setSelectedCourses(currCourses)
 		this.context.savedStateHandler.setSavedTimetables(this.context.savedStateHandler.getCurrentTimetables())
 		this.setState({ availableShifts })
 	}
@@ -282,7 +276,6 @@ class App extends React.Component <{
 				this.onSelectedDegrees(degreeAcronyms)
 			}
 			const currCourses = savedTimetables[0].courseUpdates
-			// TODO this.topBar.current?.setSelectedCourses(currCourses)
 			this.setState({
 				selectedCourses: currCourses
 			})
@@ -385,11 +378,11 @@ class App extends React.Component <{
 			selectedShifts: newUpdatedShifts
 		})
 	}
-	
+
 	onChangeAcademicTerm(academicTerm: AcademicTerm): void {
 		this.newTimetable.current?.show(academicTerm)
 	}
-	
+
 	deleteTimetable(timetable: Timetable) : void {
 		const prevTimetables = this.context.savedStateHandler.getCurrentTimetables()
 		// Delete the timetable!
@@ -404,6 +397,23 @@ class App extends React.Component <{
 				shownTimetables: newTimetables
 			})
 		}
+	}
+
+	changeCourseColor(course: Course, color: string) : void {
+		course.setColor(color)
+		const timetable = this.state.savedTimetable
+		timetable.shiftState.availableShifts.forEach(shift => {
+			if (shift.courseId === course.id) {
+				shift.updateColorFromCourse()
+			}
+		})
+		this.context.savedStateHandler.setCoursesColor([course])
+		// Clone shiftState to propagate updates to schedule components
+		timetable.shiftState.availableShifts = [...this.state.savedTimetable.shiftState.availableShifts]
+		timetable.shiftState.selectedShifts = [...this.state.savedTimetable.shiftState.selectedShifts]
+		this.setState({
+			savedTimetable: timetable
+		})
 	}
 
 	render(): ReactNode {
@@ -433,6 +443,7 @@ class App extends React.Component <{
 								onSelectedTimetable={this.onSelectedTimetable}
 								deleteTimetable={this.deleteTimetable}
 								onChangeMultiShiftMode={this.onChangeMultiShiftMode}
+								changeCourseColor={this.changeCourseColor}
 							/>
 						</div>
 					</div>
@@ -491,15 +502,6 @@ class App extends React.Component <{
 							<Button onClick={() => {this.setState({newDomainDialog: false})}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
 						</DialogActions>
 					</Dialog>
-					<ColorPicker ref={this.colorPicker} onUpdatedColor={(course: Course) => {
-						this.state.savedTimetable.shiftState.availableShifts.forEach(shift => {
-							if (shift.courseId === course.id) {
-								shift.updateColorFromCourse()
-								this.context.savedStateHandler.setCoursesColor([course])
-							}
-						})
-						this.setState({ availableShifts: this.state.savedTimetable.shiftState.availableShifts })
-					}}/>
 					<NewTimetable ref={this.newTimetable}
 						onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
 						onCancel={() => this.setState({ selectedAcademicTerm: this.state.savedTimetable.getAcademicTerm() })}
