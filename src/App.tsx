@@ -78,6 +78,7 @@ class App extends React.Component <{
 		this.onSelectedDegree = this.onSelectedDegree.bind(this)
 		this.onSelectedCourse = this.onSelectedCourse.bind(this)
 		this.onSelectedShift = this.onSelectedShift.bind(this)
+		this.onSelectedTimetable = this.onSelectedTimetable.bind(this)
 		this.getLink = this.getLink.bind(this)
 		this.handleCloseAlert = this.handleCloseAlert.bind(this)
 		this.showAlert = this.showAlert.bind(this)
