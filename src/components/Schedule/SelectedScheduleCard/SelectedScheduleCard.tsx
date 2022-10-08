@@ -13,13 +13,13 @@ import Typography from '@material-ui/core/Typography'
 import Schedule from '../Schedule'
 import ScheduleActions from './ScheduleActions'
 import SelectedCourses from './SelectedCourses'
+import TimetableSelector from './TimetableSelector'
 
 import Course from '../../../domain/Course'
 import Shift, { ShiftType } from '../../../domain/Shift'
 import Timetable from '../../../domain/Timetable'
 
 import API from '../../../utils/api'
-import TimetableSelector from './TimetableSelector'
 
 interface SelectedScheduleCardProps {
 	savedTimetable: Timetable;

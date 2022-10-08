@@ -23,7 +23,7 @@ import Button from '@material-ui/core/Button'
 import SavedStateHandler from './utils/saved-state-handler'
 
 import Footer from './components/Footer/Footer'
-import AvaliableScheduleCard from './components/Schedule/AvaliableScheduleCard'
+import AvaliableScheduleCard from './components/Schedule/AvailableScheduleCard/AvaliableScheduleCard'
 import SelectedScheduleCard from './components/Schedule/SelectedScheduleCard/SelectedScheduleCard'
 import TopBar from './components/TopBar/TopBar'
 
