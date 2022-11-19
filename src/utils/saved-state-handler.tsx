@@ -120,7 +120,7 @@ export default class SavedStateHandler {
 	}
 
 	setSavedTimetables(timetables: Timetable[]): void {
-		// Mark every timetable has saved
+		// Mark every timetable as saved
 		timetables.forEach(t => t.save())
 
 		const convertedTimetables: Record<string, string> = {}
