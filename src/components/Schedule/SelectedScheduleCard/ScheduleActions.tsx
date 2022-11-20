@@ -31,11 +31,12 @@ import { useAppState } from '../../../hooks/useAppState'
 import ClassesDialog from '../../ClassesDialog/ClassesDialog'
 
 interface ScheduleActionsProps {
-	activeTimetable: Timetable;
-	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void;
+	activeTimetable: Timetable
+	onChangeMultiShiftMode: (event: React.ChangeEvent<HTMLInputElement>, value: boolean) => void
+	openDuplicateTimetable: (timetable: Timetable) => void
 }
 
-function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleActionsProps) : JSX.Element {
+function ScheduleActions ({activeTimetable, onChangeMultiShiftMode, openDuplicateTimetable} : ScheduleActionsProps) : JSX.Element {
 	const dispatchAlert = useAlert()
 	const { setLoading, darkMode } = useAppState()
 	
@@ -212,9 +213,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 				<IconButton
 					disabled={selectedShifts.length === 0}
 					color="inherit"
-					onClick={() => {alert('TODO')}
-						// TODO this.newTimetable.current?.show(staticData.currentTerm || staticData.terms[0], false, savedTimetable)
-					}
+					onClick={() => openDuplicateTimetable(activeTimetable)}
 					component="span">
 					<FontAwesomeIcon icon={faClone}/>
 				</IconButton>

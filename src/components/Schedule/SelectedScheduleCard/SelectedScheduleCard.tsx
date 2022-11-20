@@ -28,6 +28,7 @@ interface SelectedScheduleCardProps {
 	onChangeMultiShiftMode: (event: React.ChangeEvent<HTMLInputElement>, value: boolean) => void;
 	getCourseColor: (course: Course) => CourseColor;
 	onChangeCourseColor: (course: Course, color: string) => void;
+	openDuplicateTimetable: (timetable: Timetable) => void;
 }
 
 function SelectedScheduleCard ({
@@ -39,6 +40,7 @@ function SelectedScheduleCard ({
 	onChangeMultiShiftMode,
 	getCourseColor,
 	onChangeCourseColor,
+	openDuplicateTimetable,
 } : SelectedScheduleCardProps) : JSX.Element {
 	const selectedShifts = activeTimetable.getSelectedShifts()
 
@@ -79,7 +81,11 @@ function SelectedScheduleCard ({
 			</CardContent>
 			<CardActions>
 				<SelectedCourses coursesBySelectedShifts={coursesBySelectedShifts} setCourseColor={onChangeCourseColor} />
-				<ScheduleActions activeTimetable={activeTimetable} onChangeMultiShiftMode={onChangeMultiShiftMode} />
+				<ScheduleActions
+					activeTimetable={activeTimetable}
+					onChangeMultiShiftMode={onChangeMultiShiftMode}
+					openDuplicateTimetable={openDuplicateTimetable}
+				/>
 			</CardActions>
 		</Card>
 	)

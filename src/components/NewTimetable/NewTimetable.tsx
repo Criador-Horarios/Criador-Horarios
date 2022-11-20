@@ -1,120 +1,114 @@
-import React from 'react'
-import styles from './NewTimetable.module.scss'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import AcademicTerm from '../../domain/AcademicTerm'
+import Timetable from '../../domain/Timetable'
+
 import i18next from 'i18next'
 
+import Box from '@material-ui/core/Box'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import Button from '@material-ui/core/Button'
-import { Box, TextField } from '@material-ui/core'
+import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import Timetable from '../../domain/Timetable'
-import AcademicTerm from '../../domain/AcademicTerm'
-import { staticData } from '../../utils/api'
-import SavedStateHandler from '../../utils/saved-state-handler'
 
+interface NewTimetableProps {
+	open: boolean
+	showChangedAcademicTermWarning: boolean
+	academicTerm: AcademicTerm | undefined
+	oldTimetable: Timetable | undefined
+	existingTimetableNames: string[]
+	onClose: () => void
+	onCreateTimetable: (timetable: Timetable) => void
+}
 
-class NewTimetable extends React.PureComponent <{
-	onCreatedTimetable: (newTimetable: Timetable) => void,
-	onCancel: () => void
-}, unknown>{
-	state = {
-		show: false,
-		academicTerm: undefined as AcademicTerm | undefined,
-		name: '',
-		nameError: '',
-		showWarning: false,
-		oldTimetable: undefined as Timetable | undefined
-	}
-	previousTimetables = [] as Timetable[]
-	
-	show(academicTerm: AcademicTerm, showWarning = true, oldTimetable: Timetable | undefined = undefined): void {
-		if (oldTimetable !== undefined) {
-			academicTerm = staticData.terms.find(t => t.id === oldTimetable.getAcademicTerm()) || academicTerm
+function NewTimetable ({
+	open,
+	showChangedAcademicTermWarning,
+	academicTerm,
+	oldTimetable,
+	existingTimetableNames,
+	onClose,
+	onCreateTimetable,
+} : NewTimetableProps) : JSX.Element {
+	const [name, setName] = useState('')
+
+	useEffect(() => {
+		if (open) {
+			setName('') // clear name on open
 		}
-		this.previousTimetables = SavedStateHandler.getInstance().getCurrentTimetables()
-		this.setState({ show: true, academicTerm, name: '', showWarning, oldTimetable })
-	}
+	}, [open])
 
-	confirmCreation(): void {
-		// Validate name
-		if (!this.validateName(this.state.name)) return
-
-		// Create new timetable with correct academic term
-		let newTimetable = new Timetable(this.state.name, [], false, this.state.academicTerm?.id || '')
-		if (this.state.oldTimetable !== undefined) {
-			// Duplicate current timetable
-			newTimetable = this.state.oldTimetable.setName(this.state.name)
-		}
-
-		this.setState({show: false})
-		this.props.onCreatedTimetable(newTimetable)
-	}
-
-	closeDialog(): void {
-		this.setState({show: false})
-	}
-
-	// Helpers
-	private validateName(name: string): boolean {
+	const {isValidName, nameError} = useMemo(() => {
 		// Cannot be empty
 		if (name === '') {
-			this.setState({nameError: i18next.t('timetable-dialog.errors.not-empty')})
-			return false
+			return {isValidName: false, nameError: i18next.t('timetable-dialog.errors.not-empty')}
 		}
 
 		// Verify if there are any other timetables
-		if (this.previousTimetables.some(t => t.getName() === name)) {
-			this.setState({nameError: i18next.t('timetable-dialog.errors.already-exists')})
-			return false
+		if (existingTimetableNames.some(t => t === name)) {
+			return {isValidName: false, nameError: i18next.t('timetable-dialog.errors.already-exists')}
 		}
-		
-		this.setState({nameError: ''})
-		return true
-	}
 
-	render(): React.ReactNode {
-		return (
-			<div>
-				<Dialog open={this.state.show} fullWidth={true} maxWidth='xs' onClose={() => this.closeDialog()}>
-					<form onSubmit={(event) => { event.stopPropagation(); event.preventDefault(); return false}}>
-						<DialogTitle>
-							<Typography>{i18next.t('timetable-dialog.title')}</Typography>
-						</DialogTitle>
-						<DialogContent className={styles.ColorPicker}>
-							<Box display="flex" justifyContent="center" flexDirection="column">
-								<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
-									{this.state.showWarning && i18next.t('timetable-dialog.warning') as string}
-								</Typography>
-								<TextField id="timetable-name" label={i18next.t('timetable-dialog.timetable-name')} variant="standard" fullWidth
-									value={this.state.name} onChange={(event) => this.setState({name: event.target.value})}
-									error={!this.validateName(this.state.name)} helperText={this.state.nameError}
-								/>
-								{ this.state.oldTimetable !== undefined &&
+		return {isValidName: true}
+	}, [name, existingTimetableNames])
+	
+	const confirmCreation = useCallback(() => {
+		// Create new timetable with correct academic term
+		onClose()
+		if (oldTimetable !== undefined) {
+			onCreateTimetable(oldTimetable.setName(name))
+			return
+		}
+		const newTimetable = new Timetable(name, [], false, academicTerm?.id || '')
+		onCreateTimetable(newTimetable)
+	}, [oldTimetable, name, academicTerm])
+
+	return (
+		<Dialog open={open} fullWidth={true} maxWidth='xs' onClose={onClose}>
+			<form onSubmit={(event) => { event.stopPropagation(); event.preventDefault(); return false}}>
+				<DialogTitle>
+					<Typography>{i18next.t('timetable-dialog.title')}</Typography>
+				</DialogTitle>
+				<DialogContent>
+					<Box display="flex" justifyContent="center" flexDirection="column">
+						<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
+							{showChangedAcademicTermWarning && i18next.t('timetable-dialog.warning') as string}
+						</Typography>
+						<TextField
+							id="timetable-name"
+							label={i18next.t('timetable-dialog.timetable-name')}
+							variant="standard"
+							fullWidth
+							value={name}
+							onChange={(event) => setName(event.target.value)}
+							error={!isValidName}
+							helperText={nameError}
+							autoFocus
+						/>
+						{ oldTimetable !== undefined &&
 									<Typography variant="caption">
-										{i18next.t('timetable-dialog.copy-of')} “{this.state.oldTimetable.getName()}”
+										{i18next.t('timetable-dialog.copy-of')} “{oldTimetable.getName()}”
 									</Typography>
-								}
-								<Typography variant="caption">
-									{i18next.t('timetable-dialog.chosen-term')} {this.state.academicTerm?.displayTitle()}
-								</Typography>
-							</Box>
-						</DialogContent>
-						<DialogActions>
-							<Button color="default" onClick={() => { this.setState({ show: false }); this.props.onCancel() }}>
-								{i18next.t('timetable-dialog.actions.cancel')}
-							</Button>
-							
-							<Button color="primary" disabled={!this.validateName(this.state.name)} onClick={() => this.confirmCreation()} type="submit">
-								{i18next.t('timetable-dialog.actions.save')}
-							</Button>
-						</DialogActions>
-					</form>
-				</Dialog>
-			</div>
-		)
-	}
+						}
+						<Typography variant="caption">
+							{i18next.t('timetable-dialog.chosen-term')} {academicTerm?.displayTitle()}
+						</Typography>
+					</Box>
+				</DialogContent>
+				<DialogActions>
+					<Button color="default" onClick={onClose}>
+						{i18next.t('timetable-dialog.actions.cancel')}
+					</Button>
+
+					<Button color="primary" disabled={!isValidName} onClick={confirmCreation} type="submit">
+						{i18next.t('timetable-dialog.actions.save')}
+					</Button>
+				</DialogActions>
+			</form>
+		</Dialog>
+	)
 }
 
 export default NewTimetable

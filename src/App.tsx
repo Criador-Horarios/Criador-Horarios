@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import API, { defineCurrentTerm, staticData } from './utils/api'
 import './App.scss'
 
@@ -32,6 +32,7 @@ import { useAppState } from './hooks/useAppState'
 import { useAlert } from './hooks/useAlert'
 import AcademicTerm from './domain/AcademicTerm'
 import WarningDialog from './components/WarningDialog/WarningDialog'
+import useNewTimetable from './hooks/useNewTimetable'
 
 interface AppProps {
 	classes: CreateCSSProperties; // TODO use useStyles instead
@@ -43,8 +44,6 @@ function App ({classes}:AppProps) : JSX.Element {
 
 	const [newDomainDialog, setNewDomainDialog] = useState(false)
 	const [newDomainURL, setNewDomainURL] = useState(SavedStateHandler.DOMAIN)
-	
-	const newTimetable = useRef<NewTimetable | null>(null)
 	
 	const {savedStateHandler, loading, setLoading} = useAppState()
 	const dispatchAlert = useAlert()
@@ -97,6 +96,19 @@ function App ({classes}:AppProps) : JSX.Element {
 			return newTimetables
 		})
 	}, [activeTimetableIndex, setAvailableTimetables])
+	
+	const onCreateNewTimetable = useCallback((timetable: Timetable): void => {
+		setAvailableTimetables(availableTimetables => availableTimetables.concat([timetable]))
+		setActiveTimetableIndex(availableTimetables.length)
+	}, [setAvailableTimetables, setActiveTimetableIndex, availableTimetables.length])
+
+	const {
+		openNewTimetable,
+		openDuplicateTimetable,
+		openAfterChangeAcademicTerm,
+		newTimetableProps,
+	} = useNewTimetable()
+
 
 	const onSelectedDegrees = async (selectedDegrees: string[]): Promise<void> => {
 		updateActiveTimetable(activeTimetable.setDegreeAcronyms(selectedDegrees))
@@ -129,18 +141,13 @@ function App ({classes}:AppProps) : JSX.Element {
 			const currAcademicTerm = staticData.terms
 				.find(t => t.id === activeTimetable.getAcademicTerm()) || staticData.currentTerm
 			if (currAcademicTerm !== undefined) {
-				newTimetable.current?.show(currAcademicTerm, false)
+				openNewTimetable(currAcademicTerm)
 			}
 			return
 		}
 
 		const newTimetableIndex = availableTimetables.indexOf(timetable)
 		setActiveTimetableIndex(Math.max(0, newTimetableIndex))
-	}
-
-	const onCreateNewTimetable = (timetable: Timetable): void => {
-		setAvailableTimetables(availableTimetables.concat([timetable]))
-		setActiveTimetableIndex(availableTimetables.length)
 	}
 
 	const onSelectedShift = (shiftName: string, arr: Shift[]): void => {
@@ -206,7 +213,7 @@ function App ({classes}:AppProps) : JSX.Element {
 	}
 
 	const onChangeAcademicTerm = (academicTerm: AcademicTerm): void => {
-		newTimetable.current?.show(academicTerm)
+		openAfterChangeAcademicTerm(academicTerm)
 	}
 
 	const deleteTimetable = (timetable: Timetable): void => {
@@ -236,6 +243,10 @@ function App ({classes}:AppProps) : JSX.Element {
 	const onChangeCourseColor = (course: Course, color: string): void => {
 		updateActiveTimetable(activeTimetable.setCourseColor(course, color))
 	}
+
+	const existingTimetableNames = useMemo(() => {
+		return availableTimetables.map(timetable => timetable.getName())
+	}, [availableTimetables])
 
 	return (
 		<div className="App">
@@ -268,6 +279,7 @@ function App ({classes}:AppProps) : JSX.Element {
 							onChangeMultiShiftMode={onChangeMultiShiftMode}
 							getCourseColor={getCourseColor}
 							onChangeCourseColor={onChangeCourseColor}
+							openDuplicateTimetable={openDuplicateTimetable}
 						/>
 					</div>
 				</div>
@@ -293,9 +305,14 @@ function App ({classes}:AppProps) : JSX.Element {
 						<Button onClick={() => {setNewDomainDialog(false)}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
 					</DialogActions>
 				</Dialog>
-				<NewTimetable ref={newTimetable}
-					onCreatedTimetable={(newTimetable) => onCreateNewTimetable(newTimetable)}
-					onCancel={() => {return}}
+				<NewTimetable
+					open={newTimetableProps.open}
+					onClose={newTimetableProps.onClose}
+					showChangedAcademicTermWarning={newTimetableProps.showChangedAcademicTermWarning}
+					academicTerm={newTimetableProps.academicTerm}
+					oldTimetable={newTimetableProps.oldTimetable}
+					onCreateTimetable={onCreateNewTimetable}
+					existingTimetableNames={existingTimetableNames}
 				/>
 			</div>
 		</div>
