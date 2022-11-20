@@ -229,9 +229,9 @@ function App ({classes}:AppProps) : JSX.Element {
 		}
 	}
 
-	const getCourseColor = (course: Course): CourseColor => {
+	const getCourseColor = useCallback((course: Course): CourseColor => {
 		return activeTimetable.getCourseColor(course)
-	}
+	}, [activeTimetable.getAllCoursesColor()])
 
 	const onChangeCourseColor = (course: Course, color: string): void => {
 		updateActiveTimetable(activeTimetable.setCourseColor(course, color))

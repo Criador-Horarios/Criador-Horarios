@@ -149,6 +149,7 @@ export default class Timetable implements Comparable {
 			const color = `#${rgbHex(randomColor.red, randomColor.green, randomColor.blue)}`
 			this.coursesColors = {...this.coursesColors, [course.getId()]: color}
 		})
+		Object.freeze(this.coursesColors)
 	}
 
 	// =================
@@ -337,6 +338,13 @@ export default class Timetable implements Comparable {
 	}
 
 	/**
+	 * @returns an immutable mapping of <courseId, hex color>.
+	 */
+	getAllCoursesColor(): Record<string, string> {
+		return this.coursesColors
+	}
+
+	/**
 	 * Returns the saved background color and the calculated text color for a course.
 	 * @param course The course to get the color for
 	 * @returns The background and text color for the course
@@ -345,7 +353,7 @@ export default class Timetable implements Comparable {
 		const color = this.coursesColors[course.getId()] || '#000'
 		return {
 			backgroundColor: color,
-			textColor: isOkWithWhite(hexRgb(color)) ? 'white' : 'black'
+			textColor: isOkWithWhite(hexRgb(color)) ? '#ffffff' : '#000000'
 		}
 	}
 
@@ -362,6 +370,7 @@ export default class Timetable implements Comparable {
 		}
 		const newTimetable = this.shallowCopy()
 		newTimetable.coursesColors = {...newTimetable.coursesColors, [course.getId()]: color}
+		Object.freeze(newTimetable.coursesColors)
 		return newTimetable
 	}
 

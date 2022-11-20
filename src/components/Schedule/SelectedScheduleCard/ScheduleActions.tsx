@@ -90,12 +90,12 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 		setLoading(true)
 		const classes = await getClasses(selectedShifts, academicTerm)
 
-		await saveToExcel(selectedShifts, classes)
+		await saveToExcel(selectedShifts, classes, course => activeTimetable.getCourseColor(course))
 
 		setLoading(false)
 		dispatchAlert({ message: i18next.t('alert.schedule-to-excel'), severity: 'success' })
 		closeSaveMenu()
-	}, [selectedShifts, academicTerm])
+	}, [selectedShifts, academicTerm, activeTimetable.getAllCoursesColor()])
 
 	const downloadCalendar = useCallback(() => {
 		getCalendar(selectedShifts)
