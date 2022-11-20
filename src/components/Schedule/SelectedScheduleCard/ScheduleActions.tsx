@@ -40,7 +40,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 	
 	const isMultiShift = activeTimetable.isMultiShiftMode()
 	const degreeAcronyms = activeTimetable.getDegreeAcronyms()
-	const { selectedShifts } = activeTimetable.shiftState
+	const selectedShifts = activeTimetable.getSelectedShifts()
 	const academicTerm = activeTimetable.getAcademicTerm()
 
 	const [saveMenuAnchor, setSaveMenuAnchor] = useState<EventTarget & HTMLSpanElement | null>(null)
@@ -149,7 +149,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 			</Tooltip>
 			<Tooltip title={i18next.t('schedule-selected.actions.get-classes') as string}>
 				<IconButton
-					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
+					disabled={selectedShifts.length === 0}
 					color="inherit"
 					onClick={openClassesDialog}
 					component="span">
@@ -158,7 +158,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 			</Tooltip>
 			<Tooltip title={i18next.t('link-button.tooltip') as string}>
 				<IconButton
-					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
+					disabled={selectedShifts.length === 0}
 					color="inherit"
 					onClick={copyShareLinkToClipboard}
 					component="span"
@@ -168,7 +168,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 			</Tooltip>
 			<Tooltip title={i18next.t('schedule-selected.actions.save-to-file') as string}>
 				<IconButton
-					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
+					disabled={selectedShifts.length === 0}
 					color="inherit"
 					onClick={openSaveMenu}
 					component="span">
@@ -204,7 +204,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 			</Menu>
 			<Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
 				<IconButton
-					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
+					disabled={selectedShifts.length === 0}
 					color="inherit"
 					onClick={() => {alert('TODO')}
 						// TODO this.newTimetable.current?.show(staticData.currentTerm || staticData.terms[0], false, savedTimetable)

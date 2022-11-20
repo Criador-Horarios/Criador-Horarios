@@ -60,7 +60,7 @@ function App ({classes}:AppProps) : JSX.Element {
 	const dispatchAlert = useAlert()
 	const {ensureCoursesHaveColor} = useCourseColors()
 	
-	const activeTimetable = availableTimetables[activeTimetableIndex] || new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, '')
+	const activeTimetable = availableTimetables[activeTimetableIndex] || Timetable.emptyTimetable()
 
 	useEffect(() => {
 		// Set occupancy updater
@@ -189,7 +189,7 @@ function App ({classes}:AppProps) : JSX.Element {
 			return savedTimetables[0]
 		} catch (err) {
 			console.error(err)
-			return new Timetable('', [], false, false, '')
+			return Timetable.emptyTimetable()
 		}
 	}
 
@@ -205,7 +205,7 @@ function App ({classes}:AppProps) : JSX.Element {
 		const coursesToBeFetched = new Set<Course>()
 		
 		// NOTICE: For now we update only the selected shifts
-		activeTimetable.shiftState.selectedShifts.forEach((s) => {
+		activeTimetable.getSelectedShifts().forEach((s) => {
 			shiftsById[s.getStoredId()] = s
 			coursesToBeFetched.add(s.course)
 		})

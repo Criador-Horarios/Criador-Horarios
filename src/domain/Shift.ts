@@ -1,4 +1,4 @@
-import Comparable, { Comparables } from './Comparable'
+import Comparable from './Comparable'
 import Lesson, { createLesson, keepUniqueLessons, LessonDto } from './Lesson'
 import Course from './Course'
 import { getColor1, getColor2 } from '../utils/colors'

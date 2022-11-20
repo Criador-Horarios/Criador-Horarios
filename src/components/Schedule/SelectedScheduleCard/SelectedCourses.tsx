@@ -1,25 +1,24 @@
 import React, { useState } from 'react'
 
 import i18next from 'i18next'
-// import styles from '../Schedule.module.scss'
+import styles from '../Schedule.module.scss'
 
 import Chip from '@material-ui/core/Chip'
 import Paper from '@material-ui/core/Paper'
 import Tooltip from '@material-ui/core/Tooltip'
-// import Typography from '@material-ui/core/Typography'
+import Typography from '@material-ui/core/Typography'
 
-import Course from '../../../domain/Course'
-import { ShiftType } from '../../../domain/Shift'
-// import { useTheme } from '@material-ui/core/styles'
+import Course, { CourseWithShiftTypes } from '../../../domain/Course'
+import { useTheme } from '@material-ui/core/styles'
 import ColorPicker from '../../ColorPicker/ColorPicker'
 import { useCourseColors } from '../../../hooks/useCourseColors'
 
 interface SelectedCoursesProps {
-	coursesBySelectedShifts: [Course, Record<ShiftType, boolean | undefined>][];
+	coursesBySelectedShifts: CourseWithShiftTypes[]
 }
 
 function SelectedCourses ({ coursesBySelectedShifts } : SelectedCoursesProps) : JSX.Element {
-	//const theme = useTheme()
+	const theme = useTheme()
 	const {getColorForCourse} = useCourseColors()
 
 	const [coursePickingColor, setCoursePickingColor] = useState<Course | null>(null)
@@ -27,7 +26,7 @@ function SelectedCourses ({ coursesBySelectedShifts } : SelectedCoursesProps) : 
 	return (
 		<>
 			<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
-				{coursesBySelectedShifts.map(([c, /*types*/]) => {
+				{coursesBySelectedShifts.map(({course: c, shiftTypes}) => {
 					const {backgroundColor, textColor} = getColorForCourse(c)
 					return (
 						<Paper elevation={0} variant={'outlined'} key={c.hashString()}
@@ -41,8 +40,7 @@ function SelectedCourses ({ coursesBySelectedShifts } : SelectedCoursesProps) : 
 									onClick={() => setCoursePickingColor(c)} // Toggle colorPicker on click
 								/>
 							</Tooltip>
-							{ /* TODO Array.from(c.shiftTypes.entries()).map(([type]) => {
-								const shown = types[type as ShiftType] !== undefined
+							{ Object.entries(shiftTypes).map(([type, shown]) => {
 								return (
 									<Paper elevation={0} key={type}
 										className={ (shown ? styles.ShiftChecklistSelected : styles.ShiftChecklistUnselected) as string }
@@ -54,7 +52,7 @@ function SelectedCourses ({ coursesBySelectedShifts } : SelectedCoursesProps) : 
 										<Typography variant='body1' style={{ fontWeight: 500 }}>{type}</Typography>
 									</Paper>
 								)
-							}) */ }
+							}) }
 						</Paper>
 					)
 				})}

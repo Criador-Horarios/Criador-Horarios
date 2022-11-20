@@ -1,4 +1,5 @@
 import Comparable from './Comparable'
+import { ShiftType } from './Shift'
 
 export default class Course implements Comparable {
 	private id = ''
@@ -80,6 +81,11 @@ export default class Course implements Comparable {
 		return display
 	}
 
+}
+
+export type CourseWithShiftTypes = {
+	course: Course
+	shiftTypes: Record<ShiftType, boolean | undefined>
 }
 
 export type CourseDto = {

@@ -42,10 +42,10 @@ class NewTimetable extends React.PureComponent <{
 		if (!this.validateName(this.state.name)) return
 
 		// Create new timetable with correct academic term
-		let newTimetable = new Timetable(this.state.name, [], false, false, this.state.academicTerm?.id || '')
+		let newTimetable = new Timetable(this.state.name, [], false, this.state.academicTerm?.id || '')
 		if (this.state.oldTimetable !== undefined) {
-			newTimetable = this.state.oldTimetable
-			newTimetable.name = this.state.name
+			// Duplicate current timetable
+			newTimetable = this.state.oldTimetable.setName(this.state.name)
 		}
 
 		this.setState({show: false})
@@ -65,7 +65,7 @@ class NewTimetable extends React.PureComponent <{
 		}
 
 		// Verify if there are any other timetables
-		if (this.previousTimetables.some(t => t.name === name)) {
+		if (this.previousTimetables.some(t => t.getName() === name)) {
 			this.setState({nameError: i18next.t('timetable-dialog.errors.already-exists')})
 			return false
 		}
@@ -93,7 +93,7 @@ class NewTimetable extends React.PureComponent <{
 								/>
 								{ this.state.oldTimetable !== undefined &&
 									<Typography variant="caption">
-										{i18next.t('timetable-dialog.copy-of')} “{this.state.oldTimetable.name}”
+										{i18next.t('timetable-dialog.copy-of')} “{this.state.oldTimetable.getName()}”
 									</Typography>
 								}
 								<Typography variant="caption">

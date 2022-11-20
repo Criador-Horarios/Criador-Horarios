@@ -16,10 +16,8 @@ import SelectedCourses from './SelectedCourses'
 import TimetableSelector from './TimetableSelector'
 
 import Course from '../../../domain/Course'
-import Shift, { ShiftType } from '../../../domain/Shift'
+import Shift from '../../../domain/Shift'
 import Timetable from '../../../domain/Timetable'
-
-import API from '../../../utils/api'
 
 interface SelectedScheduleCardProps {
 	activeTimetable: Timetable;
@@ -38,20 +36,16 @@ function SelectedScheduleCard ({
 	deleteTimetable,
 	onChangeMultiShiftMode,
 } : SelectedScheduleCardProps) : JSX.Element {
-	const { selectedShifts } = activeTimetable.shiftState
+	const selectedShifts = activeTimetable.getSelectedShifts()
 
 	const selectedLessons = useMemo(() => {
 		return selectedShifts.map((shift: Shift) => shift.lessons).flat()
 	}, [selectedShifts])
 	
 	const coursesBySelectedShifts = useMemo(() => {
-		const coursesShifts = activeTimetable.getCoursesWithShiftTypes()
-		const coursesWithTypes: [Course, Record<ShiftType, boolean | undefined>][] = Object.entries(coursesShifts)
-			.map(([courseId, types]) =>
-				[API.REQUEST_CACHE.getCourse(courseId, activeTimetable.getAcademicTerm()), types] as [Course, Record<ShiftType, boolean>]
-			).filter(([course]) => course !== undefined)
-
-		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
+		const coursesWithTypes = activeTimetable.getCoursesWithShiftTypes()
+			.filter(({shiftTypes}) => Object.values(shiftTypes).some(Boolean)) // only include courses with selected shifts
+		return coursesWithTypes.sort(({course: courseA}, {course: courseB}) => Course.compare(courseA, courseB))
 	}, [selectedShifts])
 
 	return (
@@ -74,7 +68,7 @@ function SelectedScheduleCard ({
 			/>
 			<CardContent className={styles.ScheduleCardContent as string}>
 				<Schedule
-					onSelectedEvent={(id: string) => onSelectedShift(id, activeTimetable.shiftState.selectedShifts)}
+					onSelectedEvent={(id: string) => onSelectedShift(id, selectedShifts)}
 					events={selectedLessons}
 				/>
 			</CardContent>

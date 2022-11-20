@@ -121,9 +121,6 @@ export default class SavedStateHandler {
 	}
 
 	setSavedTimetables(timetables: Timetable[]): void {
-		// Mark every timetable as saved
-		timetables.forEach(t => t.save())
-
 		const convertedTimetables: Record<string, string> = {}
 		timetables.map((t, index) => convertedTimetables[index] = t.toString())
 
@@ -132,8 +129,7 @@ export default class SavedStateHandler {
 	}
 
 	createCurrentTimetable(name = i18next.t('timetable-autocomplete.default-timetable')): Timetable {
-		const newTimetable = new Timetable(name, [], false, false, '')
-		newTimetable.save()
+		const newTimetable = new Timetable(name, [], false, '')
 		return newTimetable
 	}
 
@@ -143,7 +139,7 @@ export default class SavedStateHandler {
 	}
 
 	getAvailableTimetableName(timetables: Timetable[]): string {
-		const allNames = timetables.map(t => t.name)
+		const allNames = timetables.map(t => t.getName())
 		const prefix = i18next.t('timetable-autocomplete.default-timetable').split(' ')[0]
 		let n = 1
 

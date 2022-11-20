@@ -56,9 +56,9 @@ function TimetableSelector ({
 
 					const { inputValue } = params
 					// Suggest the creation of a new value
-					const isExisting = options.some((option) => typeof option === 'string' || inputValue === option.name)
+					const isExisting = options.some((option) => typeof option === 'string' || inputValue === option.getName())
 					if (inputValue !== '' && !isExisting) {
-						filtered.push(new Timetable(inputValue, [], false, false, ''))
+						filtered.push(new Timetable(inputValue, [], false, ''))
 					}
 
 					return filtered
@@ -98,7 +98,7 @@ function TimetableSelector ({
 			<Dialog open={!!timetableToDelete}>
 				<DialogTitle>{i18next.t('confirm-delete-timetable-dialog.title')}</DialogTitle>
 				<DialogContent style={{whiteSpace: 'pre-line'}}>
-					{i18next.t('confirm-delete-timetable-dialog.content', {timetable: timetableToDelete?.name})}
+					{i18next.t('confirm-delete-timetable-dialog.content', {timetable: timetableToDelete?.getName()})}
 				</DialogContent>
 				<DialogActions>
 					<Button
