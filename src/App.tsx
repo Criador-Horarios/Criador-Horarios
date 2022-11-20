@@ -10,7 +10,6 @@ import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withSt
 
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import SavedStateHandler from './utils/saved-state-handler'
 
@@ -41,10 +40,6 @@ interface AppProps {
 function App ({classes}:AppProps) : JSX.Element {
 	const [activeTimetableIndex, setActiveTimetableIndex] = useState(0)
 	const [availableTimetables, setAvailableTimetables] = useState<Timetable[]>(() => ([]))
-
-	const [classesDialog, setClassesDialog] = useState(false)
-	const [classesByShift, setClassesByShift] = useState<[string, string][]>([])
-	const [minimalClasses, setMinimalClasses] = useState<string[]>([])
 
 	const [newDomainDialog, setNewDomainDialog] = useState(false)
 	const [newDomainURL, setNewDomainURL] = useState(SavedStateHandler.DOMAIN)
@@ -279,31 +274,6 @@ function App ({classes}:AppProps) : JSX.Element {
 			</div>
 			<Footer />
 			<div className="dialogs">
-				<Dialog open={classesDialog}>
-					<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>
-					<DialogContent className={classes.contentCopyable as string}>
-						<Box>{
-							classesByShift.map(c => {
-								return (
-									<div key={c[0]}>
-										<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
-										<Typography key={'class-' + c[0]} variant='body1'
-											style={{marginLeft: '8px'}}
-										>{c[1]}</Typography>
-									</div>
-								)})
-						}
-						</Box>
-						<br/>
-						<Typography variant='h6'>{i18next.t('classes-dialog.minimal-classes')}: {minimalClasses.join(', ')}</Typography>
-					</DialogContent>
-					<DialogActions>
-						<div />
-						<Button onClick={() => {setClassesDialog(false)}} color="primary">
-							{i18next.t('classes-dialog.actions.close-button') as string}
-						</Button>
-					</DialogActions>
-				</Dialog>
 				<WarningDialog />
 				<Dialog maxWidth='sm' fullWidth open={newDomainDialog}>
 					<DialogTitle style={{alignSelf: 'center'}}>

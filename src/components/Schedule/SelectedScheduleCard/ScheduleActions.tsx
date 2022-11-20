@@ -28,6 +28,7 @@ import downloadAsImage from '../../../utils/save-as-image'
 import getClasses, { getMinimalClasses } from '../../../utils/shift-scraper'
 import { useAlert } from '../../../hooks/useAlert'
 import { useAppState } from '../../../hooks/useAppState'
+import ClassesDialog from '../../ClassesDialog/ClassesDialog'
 
 interface ScheduleActionsProps {
 	activeTimetable: Timetable;
@@ -48,6 +49,11 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 		setSaveMenuAnchor(event.currentTarget)
 	}, [])
 	const closeSaveMenu = useCallback(() => setSaveMenuAnchor(null), [])
+	
+	const [classesDialog, setClassesDialog] = useState(false)
+	const [classesByShift, setClassesByShift] = useState<[string, string][]>([])
+	const [minimalClasses, setMinimalClasses] = useState<string[]>([])
+	const closeClassesDialog = useCallback(() => setClassesDialog(false), [setClassesDialog])
 
 	const inhibitMultiShiftModeChange = useMemo(() => {
 		// Check if multi-shift can't be disabled safely
@@ -73,10 +79,10 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 			academicTerm
 		)
 
-		// TODO this.setState({classesDialog: true})
 		setLoading(false)
-		// TODO save this somewhere instead of returning
-		return {classesByShift: Object.entries(classesByShift), minimalClasses}
+		setClassesDialog(true)
+		setClassesByShift(Object.entries(classesByShift))
+		setMinimalClasses(minimalClasses)
 	}, [degreeAcronyms, selectedShifts, academicTerm])
 
 
@@ -213,6 +219,12 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 					<FontAwesomeIcon icon={faClone}/>
 				</IconButton>
 			</Tooltip>
+			<ClassesDialog
+				open={classesDialog}
+				classesByShift={classesByShift}
+				minimalClasses={minimalClasses}
+				onClose={closeClassesDialog}
+			/>
 		</div>)
 }
 
