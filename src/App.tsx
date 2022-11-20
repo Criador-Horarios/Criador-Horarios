@@ -6,7 +6,6 @@ import Course, { CourseColor } from './domain/Course'
 import Shift from './domain/Shift'
 
 import i18next from 'i18next'
-import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
 
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -33,12 +32,12 @@ import { useAlert } from './hooks/useAlert'
 import AcademicTerm from './domain/AcademicTerm'
 import WarningDialog from './components/WarningDialog/WarningDialog'
 import useNewTimetable from './hooks/useNewTimetable'
+import { makeStyles } from '@material-ui/core/styles'
 
-interface AppProps {
-	classes: CreateCSSProperties; // TODO use useStyles instead
-}
+const useStyles = makeStyles(APP_STYLES)
 
-function App ({classes}:AppProps) : JSX.Element {
+function App () : JSX.Element {
+	const classes = useStyles()
 	const [activeTimetableIndex, setActiveTimetableIndex] = useState(0)
 	const [availableTimetables, setAvailableTimetables] = useState<Timetable[]>(() => ([]))
 
@@ -319,4 +318,4 @@ function App ({classes}:AppProps) : JSX.Element {
 	)
 }
 
-export default withStyles(APP_STYLES)(App)
+export default App
