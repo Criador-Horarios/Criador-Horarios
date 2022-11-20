@@ -51,8 +51,7 @@ function App () : JSX.Element {
 
 	useEffect(() => {
 		// Set occupancy updater
-		OccupancyUpdater.getInstance().changeRate(occupancyRates['Off'])
-		OccupancyUpdater.setUpdateFunction(updateShiftOccupancies);
+		OccupancyUpdater.getInstance().changeRate(occupancyRates['Off']);
 
 		(async () => {
 			// Fetch all terms
@@ -180,36 +179,29 @@ function App () : JSX.Element {
 		}
 	}
 
-	const updateShiftOccupancies = async (): Promise<void> => {
-		const shiftsById: Record<string, Shift> = {}
+	const updateShiftOccupancies = useCallback(async (): Promise<void> => {
 		const coursesToBeFetched = new Set<Course>()
-		
+
 		// NOTICE: For now we update only the selected shifts
 		activeTimetable.getSelectedShifts().forEach((s) => {
-			shiftsById[s.getStoredId()] = s
 			coursesToBeFetched.add(s.getCourse())
 		})
 
-		// TODO check if this is still needed
-		await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
-			let newShifts: Shift[] | null | undefined =
-				await API.getCourseSchedules(c, activeTimetable.getAcademicTerm())
+		const newShifts: Shift[] = (await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
+			const newShifts: Shift[] | null | undefined =
+				await API.getCourseSchedules(c, activeTimetable.getAcademicTerm(), true)
 
-			newShifts = newShifts?.filter((s) => {
-				const toUpdateShift = shiftsById[s.getStoredId()]
-				if (toUpdateShift !== undefined) {
-					// FIXME: Remove this, just for testing
-					// s.occupation.current = Math.round(s.occupation.max * Math.random())
-					// --
-					toUpdateShift.updateOccupancy(s.getOccupation())
-				}
+			return newShifts || []
+		}))).flat()
 
-				return toUpdateShift !== undefined
-			})
+		if (newShifts.length > 0) {
+			updateActiveTimetable(activeTimetable.updateOccupancies(newShifts))
+		}
+	}, [activeTimetable])
 
-			return newShifts
-		}))
-	}
+	useEffect(() => {
+		OccupancyUpdater.setUpdateFunction(updateShiftOccupancies)
+	}, [updateShiftOccupancies])
 
 	const onChangeAcademicTerm = (academicTerm: AcademicTerm): void => {
 		openAfterChangeAcademicTerm(academicTerm)

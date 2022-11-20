@@ -172,14 +172,6 @@ export default class Shift implements Comparable {
 		return newColor
 	}
 
-	updateOccupancy(newOccupancy: ShiftOccupation): void {
-		// TODO this should be removed, the class is immutable
-		this.occupation = {
-			current: newOccupancy.current,
-			max: newOccupancy.max,
-		}
-	}
-
 	toString(): string {
 		return this.getFullId().join(';')
 	}

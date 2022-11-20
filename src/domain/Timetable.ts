@@ -187,6 +187,27 @@ export default class Timetable implements Comparable {
 		return this.setSelectedShifts(newSelectedShifts)
 	}
 
+	/**
+	 * Immutably replaces shifts with their updated version,
+	 * in order to update occupancies.
+	 * @param newShifts The refreshed shifts
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	updateOccupancies(newShifts: Shift[]): Timetable {
+		const newTimetable = this.shallowCopy()
+		newTimetable.shiftState = {
+			availableShifts: newTimetable.getAvailableShifts().map(shift => {
+				const newShift = newShifts.find(s => s.equals(shift))
+				return newShift || shift
+			}),
+			selectedShifts: newTimetable.getSelectedShifts().map(shift => {
+				const newShift = newShifts.find(s => s.equals(shift))
+				return newShift || shift
+			})
+		}
+		return newTimetable
+	}
+
 	// =================
 	/**
 	 * @returns The name of this timetable
