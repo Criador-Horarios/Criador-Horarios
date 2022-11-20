@@ -22,35 +22,33 @@ import Timetable from '../../../domain/Timetable'
 import API from '../../../utils/api'
 
 interface SelectedScheduleCardProps {
-	savedTimetable: Timetable;
-	shownTimetables: (Timetable | string)[];
+	activeTimetable: Timetable;
+	availableTimetables: (Timetable | string)[]; // TODO consider renaming to "availableTimetables" like on App.tsx
 	onSelectedTimetable: (timetable: Timetable | string) => void;
 	onSelectedShift: (shiftName: string, arr: Shift[]) => void;
 	deleteTimetable: (timetable: Timetable) => void;
 	onChangeMultiShiftMode: (event: React.ChangeEvent<HTMLInputElement>, value: boolean) => void;
-	changeCourseColor: (course: Course, color: string) => void;
 }
 
 function SelectedScheduleCard ({
-	savedTimetable,
-	shownTimetables,
+	activeTimetable,
+	availableTimetables,
 	onSelectedTimetable,
 	onSelectedShift,
 	deleteTimetable,
 	onChangeMultiShiftMode,
-	changeCourseColor,
 } : SelectedScheduleCardProps) : JSX.Element {
-	const { selectedShifts } = savedTimetable.shiftState
+	const { selectedShifts } = activeTimetable.shiftState
 
 	const selectedLessons = useMemo(() => {
 		return selectedShifts.map((shift: Shift) => shift.lessons).flat()
 	}, [selectedShifts])
 	
 	const coursesBySelectedShifts = useMemo(() => {
-		const coursesShifts = savedTimetable.getCoursesWithShiftTypes()
+		const coursesShifts = activeTimetable.getCoursesWithShiftTypes()
 		const coursesWithTypes: [Course, Record<ShiftType, boolean | undefined>][] = Object.entries(coursesShifts)
 			.map(([courseId, types]) =>
-				[API.REQUEST_CACHE.getCourse(courseId, savedTimetable.getAcademicTerm()), types] as [Course, Record<ShiftType, boolean>]
+				[API.REQUEST_CACHE.getCourse(courseId, activeTimetable.getAcademicTerm()), types] as [Course, Record<ShiftType, boolean>]
 			).filter(([course]) => course !== undefined)
 
 		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
@@ -66,8 +64,8 @@ function SelectedScheduleCard ({
 						<span style={{flexGrow: 1, width: '23%'}}></span>
 						<Typography variant='h6' align='center' style={{flexGrow: 1}}>{i18next.t('schedule-selected.title')}</Typography>
 						<TimetableSelector
-							savedTimetable={savedTimetable}
-							shownTimetables={shownTimetables}
+							activeTimetable={activeTimetable}
+							availableTimetables={availableTimetables}
 							onSelectedTimetable={onSelectedTimetable}
 							deleteTimetable={deleteTimetable}
 						/>
@@ -76,13 +74,13 @@ function SelectedScheduleCard ({
 			/>
 			<CardContent className={styles.ScheduleCardContent as string}>
 				<Schedule
-					onSelectedEvent={(id: string) => onSelectedShift(id, savedTimetable.shiftState.selectedShifts)}
+					onSelectedEvent={(id: string) => onSelectedShift(id, activeTimetable.shiftState.selectedShifts)}
 					events={selectedLessons}
 				/>
 			</CardContent>
 			<CardActions>
-				<SelectedCourses coursesBySelectedShifts={coursesBySelectedShifts} changeCourseColor={changeCourseColor} />
-				<ScheduleActions savedTimetable={savedTimetable} onChangeMultiShiftMode={onChangeMultiShiftMode} />
+				<SelectedCourses coursesBySelectedShifts={coursesBySelectedShifts} />
+				<ScheduleActions activeTimetable={activeTimetable} onChangeMultiShiftMode={onChangeMultiShiftMode} />
 			</CardActions>
 		</Card>
 	)

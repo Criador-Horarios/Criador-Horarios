@@ -177,7 +177,7 @@ export default class API {
 		// Replace with previous courses already cached and store new ones
 		const returnedCourses: Course[] = []
 		courses.forEach(course => {
-			const prevCourse = this.REQUEST_CACHE.getCourse(course.id, academicTermId || '')
+			const prevCourse = this.REQUEST_CACHE.getCourse(course.getId(), academicTermId || '')
 			if (prevCourse === undefined) returnedCourses.push(course)
 			else returnedCourses.push(prevCourse)
 		})
@@ -232,7 +232,7 @@ export default class API {
 		}
 		const newCourse = Course.fromDto(res, courseAcronyms)
 		// Update degree acronyms
-		newCourse.updateDegree(degreeAcronyms)
+		// TODO newCourse.updateDegree(degreeAcronyms)
 
 		// Store in cache for future use
 		this.REQUEST_CACHE.storeCourse(newCourse, academicTermId || '')
@@ -248,7 +248,7 @@ export default class API {
 		if (!forceUpdate && prevSchedules.length > 0) return prevSchedules
 
 		// LOCK HERE to avoid repeating the same request N times
-		const mutexKey = `shifts-course-${course.id}`
+		const mutexKey = `shifts-course-${course.getId()}`
 		// Create/find mutex for this degree
 		const mutex = await this.createMutex(mutexKey)
 		let releaser: undefined | MutexInterface.Releaser = undefined
@@ -266,35 +266,16 @@ export default class API {
 			return prevSchedules
 		}
 
-		const res = await this.getRequest(`/api/courses/${course.id}/schedule`, academicTermId) as ScheduleDto | null
+		const res = await this.getRequest(`/api/courses/${course.getId()}/schedule`, academicTermId) as ScheduleDto | null
 		if (res === null) {
 			console.error('Can\'t get course schedule')
 			releaser()
 			return null
 		}
-		// course might be unselected because of async
-		if (!course.isSelected) {
-			releaser()
-			return []
-		}
-		let hasBeenUnselected = false
-		const shifts = res.shifts.map((d: ShiftDto) => {
-			if (!course.isSelected) {
-				hasBeenUnselected = true
-				return null
-			}
-			const shift = new Shift(d, course)
-			course.addShift(shift)
-			return shift
-		})
-		if (hasBeenUnselected) {
-			releaser()
-			return []
-		}
-		course.saveShifts()
+		const shifts = res.shifts.map((d: ShiftDto) => new Shift(d, course))
 
 		// Store in cache for future use
-		shifts.forEach(shift => shift !== null && this.REQUEST_CACHE.storeShift(shift, course.id, academicTermId || ''))
+		shifts.forEach(shift => shift !== null && this.REQUEST_CACHE.storeShift(shift, course.getId(), academicTermId || ''))
 
 		// RELEASE LOCK HERE
 		releaser()

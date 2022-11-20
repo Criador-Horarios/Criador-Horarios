@@ -6,7 +6,7 @@ import i18next from 'i18next'
 export default function getCalendar(shifts: Shift[]): void {
 	const events = shifts.map(s => s.allLessons).flat().map(l => {
 		return {
-			title: `${l.courseName} : ${i18next.t(`classType.${l.type}`)}`,
+			title: `${l.course.getName()} : ${i18next.t(`classType.${l.type}`)}`,
 			location: l.room,
 			start: new Date(l.date + 'T' + l.startTime),
 			end: new Date(l.date + 'T' + l.endTime),

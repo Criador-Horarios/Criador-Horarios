@@ -13,19 +13,16 @@ import ScheduleFilters from './ScheduleFilters'
 
 import campiList from '../../../domain/CampiList'
 import Shift, { ShiftType } from '../../../domain/Shift'
-import Timetable from '../../../domain/Timetable'
 
 interface AvaliableScheduleCardProps {
-	savedTimetable: Timetable;
+	availableShifts: Shift[];
 	onSelectedShift: (shiftName: string, arr: Shift[]) => void;
 }
 
-function AvaliableScheduleCard ({savedTimetable, onSelectedShift} : AvaliableScheduleCardProps) : JSX.Element {
+function AvaliableScheduleCard ({availableShifts, onSelectedShift} : AvaliableScheduleCardProps) : JSX.Element {
 	const [selectedCampi, setSelectedCampi] = useState([...campiList])
 	const [selectedShiftTypes, setSelectedShiftTypes] = useState(Object.values(ShiftType) as string[])
 	
-	const { availableShifts } = savedTimetable.shiftState
-
 	// Filter lessons according to current campi and shift type filters
 	const shownLessons = useMemo(() => {
 		return availableShifts.filter((s) => {
@@ -45,7 +42,7 @@ function AvaliableScheduleCard ({savedTimetable, onSelectedShift} : AvaliableSch
 			/>
 			<CardContent className={styles.ScheduleCardContent}>
 				<Schedule
-					onSelectedEvent={(id: string) => onSelectedShift(id, savedTimetable.shiftState.availableShifts)}
+					onSelectedEvent={(id: string) => onSelectedShift(id, availableShifts)}
 					events={shownLessons}
 				/>
 			</CardContent>

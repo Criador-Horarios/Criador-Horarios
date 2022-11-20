@@ -199,8 +199,8 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 				usedCell.fill = {
 					type: 'pattern',
 					pattern: 'solid',
-					fgColor: { argb: l.color.replace('#', '') },
-					bgColor: { argb: l.color.replace('#', '')}
+					fgColor: { argb: '000' /* TODO l.color.replace('#', '') */ },
+					bgColor: { argb: 'fff' /* TODO l.color.replace('#', '') */ }
 				} as ExcelJS.FillPattern
 				usedCell.border = {
 					top: {style:'thin'},

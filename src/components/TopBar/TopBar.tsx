@@ -5,7 +5,6 @@ import API, { staticData } from '../../utils/api'
 import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course from '../../domain/Course'
-import CourseUpdates from '../../utils/CourseUpdate'
 
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
@@ -21,9 +20,10 @@ import LanguageButton from './LanguageButton'
 import DarkModeButton from './DarkModeButton'
 import SettingsButton from './SettingsButton'
 import { useAlert } from '../../hooks/useAlert'
+import { useCourseColors } from '../../hooks/useCourseColors'
 
 interface TopBarProps {
-	selectedCourses: CourseUpdates;
+	selectedCourses: Course[];
 	onSelectedCourse: (selectedCourses: Course[]) => Promise<void>;
 	selectedDegrees: string[]; // degree acronyms
 	setSelectedDegrees: (selectedDegrees: string[]) => Promise<void>;
@@ -43,6 +43,8 @@ function TopBar ({
 
 	const [availableDegrees, setAvailableDegrees] = useState<Degree[]>([])
 	const [availableCourses, setAvailableCourses] = useState<Course[]>([])
+	
+	const {getColorForCourse} = useCourseColors()
 	
 	const currentDegrees = useMemo(() => {
 		return availableDegrees.filter((degree: Degree) => selectedDegrees.includes(degree.acronym))
@@ -69,13 +71,12 @@ function TopBar ({
 				}
 				degreeCourses = degreeCourses.concat(tempCourses)
 			}
-			const selected = selectedCourses.courses
+			const selected = selectedCourses
 			const availableCourses = Comparables.toUnique(degreeCourses.concat(selected)) as Course[]
 
-			availableCourses.forEach((c) => c.updateDegree(selectedDegrees))
 			setAvailableCourses(availableCourses)
 		} else {
-			setAvailableCourses(selectedCourses.courses)
+			setAvailableCourses(selectedCourses)
 		}
 	}
 	
@@ -106,7 +107,7 @@ function TopBar ({
 
 	const maxTags = 14
 	const courseFilterOptions = createFilterOptions({
-		stringify: (option: Course) => option.searchableName()
+		stringify: (option: Course) => option.searchableName(selectedDegrees.length > 1)
 	})
 	const maxSelectedCourses = 10
 		
@@ -141,7 +142,7 @@ function TopBar ({
 						}}
 					/>
 					<Autocomplete
-						value={selectedCourses.courses}
+						value={selectedCourses}
 						color="inherit"
 						size="small"
 						className={styles.courseSelector}
@@ -155,25 +156,27 @@ function TopBar ({
 						filterOptions={courseFilterOptions}
 						options={availableCourses}
 						getOptionDisabled={(option) => {
-							return !option.isSelected &&
-									selectedCourses.courses.length === maxSelectedCourses
+							// TODO return !option.isSelected &&
+							return selectedCourses.length === maxSelectedCourses
 						}}
 						noOptionsText={i18next.t('course-selector.noOptions') as string}
 						getOptionLabel={(option) => {
 							// Make course show degree when multiple are chosen
-							option.showDegree = selectedDegrees.length > 1
-							return option.displayName()
+							return option.displayName(selectedDegrees.length > 1)
 						}}
 						renderInput={(params) => <TextField {...params} label={i18next.t('course-selector.title') as string} variant="outlined" />}
 						renderTags={(tagValue, getTagProps) => {
-							return tagValue.map((option, index) => (
-								<Tooltip title={option.displayName()} key={option.hashString()}>
-									<Chip {...getTagProps({ index })} size="small" color='primary'
-										style={{backgroundColor: option.color}}
-										label={<span style={{color: option.textColor}}>{option.acronym}</span>}
-									/>
-								</Tooltip>
-							))
+							return tagValue.map((option, index) => {
+								const {backgroundColor, textColor} = getColorForCourse(option)
+								return (
+									<Tooltip title={option.displayName(selectedDegrees.length > 1)} key={option.hashString()}>
+										<Chip {...getTagProps({ index })} size="small" color='primary'
+											style={{backgroundColor}}
+											label={<span style={{color: textColor}}>{option.getAcronym()}</span>}
+										/>
+									</Tooltip>
+								)
+							})
 						}}
 					/>
 					<LanguageButton refreshAvailableDegrees={refreshAvailableDegrees} />

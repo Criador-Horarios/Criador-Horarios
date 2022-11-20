@@ -1,5 +1,5 @@
-import React from 'react'
-import Lesson from '../../domain/Lesson'
+import React, { useMemo } from 'react'
+import Lesson, { addColorToLesson, LessonWithColor } from '../../domain/Lesson'
 import styles from './Schedule.module.scss'
 import FullCalendar, { EventClickArg, EventContentArg } from '@fullcalendar/react'
 import bootstrapPlugin from '@fullcalendar/bootstrap'
@@ -13,6 +13,7 @@ import hexRgb from 'hex-rgb'
 // import './_materialFullCalendar.scss'
 
 import { useAppState } from '../../hooks/useAppState'
+import { useCourseColors } from '../../hooks/useCourseColors'
 
 interface ScheduleProps {
 	onSelectedEvent: (id: string) => void;
@@ -21,6 +22,12 @@ interface ScheduleProps {
 
 function Schedule ({onSelectedEvent, events} : ScheduleProps) : JSX.Element {
 	const { lang } = useAppState()
+	
+	const {getColorForCourse} = useCourseColors()
+
+	const lessonsWithColors: LessonWithColor[] = useMemo(() => {
+		return events.map(lesson => addColorToLesson(lesson, getColorForCourse(lesson.course)))
+	}, [events, getColorForCourse])
 
 	const onEventClick = (info: EventClickArg) => {
 		// TODO: The courses don't have url for now
@@ -70,7 +77,7 @@ function Schedule ({onSelectedEvent, events} : ScheduleProps) : JSX.Element {
 				expandRows={false}
 				height={'auto'}
 				contentHeight={'auto'}
-				events={events}
+				events={lessonsWithColors}
 				eventClick={onEventClick}
 				eventContent={EventContent}
 				locale={lang}

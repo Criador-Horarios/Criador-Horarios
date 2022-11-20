@@ -44,7 +44,7 @@ class NewTimetable extends React.PureComponent <{
 		// Create new timetable with correct academic term
 		let newTimetable = new Timetable(this.state.name, [], false, false, this.state.academicTerm?.id || '')
 		if (this.state.oldTimetable !== undefined) {
-			newTimetable = this.state.oldTimetable.deepCopy()
+			newTimetable = this.state.oldTimetable
 			newTimetable.name = this.state.name
 		}
 

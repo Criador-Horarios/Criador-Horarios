@@ -54,14 +54,14 @@ export default class StoredEntities {
 	public static storeCourse(course: Course, academicTermId: string): void {
 		const currInstance = this.getInstance(academicTermId)
 		const courses = currInstance.courses
-		courses[course.id] = course
+		courses[course.getId()] = course
 	}
 	
 	public static storeDegreeCourses(degree: Degree, courses: Course[], academicTermId: string): void {
 		const currInstance = this.getInstance(academicTermId)
 		courses.forEach(course => {
 			currInstance.coursesByDegree[degree.acronym] = currInstance.coursesByDegree[degree.acronym] || new Set
-			currInstance.coursesByDegree[degree.acronym].add(course.id)
+			currInstance.coursesByDegree[degree.acronym].add(course.getId())
 			StoredEntities.storeCourse(course, academicTermId)
 		})
 	}
@@ -111,7 +111,7 @@ export default class StoredEntities {
 	}
 
 	public static getCourseShifts(course: Course, academicTermId: string): Shift[] {
-		return Object.values(this.getInstance(academicTermId).courseShifts[course.id] || {}).filter(s => s !== undefined)
+		return Object.values(this.getInstance(academicTermId).courseShifts[course.getId()] || {}).filter(s => s !== undefined)
 	}
 
 }

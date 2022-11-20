@@ -1,5 +1,5 @@
 import Comparable, { Comparables } from './Comparable'
-import Lesson, { LessonDto } from './Lesson'
+import Lesson, { createLesson, keepUniqueLessons, LessonDto } from './Lesson'
 import Course from './Course'
 import { getColor1, getColor2 } from '../utils/colors'
 
@@ -31,13 +31,12 @@ export default class Shift implements Comparable {
 	courseName: string
 	lessons: Lesson[]
 	allLessons: Lesson[]
-	color = ''
 	campus = ''
 	occupation: ShiftOccupation
 	url: string
 	
 	constructor(obj: ShiftDto, course: Course) {
-		this.courseId = course.id
+		this.courseId = course.getId()
 		this.course = course
 		this.name = obj.name
 
@@ -54,29 +53,26 @@ export default class Shift implements Comparable {
 		this.shiftId = this.type + match[2]
 
 		// Use course acronym
-		this.acronym = course.acronym
-		this.courseName = course.name
+		this.acronym = course.getAcronym()
+		this.courseName = course.getName()
 		if (obj.rooms !== null || (obj.rooms as string[]).length > 0) {
 			this.campus = obj.rooms[0]?.topLevelSpace.name
 		}
-
-		this.updateColorFromCourse()
 
 		this.occupation = {
 			current: obj.occupation.current,
 			max: obj.occupation.max,
 		}
-		this.url = course.url
+		this.url = course.getUrl()
 
 		const lessons = obj.lessons.map((l: LessonDto) => {
-			return new Lesson({
+			return createLesson({
 				shiftName: this.name,
-				color: this.color,
 				start: l.start.split(' ')[1],
 				end: l.end.split(' ')[1],
 				date: l.start.split(' ')[0],
 				// Replacing space to T to allow parsing on SAFARI
-				dayOfWeek:  new Date(l.start.replace(' ', 'T')).getDay(),
+				dayOfWeek: new Date(l.start.replace(' ', 'T')).getDay(),
 				room: l.room?.name,
 				campus: l.room?.topLevelSpace.name || this.campus,
 				acronym: this.acronym,
@@ -85,12 +81,12 @@ export default class Shift implements Comparable {
 				occupation: this.occupation,
 				type: this.type,
 				url: this.url,
-				courseName: course.name
+				course: course,
 			})
 		})
 
 		this.allLessons = lessons
-		this.lessons = Comparables.toUnique(lessons) as Lesson[]
+		this.lessons = keepUniqueLessons(lessons)
 	}
 
 	static isSameCourseAndType(o1: Comparable, o2: Comparable): boolean {
@@ -119,22 +115,21 @@ export default class Shift implements Comparable {
 		return [this.courseId, this.getStoredId()]
 	}
 
-	updateColorFromCourse(): void {
-		let newColor = this.color
+	/**
+	 * Get the color of the shift based on this shift's course
+	 * @param courseColor The color of this shift's course
+	 */
+	getColor(courseColor: string): string {
+		let newColor
 		if (this.type === ShiftType['Teo']) {
-			[newColor, ] = getColor1(this.course.color)
+			[newColor, ] = getColor1(courseColor)
 		} else if (this.type === ShiftType['PB']) {
-			[newColor, ] = getColor2(this.course.color)
+			[newColor, ] = getColor2(courseColor)
 		} else {
-			newColor = this.course.color
+			newColor = courseColor
 		}
-
-		// If has lessons, update their color
-		if (this.color != newColor) {
-			this.lessons?.forEach(lesson => lesson.color = newColor)
-		}
-
-		this.color = newColor
+		
+		return newColor
 	}
 
 	updateOccupancy(newOccupancy: ShiftOccupation): void {
@@ -146,11 +141,6 @@ export default class Shift implements Comparable {
 
 	toString(): string {
 		return this.getFullId().join(';')
-	}
-
-	deepCopy(): Shift {
-		// TODO: Check if we want to implement
-		return this
 	}
 }
 
@@ -170,7 +160,7 @@ export const shortenDescriptions = (shifts: Shift[]): string => {
 
 export const getDegreesAcronyms = (shifts: Shift[]): string | undefined => {
 	let res = shifts
-		.map((s) => s.course.degreeAcronym)
+		.map((s) => s.course.getDegreeAcronym())
 	res = Array.from(new Set(res)) // Remove duplicates
 	if (res.length == 0) return undefined
 	return res.reduce((a, b) => `${a};${b}`)
@@ -201,11 +191,4 @@ export type ShiftDto = {
 export type ShiftOccupation = {
 	current: number
 	max: number
-}
-
-export type ShiftRef = {
-	courseId: string,
-	type: string,
-	id: string,
-	fullId: string
 }

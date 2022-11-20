@@ -19,13 +19,18 @@ import Timetable from '../../../domain/Timetable'
 import { useAlert } from '../../../hooks/useAlert'
 
 interface TimetableSelectorProps {
-	savedTimetable: Timetable;
-	shownTimetables: (Timetable | string)[];
+	activeTimetable: Timetable;
+	availableTimetables: (Timetable | string)[];
 	onSelectedTimetable: (timetable: Timetable | string) => void;
 	deleteTimetable: (timetable: Timetable) => void;
 }
 
-function TimetableSelector ({savedTimetable, shownTimetables, onSelectedTimetable, deleteTimetable} : TimetableSelectorProps) : JSX.Element {
+function TimetableSelector ({
+	activeTimetable,
+	availableTimetables,
+	onSelectedTimetable,
+	deleteTimetable
+} : TimetableSelectorProps) : JSX.Element {
 	const dispatchAlert = useAlert()
 	const [timetableToDelete, setTimetableToDelete] = useState<Timetable | null>(null)
 	
@@ -40,12 +45,15 @@ function TimetableSelector ({savedTimetable, shownTimetables, onSelectedTimetabl
 
 	return (
 		<>
-			<Autocomplete disableClearable autoHighlight size='small'
+			<Autocomplete
+				disableClearable
+				autoHighlight
+				size='small'
 				filterOptions={(options, params): (Timetable | string)[] => {
 					const filter = createFilterOptions<Timetable | string>()
 					const filtered = filter(options, params)
 					filtered.unshift(i18next.t('timetable-autocomplete.add-new'))
-										
+
 					const { inputValue } = params
 					// Suggest the creation of a new value
 					const isExisting = options.some((option) => typeof option === 'string' || inputValue === option.name)
@@ -55,8 +63,8 @@ function TimetableSelector ({savedTimetable, shownTimetables, onSelectedTimetabl
 
 					return filtered
 				}}
-				options={shownTimetables}
-				value={savedTimetable}
+				options={availableTimetables}
+				value={activeTimetable}
 				onChange={(_, value) => onSelectedTimetable(value)}
 				getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
 				renderInput={(params) => <TextField {...params} variant="standard" />}
@@ -71,9 +79,9 @@ function TimetableSelector ({savedTimetable, shownTimetables, onSelectedTimetabl
 							<Typography style={{flexGrow: 1, overflow: 'clip', marginTop: '4px'}}>
 								{typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
 							</Typography>
-							{shownTimetables.length > 1 && typeof option !== 'string' &&
+							{availableTimetables.length > 1 && typeof option !== 'string' &&
 																	<IconButton color="inherit" component="span" size="small"
-																		disabled={shownTimetables.length <= 1}
+																		disabled={availableTimetables.length <= 1}
 																		onClick={(e: React.MouseEvent<HTMLElement, MouseEvent>) => {
 																			e.stopPropagation() // prevent changing to this timetable
 																			setTimetableToDelete(option)

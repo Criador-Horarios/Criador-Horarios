@@ -1,27 +1,24 @@
 import Comparable, { Comparables } from './Comparable'
-import Shift, { ShiftRef, ShiftType, shortenDescriptions } from './Shift'
+import Shift, { ShiftType, shortenDescriptions } from './Shift'
 
 import i18next from 'i18next'
 import SavedStateHandler, { ShiftState } from '../utils/saved-state-handler'
 import Course from './Course'
-import CourseUpdates from '../utils/CourseUpdate'
 import { staticData } from '../utils/api'
 
 export default class Timetable implements Comparable {
 	name: string
 	shiftState: ShiftState = { availableShifts: [], selectedShifts: [] }
-	degreeAcronyms: Set<string> = new Set()
-	isSaved: boolean
-	isMultiShift: boolean
+	private degreeAcronyms: Set<string> = new Set()
+	isSaved: boolean // TODO remove
+	private isMultiShift: boolean
 	private academicTerm: string
 	// Not stored
-	isImported = false
-	courses: Set<Course> = new Set()
-	courseUpdates: CourseUpdates = new CourseUpdates()
+	isImported = false // TODO remove
+	private courses: Set<Course> = new Set()
 	errors = ''
 	// { degree: { course : { shiftType: Set<string> }}}
 	currDegreeCourseShifts: Record<string, Record<string, Record<ShiftType, Set<string>>>> = {}
-	shiftRefs: Record<string, ShiftRef> = {}
 	// { degree: Set<string>(Courses) }
 	private shownCourses: Record<string, Set<string>> = {}
 
@@ -32,7 +29,7 @@ export default class Timetable implements Comparable {
 		this.isMultiShift = isMultishift
 		this.academicTerm = academicTerm
 		shifts.forEach(s => {
-			const degreeAcronym = s.course.degreeAcronym
+			const degreeAcronym = '' // TODO s.course.degreeAcronym
 			const courses = this.currDegreeCourseShifts[degreeAcronym] = this.currDegreeCourseShifts[degreeAcronym] || {}
 			const courseId = s.courseId
 			this.shownCourses[degreeAcronym] = this.shownCourses[degreeAcronym] || new Set()
@@ -40,9 +37,7 @@ export default class Timetable implements Comparable {
 			const shifts = courses[courseId] = courses[courseId] || {}
 			const shiftType = s.type
 			const shiftTypes = shifts[shiftType] = shifts[shiftType] || new Set<string>()
-			const storingShift: ShiftRef = { courseId: s.courseId, type: s.type, id: s.shiftId, fullId: s.name }
 			shiftTypes.add(s.name)
-			this.shiftRefs[s.name] = storingShift
 		})
 
 		if (academicTerm === '' || academicTerm === undefined) {
@@ -55,18 +50,16 @@ export default class Timetable implements Comparable {
 			const parsedStr = JSON.parse(str)
 			const degreesAcronyms: Set<string> = new Set(parsedStr.degrees?.split(SavedStateHandler.PARAMS_SEP))
 			const savedState =
-				await SavedStateHandler.getInstance().getShifts(parsedStr.shifts, degreesAcronyms, parsedStr.academicTerm)
+				await SavedStateHandler.getInstance().getShifts(parsedStr.shifts, Array.from(degreesAcronyms), parsedStr.academicTerm)
 			if (!savedState) return undefined
 
-			const [courseUpdate, shiftState, errors] = savedState
+			const [courses, shiftState, errors] = savedState
 			const newTimetable = new Timetable(
 				parsedStr.name, shiftState.selectedShifts, parsedStr.isSaved,
 				((parsedStr.isMultishift || 'false') === 'true'), parsedStr.academicTerm
 			)
-			newTimetable.courses = new Set(courseUpdate.courses)
+			newTimetable.courses = new Set(courses)
 			newTimetable.degreeAcronyms = degreesAcronyms
-			// Stored for current usage, not kept in storage
-			newTimetable.courseUpdates = courseUpdate
 			newTimetable.shiftState = shiftState
 			newTimetable.errors = errors
 			newTimetable.isImported = isImported
@@ -106,48 +99,6 @@ export default class Timetable implements Comparable {
 
 	// =================
 	// Courses management
-	toggleCourse(courses: Course[]): CourseChange | undefined {
-		const prevCourseIds = Object.values(this.shownCourses)
-			.reduce((acc, value) => new Set([...acc, ...value]), new Set())
-
-		// There are no courses to be shown, so 
-		Object.values(this.shownCourses).forEach(set => set.clear())
-		if (courses.length === 0) {
-			return { type: CourseChangeType.Clear } as CourseChange
-		}
-
-		const currCourseIds = new Set<string>()
-		// const coursesChanged: CourseChange[] = []
-		let courseIdChanged: CourseChange | undefined = undefined
-
-		// Mark to show the courses
-		let newCoursesCount = 0
-		courses.forEach(course => {
-			this.shownCourses[course.degreeAcronym] = this.shownCourses[course.degreeAcronym] || new Set()
-			this.shownCourses[course.degreeAcronym].add(course.id)
-			currCourseIds.add(course.id)
-			newCoursesCount += 1
-
-			// Check if is a new course added
-			if (!prevCourseIds.has(course.id)) {
-				courseIdChanged = { course: course.id, type: CourseChangeType.Add } as CourseChange
-				return
-				// coursesChanged.push({ course: course.id, type: CourseChangeType.Add } as CourseChange)
-			}
-		})
-
-		if (courseIdChanged !== undefined) return courseIdChanged
-
-		// Check which course was removed
-		if (prevCourseIds.size === newCoursesCount + 1) {
-			const newCourseId = [...prevCourseIds].find((courseId => !currCourseIds.has(courseId)))
-			return { course: newCourseId, type: CourseChangeType.Remove } as CourseChange
-			// coursesChanged.push({ course: newCourseId, type: CourseChangeType.Remove } as CourseChange)
-		}
-
-		return undefined // coursesChanged
-	}
-
 	getShownCourseIds(): Record<string, Set<string>> {
 		return this.shownCourses
 	}
@@ -173,9 +124,16 @@ export default class Timetable implements Comparable {
 
 	// =================
 	// Shifts management
-	toggleShift(chosenShift: Shift): void {
+	/**
+	 * Toggles a shift.
+	 * If the shift is selected, it deselects it.
+	 * If the shift is not selected, it selects it, while also deselecting the shifts
+	 * of the same course and type if multishift is disabled.
+	 * @param chosenShift The shift to toggle
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	toggleShift(chosenShift: Shift): Timetable {
 		const idx = Comparables.indexOf(this.shiftState.selectedShifts, chosenShift)
-		const shiftCourse = this.courseUpdates.courses.filter(c => c.id === chosenShift.courseId)
 
 		let replacingIndex: number
 		if (this.isMultiShift) {
@@ -186,65 +144,19 @@ export default class Timetable implements Comparable {
 			replacingIndex = Comparables.indexOfBy(this.shiftState.selectedShifts, chosenShift, Shift.isSameCourseAndType)
 		}
 
+		const newSelectedShifts: Shift[] = [...this.shiftState.selectedShifts]
 		if (idx === -1) {
-			// Add course if not existing
-			if (!this.courseUpdates.has(chosenShift.course)) this.courseUpdates.toggleCourse(chosenShift.course)
-			
-			// We must change this array immutably, otherwise useMemo will not detect the change
-			this.shiftState.selectedShifts = [...this.shiftState.selectedShifts, chosenShift]
+			newSelectedShifts.push(chosenShift)
 			if (replacingIndex !== -1) {
-				this.shiftState.selectedShifts = this.shiftState.selectedShifts.filter((_, i) => i !== replacingIndex)
-			} else if (shiftCourse.length === 1) {
-				// Change on the course for the selected shift types
-				shiftCourse[0].addSelectedShift(chosenShift)
+				newSelectedShifts.splice(replacingIndex, 1)
 			}
-			this.degreeAcronyms.add(chosenShift.course.degreeAcronym)
 		} else {
-			this.shiftState.selectedShifts = this.shiftState.selectedShifts.filter((_, i) => i !== idx)
-			if (shiftCourse.length === 1) {
-				// Change on the course for the selected shift types
-				shiftCourse[0].removeSelectedShift(chosenShift)
-			}
+			newSelectedShifts.splice(idx, 1)
 		}
-
-		// -- ShiftRef
-		const degreeAcronym = chosenShift.course.degreeAcronym
-		const courseId = chosenShift.courseId
-		const shiftId = chosenShift.name
-		const shiftType = chosenShift.type
-
-		// Check for degree, course and shift types
-		const courses = this.currDegreeCourseShifts[degreeAcronym] = this.currDegreeCourseShifts[degreeAcronym] || {}
-		const shiftTypes = courses[courseId] = courses[courseId] || {}
-		const shifts = shiftTypes[shiftType] = shiftTypes[shiftType] || new Set()
-
-		const storingShift: ShiftRef =
-			{ courseId: chosenShift.courseId, type: chosenShift.type, id: chosenShift.shiftId, fullId: chosenShift.name }
-
-		// Has clicked to remove the specific shift of specific type
-		if (shifts.has(shiftId)) {
-			shifts.delete(shiftId)
-			delete this.shiftRefs[shiftId]
-			// Clear course if there are no shifts, clear degree if there are no courses, etc...
-			if (shifts.size === 0) delete shiftTypes[shiftType]
-			if (Object.entries(shiftTypes).length === 0) delete courses[courseId]
-			if (Object.entries(courses).length === 0) delete this.currDegreeCourseShifts[degreeAcronym]
-		}
-		// Has shifts for this type but does not have this specific shift
-		else if (shifts.size > 0) {
-			// If not multishift, remove the other one
-			if (!this.isMultiShift) {
-				shifts.forEach(shiftId => delete this.shiftRefs[shiftId])
-				shifts.clear()
-			}
-			shifts.add(shiftId)
-			this.shiftRefs[shiftId] = storingShift
-		}
-		// Does not have shifts for this type, so it is a new one :)
-		else {
-			shifts.add(shiftId)
-			this.shiftRefs[shiftId] = storingShift
-		}
+		
+		const newTimetable = this.shallowCopy()
+		newTimetable.shiftState = {...this.shiftState, selectedShifts: newSelectedShifts}
+		return newTimetable
 	}
 
 	getSelectedShiftIds(): string[] {
@@ -254,29 +166,129 @@ export default class Timetable implements Comparable {
 			.map(set => Array.from(set.values())).flat() // Shifts
 	}
 
-	// Returns true if any shifts were cleared, false otherwise
-	clearAllShifts(): boolean {
-		// TODO: Check currDegreeCourseShifts
-		if (this.shiftState.selectedShifts.length === 0) return false
-		this.courseUpdates.courses.forEach(c => c.clearSelectedShifts())
-		this.shiftState.selectedShifts = []
-
-		// TODO: ShiftRef
-		// Object.keys(this.currDegreeCourseShifts).map((c) => this.currDegreeCourseShifts[c] = {})
-		return true
+	// =================
+	/**
+	 * @returns The name of this timetable
+	 */
+	getName() : string {
+		return this.name
 	}
 
-	// =================
+	/**
+	 * @returns The available shifts for this timetable
+	 */
+	getAvailableShifts(): Shift[] {
+		return this.shiftState.availableShifts
+	}
+
+	/**
+	 * Immutably sets the available shifts for this timetable,
+	 * returning a new instance of Timetable.
+	 * @param shifts The shifts to set as available.
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	setAvailableShifts(shifts: Shift[]): Timetable {
+		const newTimetable = this.shallowCopy()
+		newTimetable.shiftState = {...this.shiftState, availableShifts: shifts}
+		return newTimetable
+	}
+
+	/**
+	 * @returns The selected shifts for this timetable
+	 */
+	getSelectedShifts(): Shift[] {
+		return this.shiftState.selectedShifts
+	}
+
+	/**
+	 * Immutably sets the selected shifts for this timetable,
+	 * returning a new instance of Timetable.
+	 * @param shifts The shifts to set as selected.
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	setSelectedShifts(shifts: Shift[]): Timetable {
+		const newTimetable = this.shallowCopy()
+		newTimetable.shiftState = {...this.shiftState, selectedShifts: shifts}
+		return newTimetable
+	}
+
+	/**
+	 * @returns A list of degree acronyms
+	 */
+	getDegreeAcronyms(): string[] {
+		return Array.from(this.degreeAcronyms)
+	}
+
+	/**
+	 * Immutably sets the degree acronyms for this timetable,
+	 * returning a new instance of Timetable.
+	 * @param degreeAcronyms A list of degree acronyms.
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	setDegreeAcronyms(degreeAcronyms: string[]): Timetable {
+		const newTimetable = this.shallowCopy()
+		newTimetable.degreeAcronyms = new Set(degreeAcronyms)
+		return newTimetable
+	}
+
+	/**
+	 * @returns True if multishift mode is enabled, false otherwise.
+	 */
+	isMultiShiftMode(): boolean {
+		return this.isMultiShift
+	}
+
+	/**
+	 * Immutably sets the multishift mode for this timetable,
+	 * returning a new instance of Timetable.
+	 * @param mode true to enable multishift, false otherwise.
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	setMultiShiftMode(mode: boolean): Timetable {
+		const newTimetable = this.shallowCopy()
+		newTimetable.isMultiShift = mode
+		return newTimetable
+	}
+
+	/**
+	 * @returns The academic term (as string) for this timetable
+	 */
 	getAcademicTerm(): string {
 		return this.academicTerm
 	}
 
-	setAcademicTerm(academicTerm: string): void {
-		if (this.academicTerm === '') this.academicTerm = academicTerm
+	/**
+	 * Changes the academic term of this Timetable to the one given,
+	 * but only if the Timetable does not have an academic term already.
+	 * @param academicTerm The new academic term
+	 * @returns A new instance of Timetable with the changes, if applicable.
+	 */
+	setAcademicTerm(academicTerm: string): Timetable {
+		if (this.academicTerm === '') {
+			const newTimetable = this.shallowCopy()
+			newTimetable.academicTerm = academicTerm
+			return newTimetable
+		}
+		return this
 	}
 
-	setMultiShiftMode(mode: boolean): void {
-		this.isMultiShift = mode
+	/**
+	 * @returns A list of courses present in available shifts of this timetable
+	 */
+	getCourses(): Course[] {
+		return Array.from(this.courses)
+	}
+
+	/**
+	 * Immutably sets the available courses for this timetable,
+	 * returning a new instance of Timetable.
+	 * @param courses A list of courses.
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	setCourses(courses: Course[]): Timetable {
+		const newTimetable = this.shallowCopy()
+		newTimetable.courses = new Set(courses)
+		return newTimetable
 	}
 
 	save(): void {
@@ -323,35 +335,26 @@ export default class Timetable implements Comparable {
 		}
 		return JSON.stringify(obj)
 	}
-
-	deepCopy(): Timetable {
-		// Deep copy courses
-		const newCourses = [...(Comparables.toUnique(this.courseUpdates.courses) as Course[])].map(c => c.deepCopy()) 
-		const coursesById: Record<string, Course> = Array.from(newCourses)
-			.reduce((acc, course) => ({ ...acc, [course.id]: course }), {})
-
-		// Deep copy shifts and associate to the new courses
-		const availableShifts = this.shiftState.availableShifts.map(s => {
-			const newShift = s.deepCopy()
-			newShift.course = coursesById[newShift.courseId]
-			return newShift
-		})
-		const selectedShifts = availableShifts.filter(s =>
-			this.shiftState.selectedShifts.find(oldS => oldS.name === s.name) !== undefined
-		)
+	
+	/**
+	 * We're aiming to keep this class immutable, so we need this method
+	 * for internal usage in setters.
+	 */
+	private shallowCopy() : Timetable {
 		const newTimetable = new Timetable(
-			this.name, selectedShifts, false,
-			this.isMultiShift, this.academicTerm
+			this.name,
+			[],
+			this.isSaved,
+			this.isMultiShift,
+			this.academicTerm
 		)
-		newTimetable.courseUpdates.degreeAcronyms = new Set(this.courseUpdates.degreeAcronyms)
+		newTimetable.shiftState = this.shiftState
 		newTimetable.degreeAcronyms = this.degreeAcronyms
-		// Stored for current usage, not kept in storage
-		newTimetable.courseUpdates = new CourseUpdates()
-		newTimetable.courseUpdates.courses = newCourses
-		newTimetable.courses = new Set(newCourses)
-		newTimetable.shiftState = { availableShifts, selectedShifts }
+		newTimetable.isImported = this.isImported
+		newTimetable.courses = this.courses
 		newTimetable.errors = this.errors
-		newTimetable.isImported = false
+		newTimetable.currDegreeCourseShifts = this.currDegreeCourseShifts
+		newTimetable.shownCourses = this.shownCourses
 		return newTimetable
 	}
 }

@@ -1,10 +1,9 @@
-import React, { ReactNode } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import API, { defineCurrentTerm, staticData } from './utils/api'
 import './App.scss'
 
 import Course from './domain/Course'
-import Shift, { ShiftType } from './domain/Shift'
-import CourseUpdates, { CourseUpdateType, getCoursesDifference } from './utils/CourseUpdate'
+import Shift from './domain/Shift'
 
 import i18next from 'i18next'
 import withStyles, { CreateCSSProperties } from '@material-ui/core/styles/withStyles'
@@ -30,329 +29,191 @@ import { APP_STYLES } from './styles/styles'
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
 import Timetable from './domain/Timetable'
 import NewTimetable from './components/NewTimetable/NewTimetable'
-import { AppStateContext } from './hooks/useAppState'
+import { useAppState } from './hooks/useAppState'
+import { useAlert } from './hooks/useAlert'
 import AcademicTerm from './domain/AcademicTerm'
+import { useCourseColors } from './hooks/useCourseColors'
 
-class App extends React.Component <{
-	classes: CreateCSSProperties
-}>{
-	context!: React.ContextType<typeof AppStateContext>;
-	state = {
-		selectedDegrees: [] as string[], // degree acronyms
-		selectedCourses: new CourseUpdates(),
-		classesDialog: false,
-		warningDialog: false,
-		saveMenuAnchor: null,
-		newDomainDialog: false,
-		savedTimetable: new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, ''),
-		shownTimetables: [] as Timetable[],
-	}
-	newTimetable: React.RefObject<NewTimetable>
-	classesByShift: [string, string][] = []
-	minimalClasses: string[] = []
-	warningTitle = ''
-	warningContent = ''
-	warningContinue: () => void = () => {return}
-	newDomainURL = SavedStateHandler.DOMAIN
+interface AppProps {
+	classes: CreateCSSProperties; // TODO use useStyles instead
+}
 
-	// eslint-disable-next-line
-	constructor(props: any) {
-		super(props)
-		this.onSelectedDegrees = this.onSelectedDegrees.bind(this)
-		this.onSelectedCourse = this.onSelectedCourse.bind(this)
-		this.onSelectedShift = this.onSelectedShift.bind(this)
-		this.onSelectedTimetable = this.onSelectedTimetable.bind(this)
-		this.onChangeMultiShiftMode = this.onChangeMultiShiftMode.bind(this)
-		this.updateShiftOccupancies = this.updateShiftOccupancies.bind(this)
-		this.onChangeAcademicTerm = this.onChangeAcademicTerm.bind(this)
-		this.deleteTimetable = this.deleteTimetable.bind(this)
-		this.changeCourseColor = this.changeCourseColor.bind(this)
+function App ({classes}:AppProps) : JSX.Element {
+	const [activeTimetableIndex, setActiveTimetableIndex] = useState(0)
+	const [availableTimetables, setAvailableTimetables] = useState<Timetable[]>(() => ([]))
 
-		this.newTimetable = React.createRef()
+	const [classesDialog, setClassesDialog] = useState(false)
+	const [classesByShift, setClassesByShift] = useState<[string, string][]>([])
+	const [minimalClasses, setMinimalClasses] = useState<string[]>([])
 
+	const [warningDialog, setWarningDialog] = useState(false) // TODO move warning to separate component
+	const [warningTitle, setWarningTitle] = useState('')
+	const [warningContent, setWarningContent] = useState('')
+	const [warningContinue, setWarningContinue] = useState<() => void>(() => () => {return})
+
+	const [newDomainDialog, setNewDomainDialog] = useState(false)
+	const [newDomainURL, setNewDomainURL] = useState(SavedStateHandler.DOMAIN)
+	
+	const newTimetable = useRef<NewTimetable | null>(null)
+	
+	const {savedStateHandler, loading, setLoading} = useAppState()
+	const dispatchAlert = useAlert()
+	const {ensureCoursesHaveColor} = useCourseColors()
+	
+	const activeTimetable = availableTimetables[activeTimetableIndex] || new Timetable(i18next.t('timetable-autocomplete.default-timetable'), [], false, false, '')
+
+	useEffect(() => {
 		// Set occupancy updater
 		OccupancyUpdater.getInstance().changeRate(occupancyRates['Off'])
-		OccupancyUpdater.setUpdateFunction(this.updateShiftOccupancies)
-	}
+		OccupancyUpdater.setUpdateFunction(updateShiftOccupancies);
 
-	async componentDidMount() {
-		// Fetch all terms
-		await defineCurrentTerm()
+		(async () => {
+			// Fetch all terms
+			await defineCurrentTerm()
 
-		// Update current timetable to use the current academic term if does not have
-		this.state.savedTimetable.setAcademicTerm(staticData.currentTerm?.id ?? '')
+			// Build state from cookies or url
+			const builtTimetable = await buildState()
 
-		// Build state from cookies or url
-		await this.buildState()
+			// Update current timetable to use the current academic term if does not have
+			updateActiveTimetable(builtTimetable.setAcademicTerm(staticData.currentTerm?.id ?? ''))
 
-		this.context.setLoading(false)
+			setLoading(false)
 
-		// Set warning with all notices
-		const isWarned = this.context.savedStateHandler.getWarning()
-		if (!isWarned) {
-			this.setWarningDialog()
-			this.context.savedStateHandler.setWarning(true)
-		}
-		
-		// Warn about new domain
-		const isWarnedDomain = this.context.savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
-		this.newDomainURL = await this.getSharingURL()
-		this.setState({newDomainDialog: !isWarnedDomain})
-	}
-
-	async onSelectedDegrees(selectedDegrees: string[]): Promise<void> {
-		this.setState({
-			selectedDegrees
-		})
-	}
-
-	async onSelectedCourse(selectedCourses: Course[]): Promise<void> {
-		// this.state.savedTimetable.toggleCourse(selectedCourses) // For future use
-		// const courseChange = this.state.savedTimetable.toggleCourse(selectedCourses)
-
-		// // If there was no change for whatever reason, ignore
-		// if (!courseChange) return
-	
-		// // Cleared all courses
-		if (selectedCourses.length === 0) { // || courseChange.type === CourseChangeType.Clear) {
-			const currCourses = this.state.savedTimetable.courseUpdates as CourseUpdates
-			currCourses.removeAllCourses()
-			// TODO: Change all other selected degrees for the timetable
-			this.state.savedTimetable.shiftState.availableShifts = []
-			if (this.state.savedTimetable.degreeAcronyms.size === 0) {
-				this.setState({
-					availableCourses: [],
-					selectedCourses: currCourses,
-					availableShifts: [],
-					shownShifts: []
-				})
-			} else {
-				this.setState({
-					selectedCourses: currCourses,
-					availableShifts: [],
-					shownShifts: []
-				})
+			// Set warning with all notices
+			const isWarned = savedStateHandler.getWarning()
+			if (!isWarned) {
+				openWarningDialog()
+				savedStateHandler.setWarning(true)
 			}
+		
+			// Warn about new domain
+			const isWarnedDomain = savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
+			setNewDomainURL(await getSharingURL())
+			setNewDomainDialog(!isWarnedDomain)
+		})()
+	}, [])
+	
+	useEffect(() => {
+		if (availableTimetables.length === 0) {
+			// Skip saving, timetables still loading
 			return
 		}
-		//  else {
-		// 		this.setState({
-		// 			selectedCourses: currCourses,
-		// 			availableShifts: [],
-		// 			shownShifts: []
-		// 		})
-		// 	}
-		// 	this.topBar.current?.setSelectedCourses(currCourses)
-		// 	return
-		// }
-		// else if (courseChange.type === CourseChangeType.Add && courseChange.courseId) {
-		// 	// TODO: Implement
-		// }
-		// else if (courseChange.type === CourseChangeType.Remove && courseChange.courseId) {
-		// 	// TODO: Implement
-		// }
+		savedStateHandler.setSavedTimetables(availableTimetables)
+	}, [availableTimetables])
+	
+	// Immutably update current timetable
+	const updateActiveTimetable = useCallback((newTimetable: Timetable) => {
+		setAvailableTimetables(timetables => {
+			if (Object.is(timetables[activeTimetableIndex], newTimetable)) {
+				// Skip updating if it hasn't changed
+				return timetables
+			}
 
-		const changedCourse = getCoursesDifference(this.state.savedTimetable.courseUpdates.courses, selectedCourses)
-		if (!changedCourse) {
-			return
-		}
-
-		// this.setState({ selectedCourses })
-		// const newCourse = selectedCourses.find(course => course.id === courseChange.courseId)
-		// if (newCourse) currCourses.toggleCourse(newCourse)
-		// this.topBar.current?.setSelectedCourses(selectedCourses)
-
-		// const currCourses = this.state.selectedCourses
-		const currCourses = this.state.savedTimetable.courseUpdates
-		Object.setPrototypeOf(currCourses, CourseUpdates.prototype) // FIXME: what??
-		if (changedCourse.course !== undefined) {
-			currCourses.toggleCourse(changedCourse.course)
-		} else if (changedCourse.type === CourseUpdateType.Many) {
-			selectedCourses.forEach(c => currCourses.toggleCourse(c))
-		}
-
-		this.setState({
-			selectedCourses: currCourses
+			const newTimetables = [...timetables]
+			newTimetables[activeTimetableIndex] = newTimetable
+			return newTimetables
 		})
+	}, [activeTimetableIndex, setAvailableTimetables])
 
-		let availableShifts: Shift[] = []
-		if (currCourses.lastUpdate?.type === CourseUpdateType.Add &&
-			currCourses.lastUpdate.course !== undefined) {
-			const schedule =
-				await API.getCourseSchedules(currCourses.lastUpdate.course, this.state.savedTimetable.getAcademicTerm())
+	const onSelectedDegrees = async (selectedDegrees: string[]): Promise<void> => {
+		updateActiveTimetable(activeTimetable.setDegreeAcronyms(selectedDegrees))
+	}
+
+	const onSelectedCourse = async (courses: Course[]): Promise<void> => {
+		const availableShifts: Shift[] = []
+		const newSelectedCourses: Course[] = []
+
+		for (const course of courses) {
+			const schedule = await API.getCourseSchedules(course, activeTimetable.getAcademicTerm())
+
 			if (schedule === null) {
-				// TODO this.showAlert(i18next.t('alert.cannot-obtain-shifts'), 'error')
-				// Remove course if it can't get the schedules
-				currCourses.toggleCourse(currCourses.lastUpdate.course)
-				this.setState({
-					selectedCourses: currCourses
-				})
+				dispatchAlert({ message: i18next.t('alert.cannot-obtain-shifts'), severity:'error' })
+				// Remove the course if we can't get the schedules
 				return
 			}
-			availableShifts = this.state.savedTimetable.shiftState.availableShifts.concat(schedule)
-		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Remove) {
-			availableShifts = this.state.savedTimetable.shiftState.availableShifts
-				.filter((shift: Shift) => shift.courseId !== currCourses.lastUpdate?.course?.id)
-		} else if (currCourses.lastUpdate?.type === CourseUpdateType.Clear) {
-			availableShifts = []
+
+			availableShifts.push(...schedule)
+			newSelectedCourses.push(course)
 		}
 
-		this.state.savedTimetable.shiftState.availableShifts = availableShifts
-
-		this.context.savedStateHandler.setSavedTimetables(this.context.savedStateHandler.getCurrentTimetables())
-		this.setState({ availableShifts })
+		ensureCoursesHaveColor(newSelectedCourses)
+		
+		updateActiveTimetable(activeTimetable.setCourses(newSelectedCourses).setAvailableShifts(availableShifts))
 	}
 
-	onSelectedTimetable(timetable: Timetable | string): void {
+	const onSelectedTimetable = (timetable: Timetable | string): void => {
 		// If a string is received, it is the adding new button, so we want to add a new timetable
 		if (typeof timetable === 'string') {
 			// let currAcademicTerm = this.state.savedTimetable.
 			const currAcademicTerm = staticData.terms
-				.find(t => t.id === this.state.savedTimetable.getAcademicTerm()) || staticData.currentTerm
+				.find(t => t.id === activeTimetable.getAcademicTerm()) || staticData.currentTerm
 			if (currAcademicTerm !== undefined) {
-				this.newTimetable.current?.show(currAcademicTerm, false)
+				newTimetable.current?.show(currAcademicTerm, false)
 			}
 			return
 		}
 
-		const newTimetable = timetable as Timetable
-		// Store timetable if not saved
-		if (!newTimetable.isSaved) {
-			const prevTimetables = this.context.savedStateHandler.getCurrentTimetables()
-			this.context.savedStateHandler.setSavedTimetables(prevTimetables.concat([newTimetable]))
-		}
-
-		this.updateToNewTimetable(newTimetable)
+		const newTimetableIndex = availableTimetables.indexOf(timetable)
+		setActiveTimetableIndex(Math.max(0, newTimetableIndex))
 	}
 
-	onSelectedShift(shiftName: string, arr: Shift[]): void {
+	const onCreateNewTimetable = (timetable: Timetable): void => {
+		setAvailableTimetables(availableTimetables.concat([timetable]))
+		setActiveTimetableIndex(availableTimetables.length)
+	}
+
+	const onSelectedShift = (shiftName: string, arr: Shift[]): void => {
 		const chosenShift = arr.find((s: Shift) => s.name === shiftName)
 
 		if (chosenShift) {
-			// Add to current timetable and save
-			this.state.savedTimetable.toggleShift(chosenShift)
-			this.context.savedStateHandler.setSavedTimetables(this.context.savedStateHandler.getCurrentTimetables())
-			this.setState({
-				savedTimetable: this.state.savedTimetable,
-				shownTimetables: this.context.savedStateHandler.getCurrentTimetables()
-			})
+			// Add to current timetable
+			updateActiveTimetable(activeTimetable.toggleShift(chosenShift))
 		}
 	}
 
-	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void {
-		this.state.savedTimetable.setMultiShiftMode(value)
-		this.context.savedStateHandler.setSavedTimetables(this.context.savedStateHandler.getCurrentTimetables())
-		this.setState({
-			shownTimetables: this.context.savedStateHandler.getCurrentTimetables(), savedTimetable: this.state.savedTimetable
-		})
+	const onChangeMultiShiftMode = (event: React.ChangeEvent<HTMLInputElement>, value: boolean): void => {
+		updateActiveTimetable(activeTimetable.setMultiShiftMode(value))
 	}
 
-	getCoursesBySelectedShifts(): [Course, Record<ShiftType, boolean | undefined>][] {
-		const coursesShifts = this.state.savedTimetable.getCoursesWithShiftTypes()
-		const coursesWithTypes: [Course, Record<ShiftType, boolean | undefined>][] = Object.entries(coursesShifts)
-			.map(([courseId, types]) =>
-				[API.REQUEST_CACHE.getCourse(courseId, this.state.savedTimetable.getAcademicTerm()), types] as [Course, Record<ShiftType, boolean>]
-			).filter(([course]) => course !== undefined)
-
-		return coursesWithTypes.sort(([courseA], [courseB]) => Course.compare(courseA, courseB))
-	}
-
-	async getSharingURL(): Promise<string> {
-		const params = this.state.savedTimetable.toURLParams()
+	const getSharingURL = async (): Promise<string> => {
+		const params = activeTimetable.toURLParams()
 		return await SavedStateHandler.getAppURL(params)
 	}
 
-	// eslint-disable-next-line
-	async buildState(_forceUpdate = false): Promise<void> {
+	const buildState = async (): Promise<Timetable> => {
 		let savedTimetables: Timetable[] = []
 		try {
-			savedTimetables = await this.context.savedStateHandler.getSavedTimetables()
-			this.setState({
-				shownTimetables: savedTimetables,
-				savedTimetable: savedTimetables[0]
-			})
-			const degreeAcronyms = savedTimetables[0].getDegreesString()
-			if (degreeAcronyms) {
-				this.onSelectedDegrees(degreeAcronyms)
-			}
-			const currCourses = savedTimetables[0].courseUpdates
-			this.setState({
-				selectedCourses: currCourses
-			})
+			savedTimetables = await savedStateHandler.getSavedTimetables()
+			setAvailableTimetables(savedTimetables)
+			setActiveTimetableIndex(0)
+			return savedTimetables[0]
 		} catch (err) {
 			console.error(err)
-		}
-
-		// Update remaining logic (available shifts, campi, shift types)
-		if (savedTimetables.length > 0) this.updateToNewTimetable(savedTimetables[0])
-	}
-
-	updateToNewTimetable(newTimetable: Timetable): void {
-		// FIXME: Should not need try
-		try {
-			const degrees = newTimetable.getDegreesString() || []
-			const courseUpdates = newTimetable.courseUpdates
-			const errors = newTimetable.errors
-			const state = newTimetable.shiftState
-			
-			if (!courseUpdates || !state) {
-				return
-			}
-			// Show that there were parsing errors
-			if (errors !== '') {
-				// TODO this.showAlert(i18next.t('alert.error-parsing'), 'warning')
-			}
-
-			this.setState({
-				...state,
-				selectedDegrees: degrees,
-				selectedCourses: courseUpdates,
-				shownTimetables: this.context.savedStateHandler.getCurrentTimetables(),
-				savedTimetable: newTimetable,
-			})
-			SavedStateHandler.changeUrl()
-		} catch (err) {
-			console.error(err)
-			// ignored, bad URL/cookie state
+			return new Timetable('', [], false, false, '')
 		}
 	}
 
-	setSelectedAcademicTerm(academicTerm : string): void {
-		this.setState({ currentAcademicTerm : academicTerm })
+	const openWarningDialog = (): void => {
+		setWarningTitle(i18next.t('warning.title'))
+		setWarningContent((i18next.t('warning.content', {returnObjects: true}) as string[]).join('\n\n'))
+		setWarningContinue(() => () => {return})
+		setWarningDialog(true)
 	}
 
-	setWarningDialog(): void {
-		this.warningTitle = i18next.t('warning.title')
-		this.warningContent = (i18next.t('warning.content', {returnObjects: true}) as string[]).join('\n\n')
-		this.warningContinue = () => {return}
-		this.setState({warningDialog: true})
-	}
-
-	onSaveMenuClick(event: React.MouseEvent<HTMLSpanElement, MouseEvent> | null, open: boolean): void {
-		if (open && event !== null) {
-			this.setState({
-				saveMenuAnchor: event.currentTarget
-			})
-		} else {
-			this.setState({
-				saveMenuAnchor: null
-			})
-		}
-	}
-
-	async updateShiftOccupancies(): Promise<void> {
+	const updateShiftOccupancies = async (): Promise<void> => {
 		const shiftsById: Record<string, Shift> = {}
 		const coursesToBeFetched = new Set<Course>()
 		
 		// NOTICE: For now we update only the selected shifts
-		this.state.savedTimetable.shiftState.selectedShifts.forEach((s) => {
+		activeTimetable.shiftState.selectedShifts.forEach((s) => {
 			shiftsById[s.getStoredId()] = s
 			coursesToBeFetched.add(s.course)
 		})
 
-		const updatedShifts = await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
+		// TODO check if this is still needed
+		await Promise.all(Array.from(coursesToBeFetched).map(async (c) => {
 			let newShifts: Shift[] | null | undefined =
-				await API.getCourseSchedules(c, this.state.savedTimetable.getAcademicTerm())
+				await API.getCourseSchedules(c, activeTimetable.getAcademicTerm())
 
 			newShifts = newShifts?.filter((s) => {
 				const toUpdateShift = shiftsById[s.getStoredId()]
@@ -368,150 +229,124 @@ class App extends React.Component <{
 
 			return newShifts
 		}))
-
-		// TODO: Maybe this can be moved to the previous cycle
-		const newUpdatedShifts = updatedShifts.flat().filter((s) => {
-			return s !== undefined
-		})
-
-		this.setState({
-			selectedShifts: newUpdatedShifts
-		})
 	}
 
-	onChangeAcademicTerm(academicTerm: AcademicTerm): void {
-		this.newTimetable.current?.show(academicTerm)
+	const onChangeAcademicTerm = (academicTerm: AcademicTerm): void => {
+		newTimetable.current?.show(academicTerm)
 	}
 
-	deleteTimetable(timetable: Timetable) : void {
-		const prevTimetables = this.context.savedStateHandler.getCurrentTimetables()
-		// Delete the timetable!
-		const newTimetables = prevTimetables.filter((t) => t !== timetable)
-		this.context.savedStateHandler.setSavedTimetables(newTimetables)
+	const deleteTimetable = (timetable: Timetable) : void => {
+		const timetableIndex = availableTimetables.indexOf(timetable)
+		if (timetableIndex < 0) {
+			console.error('Failed to delete timetable since it can\'t be found on timetable list', timetable)
+			return
+		}
 		
-		if (this.state.savedTimetable === timetable) {
-			// Only change to a new timetable if we were on the deleted one
-			this.updateToNewTimetable(newTimetables[0])
-		} else {
-			this.setState({
-				shownTimetables: newTimetables
-			})
+		const newTimetables = [...availableTimetables]
+		newTimetables.splice(timetableIndex, 1)
+		setAvailableTimetables(newTimetables)
+
+		if (timetableIndex === activeTimetableIndex) {
+			// If active timetable was deleted, select the first available timetable
+			setActiveTimetableIndex(0)
+		} else if(timetableIndex < activeTimetableIndex) {
+			// Ajust index due to element removal from array
+			setActiveTimetableIndex(activeTimetableIndex - 1)
 		}
 	}
 
-	changeCourseColor(course: Course, color: string) : void {
-		course.setColor(color)
-		const timetable = this.state.savedTimetable
-		timetable.shiftState.availableShifts.forEach(shift => {
-			if (shift.courseId === course.id) {
-				shift.updateColorFromCourse()
-			}
-		})
-		this.context.savedStateHandler.setCoursesColor([course])
-		// Clone shiftState to propagate updates to schedule components
-		timetable.shiftState.availableShifts = [...this.state.savedTimetable.shiftState.availableShifts]
-		timetable.shiftState.selectedShifts = [...this.state.savedTimetable.shiftState.selectedShifts]
-		this.setState({
-			savedTimetable: timetable
-		})
-	}
-
-	render(): ReactNode {
-		const classes = this.props.classes
-
-		return (
-			<div className="App">
-				<Backdrop className={classes.backdrop as string} open={this.context.loading}>
-					<CircularProgress color="inherit" />
-				</Backdrop>
-				<TopBar
-					selectedCourses={this.state.savedTimetable.courseUpdates}
-					onSelectedCourse={this.onSelectedCourse}
-					selectedDegrees={this.state.selectedDegrees}
-					setSelectedDegrees={this.onSelectedDegrees}
-					selectedAcademicTerm={this.state.savedTimetable.getAcademicTerm()}
-					onChangeAcademicTerm={this.onChangeAcademicTerm}
-				/>
-				<div className="main">
-					<div className={classes.body as string}>
-						<div className="schedules">
-							<AvaliableScheduleCard savedTimetable={this.state.savedTimetable} onSelectedShift={this.onSelectedShift} />
-							<SelectedScheduleCard
-								savedTimetable={this.state.savedTimetable}
-								shownTimetables={this.state.shownTimetables}
-								onSelectedShift={this.onSelectedShift}
-								onSelectedTimetable={this.onSelectedTimetable}
-								deleteTimetable={this.deleteTimetable}
-								onChangeMultiShiftMode={this.onChangeMultiShiftMode}
-								changeCourseColor={this.changeCourseColor}
-							/>
-						</div>
+	return (
+		<div className="App">
+			<Backdrop className={classes.backdrop as string} open={loading}>
+				<CircularProgress color="inherit" />
+			</Backdrop>
+			<TopBar
+				selectedCourses={activeTimetable.getCourses()}
+				onSelectedCourse={onSelectedCourse}
+				selectedDegrees={activeTimetable.getDegreeAcronyms()}
+				setSelectedDegrees={onSelectedDegrees}
+				selectedAcademicTerm={activeTimetable.getAcademicTerm()}
+				onChangeAcademicTerm={onChangeAcademicTerm}
+			/>
+			<div className="main">
+				<div className={classes.body as string}>
+					<div className="schedules">
+						<AvaliableScheduleCard
+							availableShifts={activeTimetable.getAvailableShifts()}
+							onSelectedShift={onSelectedShift}
+						/>
+						<SelectedScheduleCard
+							activeTimetable={activeTimetable}
+							availableTimetables={availableTimetables}
+							onSelectedShift={onSelectedShift}
+							onSelectedTimetable={onSelectedTimetable}
+							deleteTimetable={deleteTimetable}
+							onChangeMultiShiftMode={onChangeMultiShiftMode}
+						/>
 					</div>
 				</div>
-				<Footer />
-				<div className="dialogs">
-					<Dialog open={this.state.classesDialog}>
-						<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>
-						<DialogContent className={classes.contentCopyable as string}>
-							<Box>{
-								this.classesByShift.map(c => {
-									return (
-										<div key={c[0]}>
-											<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
-											<Typography key={'class-' + c[0]} variant='body1'
-												style={{marginLeft: '8px'}}
-											>{c[1]}</Typography>
-										</div>
-									)})
-							}
-							</Box>
-							<br/>
-							<Typography variant='h6'>{i18next.t('classes-dialog.minimal-classes')}: {this.minimalClasses.join(', ')}</Typography>
-						</DialogContent>
-						<DialogActions>
-							<div />
-							<Button onClick={() => {this.setState({classesDialog: false})}} color="primary">
-								{i18next.t('classes-dialog.actions.close-button') as string}
-							</Button>
-						</DialogActions>
-					</Dialog>
-					<Dialog open={this.state.warningDialog}>
-						<DialogTitle>{this.warningTitle}</DialogTitle>
-						<DialogContent style={{whiteSpace: 'pre-line'}}>{this.warningContent}</DialogContent>
-						<DialogActions>
-							<div />
-							<Button onClick={() => {this.warningContinue(); this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
-							{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
-						</DialogActions>
-					</Dialog>
-					<Dialog maxWidth='sm' fullWidth open={this.state.newDomainDialog}>
-						<DialogTitle style={{alignSelf: 'center'}}>
-							{i18next.t('new-domain.title', {domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')})}
-						</DialogTitle>
-						<DialogContent style={{display: 'flex', flexDirection: 'column'}}>
-							<Box style={{whiteSpace: 'pre-line', alignSelf: 'center'}}>
-								{(i18next.t('new-domain.content', {returnObjects: true, domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')}) as string[]).join('\n\n')}
-							</Box>
-							<br/>
-							<Button variant='contained' style={{alignSelf: 'center'}} href={this.newDomainURL} color="primary">
-								{i18next.t('new-domain.actions.access') as string}
-							</Button>
-						</DialogContent>
-						<DialogActions>
-							<div />
-							<Button onClick={() => {this.setState({newDomainDialog: false})}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
-						</DialogActions>
-					</Dialog>
-					<NewTimetable ref={this.newTimetable}
-						onCreatedTimetable={(newTimetable) => this.onSelectedTimetable(newTimetable)}
-						onCancel={() => this.setState({ selectedAcademicTerm: this.state.savedTimetable.getAcademicTerm() })}
-					/>
-				</div>
 			</div>
-		)
-	}
+			<Footer />
+			<div className="dialogs">
+				<Dialog open={classesDialog}>
+					<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>
+					<DialogContent className={classes.contentCopyable as string}>
+						<Box>{
+							classesByShift.map(c => {
+								return (
+									<div key={c[0]}>
+										<Typography key={'course-' + c[0]} variant='h6'>{c[0]}: </Typography>
+										<Typography key={'class-' + c[0]} variant='body1'
+											style={{marginLeft: '8px'}}
+										>{c[1]}</Typography>
+									</div>
+								)})
+						}
+						</Box>
+						<br/>
+						<Typography variant='h6'>{i18next.t('classes-dialog.minimal-classes')}: {minimalClasses.join(', ')}</Typography>
+					</DialogContent>
+					<DialogActions>
+						<div />
+						<Button onClick={() => {setClassesDialog(false)}} color="primary">
+							{i18next.t('classes-dialog.actions.close-button') as string}
+						</Button>
+					</DialogActions>
+				</Dialog>
+				<Dialog open={warningDialog}>
+					<DialogTitle>{warningTitle}</DialogTitle>
+					<DialogContent style={{whiteSpace: 'pre-line'}}>{warningContent}</DialogContent>
+					<DialogActions>
+						<div />
+						<Button onClick={() => {warningContinue(); setWarningDialog(false)}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
+						{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
+					</DialogActions>
+				</Dialog>
+				<Dialog maxWidth='sm' fullWidth open={newDomainDialog}>
+					<DialogTitle style={{alignSelf: 'center'}}>
+						{i18next.t('new-domain.title', {domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')})}
+					</DialogTitle>
+					<DialogContent style={{display: 'flex', flexDirection: 'column'}}>
+						<Box style={{whiteSpace: 'pre-line', alignSelf: 'center'}}>
+							{(i18next.t('new-domain.content', {returnObjects: true, domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')}) as string[]).join('\n\n')}
+						</Box>
+						<br/>
+						<Button variant='contained' style={{alignSelf: 'center'}} href={newDomainURL} color="primary">
+							{i18next.t('new-domain.actions.access') as string}
+						</Button>
+					</DialogContent>
+					<DialogActions>
+						<div />
+						<Button onClick={() => {setNewDomainDialog(false)}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
+					</DialogActions>
+				</Dialog>
+				<NewTimetable ref={newTimetable}
+					onCreatedTimetable={(newTimetable) => onCreateNewTimetable(newTimetable)}
+					onCancel={() => {return}}
+				/>
+			</div>
+		</div>
+	)
 }
-
-App.contextType = AppStateContext
 
 export default withStyles(APP_STYLES)(App)

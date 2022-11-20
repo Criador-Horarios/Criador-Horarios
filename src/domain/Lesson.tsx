@@ -1,7 +1,8 @@
-import Comparable from './Comparable'
+import { CourseColor } from '../hooks/useCourseColors'
+import Course from './Course'
 import { ShiftOccupation } from './Shift'
 
-export default class Lesson implements Comparable {
+export default interface Lesson {
 	// Attention, as this is used by FullCalendar as EventApi, if you use the URL property it will add it to the event
 	title: string
 	exportedTitle: string
@@ -10,41 +11,51 @@ export default class Lesson implements Comparable {
 	endTime: string
 	date: string
 	daysOfWeek: number[]
-	color: string
 	id: string
 	minutes: number
 	occupation: ShiftOccupation
 	courseUrl: string
-	courseName: string
+	course: Course
 	room: string
 	campus: string
+}
 
-	// eslint-disable-next-line
-	constructor(obj: Record<string, any>) {
-		this.daysOfWeek = [obj.dayOfWeek]
-		this.startTime = obj.start
-		this.endTime = obj.end
-		this.date = obj.date
-		const dateStart = new Date('2021/02/17 ' + obj.start), dateEnd = new Date('2021/02/17 ' + obj.end)
-		this.minutes = (dateEnd.getTime() - dateStart.getTime()) / ( 1000 * 60 )
-		this.color = obj.color
-		this.type = obj.type
-		this.id = obj.shiftName
-		this.occupation = obj.occupation
-		this.courseUrl = obj.url
-		this.courseName = obj.courseName
-		this.room = obj.room
-		this.title = `${obj.acronym} - ${obj.shiftId}`
-		this.exportedTitle = `${obj.acronym} - ${obj.shiftId} @ ${obj.room !== undefined ? obj.room : '' }`
-		this.campus = obj.campus
+export interface LessonWithColor extends Lesson {
+	color: string
+}
+
+// eslint-disable-next-line
+export function createLesson(obj: Record<string, any>): Lesson {
+	// TODO this should be typed
+	const dateStart = new Date('2021/02/17 ' + obj.start), dateEnd = new Date('2021/02/17 ' + obj.end)
+	return {
+		daysOfWeek: [obj.dayOfWeek],
+		startTime: obj.start,
+		endTime: obj.end,
+		date: obj.date,
+		minutes: (dateEnd.getTime() - dateStart.getTime()) / ( 1000 * 60 ),
+		type: obj.type,
+		id: obj.shiftName,
+		occupation: obj.occupation,
+		courseUrl: obj.url,
+		course: obj.course,
+		room: obj.room,
+		title: `${obj.acronym} - ${obj.shiftId}`,
+		exportedTitle: `${obj.acronym} - ${obj.shiftId} @ ${obj.room !== undefined ? obj.room : '' }`,
+		campus: obj.campus,
 	}
+}
 
-	hashString(): string {
-		return this.title + this.startTime + this.endTime + this.daysOfWeek[0]
-	}
+export function keepUniqueLessons(lessons: Lesson[]): Lesson[] {
+	const obj: Record<string, Lesson> = {}
+	lessons.forEach(lesson => { obj[lesson.title + lesson.startTime + lesson.endTime + lesson.daysOfWeek[0]] = lesson })
+	return Object.values(obj)
+}
 
-	equals(other: Lesson): boolean {
-		return this.hashString() === other.hashString()
+export function addColorToLesson(lesson: Lesson, color: CourseColor): LessonWithColor {
+	return {
+		...lesson,
+		color: color.backgroundColor,
 	}
 }
 

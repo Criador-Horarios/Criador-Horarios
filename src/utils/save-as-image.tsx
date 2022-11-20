@@ -135,7 +135,7 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 				if (lessons[currHour] && lessons[currHour][dayOfWeek]) {
 					lessons[currHour][dayOfWeek].forEach(l => {
 						const colspan = getColSpan(dayOfWeek, currHour, l.minutes, overlaps, overlapHours)
-						body += `<td style="background-color: ${l.color}; color: white;" 
+						body += `<td style="background-color: ${/* TODO l.color */ '000'}; color: white;" 
 						rowspan="${l.minutes / intervalUnit}" 
 						colspan="${colspan}"> ${l.exportedTitle} </td>`
 						occupied = setOccupied(l.startTime, dayOfWeek, l.minutes, intervalUnit, colspan, occupied)

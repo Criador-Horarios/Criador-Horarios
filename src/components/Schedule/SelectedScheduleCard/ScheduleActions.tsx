@@ -30,17 +30,18 @@ import { useAlert } from '../../../hooks/useAlert'
 import { useAppState } from '../../../hooks/useAppState'
 
 interface ScheduleActionsProps {
-	savedTimetable: Timetable;
+	activeTimetable: Timetable;
 	onChangeMultiShiftMode(event: React.ChangeEvent<HTMLInputElement>, value: boolean): void;
 }
 
-function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleActionsProps) : JSX.Element {
+function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleActionsProps) : JSX.Element {
 	const dispatchAlert = useAlert()
 	const { setLoading, darkMode } = useAppState()
 	
-	const { isMultiShift, degreeAcronyms } = savedTimetable
-	const { selectedShifts } = savedTimetable.shiftState
-	const academicTerm = savedTimetable.getAcademicTerm()
+	const isMultiShift = activeTimetable.isMultiShiftMode()
+	const degreeAcronyms = activeTimetable.getDegreeAcronyms()
+	const { selectedShifts } = activeTimetable.shiftState
+	const academicTerm = activeTimetable.getAcademicTerm()
 
 	const [saveMenuAnchor, setSaveMenuAnchor] = useState<EventTarget & HTMLSpanElement | null>(null)
 	const openSaveMenu = useCallback((event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
@@ -59,7 +60,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 	}, [isMultiShift, selectedShifts])
 
 	const openClassesDialog = useCallback(async () => {
-		if (degreeAcronyms.size === 0) {
+		if (degreeAcronyms.length === 0) {
 			dispatchAlert({ message: i18next.t('alert.minimal-classes-no-degrees'), severity: 'error' })
 			return
 		}
@@ -109,7 +110,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 	}, [selectedShifts, darkMode])
 
 	const copyShareLinkToClipboard = useCallback(async () => {
-		const params = savedTimetable.toURLParams()
+		const params = activeTimetable.toURLParams()
 		const url = SavedStateHandler.getAppURL(params)
 		
 		try {
@@ -127,7 +128,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 			document.body.removeChild(el)
 		}
 		dispatchAlert({ message: i18next.t('alert.link-obtained'), severity: 'success' })
-	}, [savedTimetable])
+	}, [activeTimetable])
 	
 	return (
 		<div className={styles.ScheduleCentered as string}>
@@ -148,7 +149,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 			</Tooltip>
 			<Tooltip title={i18next.t('schedule-selected.actions.get-classes') as string}>
 				<IconButton
-					disabled={savedTimetable.shiftState.selectedShifts.length === 0}
+					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
 					color="inherit"
 					onClick={openClassesDialog}
 					component="span">
@@ -157,7 +158,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 			</Tooltip>
 			<Tooltip title={i18next.t('link-button.tooltip') as string}>
 				<IconButton
-					disabled={savedTimetable.shiftState.selectedShifts.length === 0}
+					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
 					color="inherit"
 					onClick={copyShareLinkToClipboard}
 					component="span"
@@ -167,7 +168,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 			</Tooltip>
 			<Tooltip title={i18next.t('schedule-selected.actions.save-to-file') as string}>
 				<IconButton
-					disabled={savedTimetable.shiftState.selectedShifts.length === 0}
+					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
 					color="inherit"
 					onClick={openSaveMenu}
 					component="span">
@@ -203,7 +204,7 @@ function ScheduleActions ({savedTimetable, onChangeMultiShiftMode} : ScheduleAct
 			</Menu>
 			<Tooltip title={i18next.t('schedule-selected.actions.duplicate-timetable') as string}>
 				<IconButton
-					disabled={savedTimetable.shiftState.selectedShifts.length === 0}
+					disabled={activeTimetable.shiftState.selectedShifts.length === 0}
 					color="inherit"
 					onClick={() => {alert('TODO')}
 						// TODO this.newTimetable.current?.show(staticData.currentTerm || staticData.terms[0], false, savedTimetable)
