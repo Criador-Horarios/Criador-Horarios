@@ -169,7 +169,7 @@ function TopBar ({
 								const {backgroundColor, textColor} = getCourseColor(option)
 								return (
 									<Tooltip title={option.displayName(selectedDegrees.length > 1)} key={option.hashString()}>
-										<Chip {...getTagProps({ index })} size="small" color='primary'
+										<Chip {...getTagProps({ index })} size="small" color='secondary'
 											style={{backgroundColor}}
 											label={<span style={{color: textColor}}>{option.getAcronym()}</span>}
 										/>

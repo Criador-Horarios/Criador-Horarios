@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import API, { defineCurrentTerm, staticData } from './utils/api'
 import './App.scss'
 
