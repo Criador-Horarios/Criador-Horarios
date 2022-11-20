@@ -77,7 +77,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 		setLoading(false)
 		// TODO save this somewhere instead of returning
 		return {classesByShift: Object.entries(classesByShift), minimalClasses}
-	}, [])
+	}, [degreeAcronyms, selectedShifts, academicTerm])
 
 
 	const exportToExcel = useCallback(async () => {

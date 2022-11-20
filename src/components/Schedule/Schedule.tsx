@@ -8,8 +8,6 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Box from '@material-ui/core/Box/Box'
 import { ShiftOccupation } from '../../domain/Shift'
 import i18next from 'i18next'
-import { isOkWithWhite } from '../../utils/colors'
-import hexRgb from 'hex-rgb'
 // import './_materialFullCalendar.scss'
 
 import { useAppState } from '../../hooks/useAppState'
