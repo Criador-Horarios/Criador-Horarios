@@ -193,7 +193,7 @@ export default class API {
 		return sortedCourses
 	}
 
-	public static async getCourse(course: string, degreeAcronyms: string[], academicTermId: string | undefined): Promise<Course | null> {
+	public static async getCourse(course: string, academicTermId: string | undefined): Promise<Course | null> {
 		// Check if courses already exist for this academicTerm and degree
 		let prevCourse = this.REQUEST_CACHE.getCourse(course, academicTermId || '')
 		if (prevCourse !== undefined) return prevCourse
@@ -231,8 +231,6 @@ export default class API {
 			courseAcronyms = res.competences[0].degrees.map(d => d.acronym).join('/')
 		}
 		const newCourse = Course.fromDto(res, courseAcronyms)
-		// Update degree acronyms
-		// TODO newCourse.updateDegree(degreeAcronyms)
 
 		// Store in cache for future use
 		this.REQUEST_CACHE.storeCourse(newCourse, academicTermId || '')

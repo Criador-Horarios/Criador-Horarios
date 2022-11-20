@@ -8,9 +8,8 @@ const prefix = 'https://fenix.tecnico.ulisboa.pt'
 export default async function getClasses(shifts: Shift[], academicTermId: string): Promise<Record<string, string>> {
 	const shiftPage: Record<string, string> = {}
 	const courseUrls = Array.from(new Set(shifts.map(shift => shift.getCourseId())))
-	const degreeAcronyms = new Set(shifts.map(s => s.getAcronym()))
 	await Promise.all(courseUrls
-		.map(courseId => API.getCourse(courseId, Array.from(degreeAcronyms), academicTermId)
+		.map(courseId => API.getCourse(courseId, academicTermId)
 			.then(async c => {
 				if (!shiftPage[courseId] && c !== null) {
 					const url = c.getUrl().replace(prefix, '') + '/turnos'

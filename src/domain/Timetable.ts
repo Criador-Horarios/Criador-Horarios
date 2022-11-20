@@ -58,7 +58,7 @@ export default class Timetable implements Comparable {
 			const parsedStr = JSON.parse(str)
 			const degreesAcronyms: Set<string> = new Set(parsedStr.degrees?.split(SavedStateHandler.PARAMS_SEP))
 			const savedState =
-				await SavedStateHandler.getInstance().getShifts(parsedStr.shifts, Array.from(degreesAcronyms), parsedStr.academicTerm)
+				await SavedStateHandler.getInstance().getShifts(parsedStr.shifts, parsedStr.academicTerm)
 			if (!savedState) return undefined
 
 			const [courses, shiftState] = savedState

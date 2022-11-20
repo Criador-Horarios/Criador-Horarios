@@ -155,8 +155,7 @@ function TopBar ({
 						filterOptions={courseFilterOptions}
 						options={availableCourses}
 						getOptionDisabled={(option) => {
-							// TODO return !option.isSelected &&
-							return selectedCourses.length === maxSelectedCourses
+							return selectedCourses.length === maxSelectedCourses && !selectedCourses.includes(option)
 						}}
 						noOptionsText={i18next.t('course-selector.noOptions') as string}
 						getOptionLabel={(option) => {

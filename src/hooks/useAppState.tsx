@@ -76,7 +76,6 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 			savedStateHandler.setLanguage(language)
 
 			await afterChange()
-			// TODO this.buildState(true)
 			setLoading(false)
 		}
 	}, [lang, savedStateHandler])

@@ -21,7 +21,7 @@ import Timetable from '../../../domain/Timetable'
 
 interface SelectedScheduleCardProps {
 	activeTimetable: Timetable;
-	availableTimetables: (Timetable | string)[]; // TODO consider renaming to "availableTimetables" like on App.tsx
+	availableTimetables: (Timetable | string)[];
 	onSelectedTimetable: (timetable: Timetable | string) => void;
 	onSelectedShift: (shiftName: string, arr: Shift[]) => void;
 	deleteTimetable: (timetable: Timetable) => void;

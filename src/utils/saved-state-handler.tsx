@@ -79,7 +79,6 @@ export default class SavedStateHandler {
 	// INSTANCE METHODS
 	async getShifts(
 		unparsedShifts: string | undefined = undefined,
-		degreesChosen: string[] = [],
 		academicTermId: string
 	): Promise<[Course[], ShiftState, string] | undefined> {
 		const errors: string[] = []
@@ -93,7 +92,7 @@ export default class SavedStateHandler {
 
 		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
 			try {
-				return await this.buildCourse(description, degreesChosen, academicTermId)
+				return await this.buildCourse(description, academicTermId)
 			} catch (err) {
 				// Values not well parsed, but keeps parsing the rest
 				errors.push(err as string)
@@ -254,8 +253,8 @@ export default class SavedStateHandler {
 	}
 
 	// HELPERS
-	private async buildCourse(description: string[], degreeAcronyms: string[], academicTermId: string): Promise<BuiltCourse> {
-		const course = await API.getCourse(description[0], degreeAcronyms, academicTermId)
+	private async buildCourse(description: string[], academicTermId: string): Promise<BuiltCourse> {
+		const course = await API.getCourse(description[0], academicTermId)
 
 		if (!course) {
 			throw 'Could not build course'
