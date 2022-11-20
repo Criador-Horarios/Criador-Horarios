@@ -32,6 +32,7 @@ import NewTimetable from './components/NewTimetable/NewTimetable'
 import { useAppState } from './hooks/useAppState'
 import { useAlert } from './hooks/useAlert'
 import AcademicTerm from './domain/AcademicTerm'
+import WarningDialog from './components/WarningDialog/WarningDialog'
 
 interface AppProps {
 	classes: CreateCSSProperties; // TODO use useStyles instead
@@ -44,11 +45,6 @@ function App ({classes}:AppProps) : JSX.Element {
 	const [classesDialog, setClassesDialog] = useState(false)
 	const [classesByShift, setClassesByShift] = useState<[string, string][]>([])
 	const [minimalClasses, setMinimalClasses] = useState<string[]>([])
-
-	const [warningDialog, setWarningDialog] = useState(false) // TODO move warning to separate component
-	const [warningTitle, setWarningTitle] = useState('')
-	const [warningContent, setWarningContent] = useState('')
-	const [warningContinue, setWarningContinue] = useState<() => void>(() => () => {return})
 
 	const [newDomainDialog, setNewDomainDialog] = useState(false)
 	const [newDomainURL, setNewDomainURL] = useState(SavedStateHandler.DOMAIN)
@@ -77,12 +73,6 @@ function App ({classes}:AppProps) : JSX.Element {
 
 			setLoading(false)
 
-			// Set warning with all notices
-			const isWarned = savedStateHandler.getWarning()
-			if (!isWarned) {
-				openWarningDialog()
-				savedStateHandler.setWarning(true)
-			}
 		
 			// Warn about new domain
 			const isWarnedDomain = savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
@@ -187,13 +177,6 @@ function App ({classes}:AppProps) : JSX.Element {
 			console.error(err)
 			return Timetable.emptyTimetable()
 		}
-	}
-
-	const openWarningDialog = (): void => {
-		setWarningTitle(i18next.t('warning.title'))
-		setWarningContent((i18next.t('warning.content', {returnObjects: true}) as string[]).join('\n\n'))
-		setWarningContinue(() => () => {return})
-		setWarningDialog(true)
 	}
 
 	const updateShiftOccupancies = async (): Promise<void> => {
@@ -321,15 +304,7 @@ function App ({classes}:AppProps) : JSX.Element {
 						</Button>
 					</DialogActions>
 				</Dialog>
-				<Dialog open={warningDialog}>
-					<DialogTitle>{warningTitle}</DialogTitle>
-					<DialogContent style={{whiteSpace: 'pre-line'}}>{warningContent}</DialogContent>
-					<DialogActions>
-						<div />
-						<Button onClick={() => {warningContinue(); setWarningDialog(false)}} color="primary">{i18next.t('warning.actions.continue') as string}</Button>
-						{/* <Button onClick={() => {this.setState({warningDialog: false})}} color="primary">{i18next.t('warning.actions.back') as string}</Button> */}
-					</DialogActions>
-				</Dialog>
+				<WarningDialog />
 				<Dialog maxWidth='sm' fullWidth open={newDomainDialog}>
 					<DialogTitle style={{alignSelf: 'center'}}>
 						{i18next.t('new-domain.title', {domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')})}
