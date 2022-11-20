@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import i18next from 'i18next'
 import styles from './ColorPicker.module.scss'
-import Course from '../../domain/Course'
+import Course, { CourseWithShiftTypes } from '../../domain/Course'
 import Chip from '@material-ui/core/Chip'
 
 import Dialog from '@material-ui/core/Dialog'
@@ -13,20 +13,19 @@ import Button from '@material-ui/core/Button'
 import { Box } from '@material-ui/core'
 import { getColor1, getColor2, getColor3 } from '../../utils/colors'
 import Typography from '@material-ui/core/Typography'
-import { useCourseColors } from '../../hooks/useCourseColors'
 
 interface ColorPickerProps {
-	course: Course | null;
+	course: CourseWithShiftTypes | null;
+	setCourseColor: (course: Course, color: string) => void;
 	onClose: () => void;
 }
 
-function ColorPicker ({course, onClose} : ColorPickerProps) : JSX.Element {
-	const {setColorForCourse, getColorForCourse} = useCourseColors()
-	const [currColor, setCurrColor] = useState(() => course ? getColorForCourse(course).backgroundColor : 'ffffff')
+function ColorPicker ({course, setCourseColor, onClose} : ColorPickerProps) : JSX.Element {
+	const [currColor, setCurrColor] = useState(() => course ? course.color.backgroundColor : 'ffffff')
 		
 	useEffect(() => {
 		if (course !== null) {
-			setCurrColor(getColorForCourse(course).backgroundColor)
+			setCurrColor(course.color.backgroundColor)
 		}
 	}, [course])
 	
@@ -35,7 +34,7 @@ function ColorPicker ({course, onClose} : ColorPickerProps) : JSX.Element {
 			return
 		}
 
-		setColorForCourse(course, currColor)
+		setCourseColor(course.course, currColor)
 		onClose()
 	}
 
@@ -46,7 +45,7 @@ function ColorPicker ({course, onClose} : ColorPickerProps) : JSX.Element {
 	return (
 		<div>
 			<Dialog open={!!course} fullWidth={true} maxWidth='xs'>
-				<DialogTitle>{i18next.t('color-picker-dialog.title', { course: course?.getAcronym()})}</DialogTitle>
+				<DialogTitle>{i18next.t('color-picker-dialog.title', { course: course?.course.getAcronym()})}</DialogTitle>
 				<DialogContent className={styles.ColorPicker}>
 					<Box display="flex" justifyContent="center" alignItems="center" flexDirection="column">
 						<Typography>{i18next.t('color-picker-dialog.content.preview')}</Typography>

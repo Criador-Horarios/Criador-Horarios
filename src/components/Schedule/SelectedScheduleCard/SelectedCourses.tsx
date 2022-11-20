@@ -11,23 +11,23 @@ import Typography from '@material-ui/core/Typography'
 import Course, { CourseWithShiftTypes } from '../../../domain/Course'
 import { useTheme } from '@material-ui/core/styles'
 import ColorPicker from '../../ColorPicker/ColorPicker'
-import { useCourseColors } from '../../../hooks/useCourseColors'
 
 interface SelectedCoursesProps {
 	coursesBySelectedShifts: CourseWithShiftTypes[]
+	setCourseColor: (course: Course, color: string) => void
 }
 
-function SelectedCourses ({ coursesBySelectedShifts } : SelectedCoursesProps) : JSX.Element {
+function SelectedCourses ({ coursesBySelectedShifts, setCourseColor } : SelectedCoursesProps) : JSX.Element {
 	const theme = useTheme()
-	const {getColorForCourse} = useCourseColors()
 
-	const [coursePickingColor, setCoursePickingColor] = useState<Course | null>(null)
+	const [coursePickingColor, setCoursePickingColor] = useState<CourseWithShiftTypes | null>(null)
 	
 	return (
 		<>
 			<div style={{display: 'flex', flexGrow: 1, flexWrap: 'wrap'}}>
-				{coursesBySelectedShifts.map(({course: c, shiftTypes}) => {
-					const {backgroundColor, textColor} = getColorForCourse(c)
+				{coursesBySelectedShifts.map((course) => {
+					const {course: c, color, shiftTypes} = course
+					const {backgroundColor, textColor} = color
 					return (
 						<Paper elevation={0} variant={'outlined'} key={c.hashString()}
 							style={{padding: '4px', margin: '4px', display: 'flex'}}
@@ -37,7 +37,7 @@ function SelectedCourses ({ coursesBySelectedShifts } : SelectedCoursesProps) : 
 								<Chip size="small" color='primary'
 									style={{backgroundColor}}
 									label={<span style={{color: textColor}}>{c.getAcronym()}</span>}
-									onClick={() => setCoursePickingColor(c)} // Toggle colorPicker on click
+									onClick={() => setCoursePickingColor(course)} // Toggle colorPicker on click
 								/>
 							</Tooltip>
 							{ Object.entries(shiftTypes).map(([type, shown]) => {
@@ -57,7 +57,11 @@ function SelectedCourses ({ coursesBySelectedShifts } : SelectedCoursesProps) : 
 					)
 				})}
 			</div>
-			<ColorPicker course={coursePickingColor} onClose={() => setCoursePickingColor(null)}/>
+			<ColorPicker
+				course={coursePickingColor}
+				setCourseColor={setCourseColor}
+				onClose={() => setCoursePickingColor(null)}
+			/>
 		</>
 	)
 }

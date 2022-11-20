@@ -9,7 +9,6 @@ import { I18nextProvider } from 'react-i18next'
 import { StylesProvider } from '@material-ui/core'
 import { AlertProvider } from './hooks/useAlert'
 import { AppStateProvider } from './hooks/useAppState'
-import { CourseColorsProvider } from './hooks/useCourseColors'
 
 API.setMutexes()
 API.setPrefix()
@@ -19,11 +18,9 @@ ReactDOM.render(
 		<I18nextProvider i18n={i18n}>
 			<StylesProvider injectFirst>
 				<AppStateProvider>
-					<CourseColorsProvider>
-						<AlertProvider>
-							<App />
-						</AlertProvider>
-					</CourseColorsProvider>
+					<AlertProvider>
+						<App />
+					</AlertProvider>
 				</AppStateProvider>
 			</StylesProvider>
 		</I18nextProvider>

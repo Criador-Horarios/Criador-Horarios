@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import API, { defineCurrentTerm, staticData } from './utils/api'
 import './App.scss'
 
-import Course from './domain/Course'
+import Course, { CourseColor } from './domain/Course'
 import Shift from './domain/Shift'
 
 import i18next from 'i18next'
@@ -32,7 +32,6 @@ import NewTimetable from './components/NewTimetable/NewTimetable'
 import { useAppState } from './hooks/useAppState'
 import { useAlert } from './hooks/useAlert'
 import AcademicTerm from './domain/AcademicTerm'
-import { useCourseColors } from './hooks/useCourseColors'
 
 interface AppProps {
 	classes: CreateCSSProperties; // TODO use useStyles instead
@@ -58,7 +57,6 @@ function App ({classes}:AppProps) : JSX.Element {
 	
 	const {savedStateHandler, loading, setLoading} = useAppState()
 	const dispatchAlert = useAlert()
-	const {ensureCoursesHaveColor} = useCourseColors()
 	
 	const activeTimetable = availableTimetables[activeTimetableIndex] || Timetable.emptyTimetable()
 
@@ -136,8 +134,6 @@ function App ({classes}:AppProps) : JSX.Element {
 			newSelectedCourses.push(course)
 		}
 
-		ensureCoursesHaveColor(newSelectedCourses)
-		
 		updateActiveTimetable(activeTimetable.setCourses(newSelectedCourses).setAvailableShifts(availableShifts))
 	}
 
@@ -235,7 +231,7 @@ function App ({classes}:AppProps) : JSX.Element {
 		newTimetable.current?.show(academicTerm)
 	}
 
-	const deleteTimetable = (timetable: Timetable) : void => {
+	const deleteTimetable = (timetable: Timetable): void => {
 		const timetableIndex = availableTimetables.indexOf(timetable)
 		if (timetableIndex < 0) {
 			console.error('Failed to delete timetable since it can\'t be found on timetable list', timetable)
@@ -255,6 +251,14 @@ function App ({classes}:AppProps) : JSX.Element {
 		}
 	}
 
+	const getCourseColor = (course: Course): CourseColor => {
+		return activeTimetable.getCourseColor(course)
+	}
+
+	const onChangeCourseColor = (course: Course, color: string): void => {
+		updateActiveTimetable(activeTimetable.setCourseColor(course, color))
+	}
+
 	return (
 		<div className="App">
 			<Backdrop className={classes.backdrop as string} open={loading}>
@@ -262,6 +266,7 @@ function App ({classes}:AppProps) : JSX.Element {
 			</Backdrop>
 			<TopBar
 				selectedCourses={activeTimetable.getCourses()}
+				getCourseColor={getCourseColor}
 				onSelectedCourse={onSelectedCourse}
 				selectedDegrees={activeTimetable.getDegreeAcronyms()}
 				setSelectedDegrees={onSelectedDegrees}
@@ -273,6 +278,7 @@ function App ({classes}:AppProps) : JSX.Element {
 					<div className="schedules">
 						<AvaliableScheduleCard
 							availableShifts={activeTimetable.getAvailableShifts()}
+							getCourseColor={getCourseColor}
 							onSelectedShift={onSelectedShift}
 						/>
 						<SelectedScheduleCard
@@ -282,6 +288,8 @@ function App ({classes}:AppProps) : JSX.Element {
 							onSelectedTimetable={onSelectedTimetable}
 							deleteTimetable={deleteTimetable}
 							onChangeMultiShiftMode={onChangeMultiShiftMode}
+							getCourseColor={getCourseColor}
+							onChangeCourseColor={onChangeCourseColor}
 						/>
 					</div>
 				</div>

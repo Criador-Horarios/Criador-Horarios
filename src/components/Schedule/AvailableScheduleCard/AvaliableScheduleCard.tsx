@@ -13,13 +13,15 @@ import ScheduleFilters from './ScheduleFilters'
 
 import campiList from '../../../domain/CampiList'
 import Shift, { ShiftType } from '../../../domain/Shift'
+import Course, { CourseColor } from '../../../domain/Course'
 
 interface AvaliableScheduleCardProps {
 	availableShifts: Shift[];
+	getCourseColor: (course: Course) => CourseColor;
 	onSelectedShift: (shiftName: string, arr: Shift[]) => void;
 }
 
-function AvaliableScheduleCard ({availableShifts, onSelectedShift} : AvaliableScheduleCardProps) : JSX.Element {
+function AvaliableScheduleCard ({availableShifts, getCourseColor, onSelectedShift} : AvaliableScheduleCardProps) : JSX.Element {
 	const [selectedCampi, setSelectedCampi] = useState([...campiList])
 	const [selectedShiftTypes, setSelectedShiftTypes] = useState(Object.values(ShiftType) as string[])
 	
@@ -43,6 +45,7 @@ function AvaliableScheduleCard ({availableShifts, onSelectedShift} : AvaliableSc
 			<CardContent className={styles.ScheduleCardContent}>
 				<Schedule
 					onSelectedEvent={(id: string) => onSelectedShift(id, availableShifts)}
+					getCourseColor={getCourseColor}
 					events={shownLessons}
 				/>
 			</CardContent>

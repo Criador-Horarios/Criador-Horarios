@@ -15,7 +15,7 @@ import ScheduleActions from './ScheduleActions'
 import SelectedCourses from './SelectedCourses'
 import TimetableSelector from './TimetableSelector'
 
-import Course from '../../../domain/Course'
+import Course, { CourseColor } from '../../../domain/Course'
 import Shift from '../../../domain/Shift'
 import Timetable from '../../../domain/Timetable'
 
@@ -26,6 +26,8 @@ interface SelectedScheduleCardProps {
 	onSelectedShift: (shiftName: string, arr: Shift[]) => void;
 	deleteTimetable: (timetable: Timetable) => void;
 	onChangeMultiShiftMode: (event: React.ChangeEvent<HTMLInputElement>, value: boolean) => void;
+	getCourseColor: (course: Course) => CourseColor;
+	onChangeCourseColor: (course: Course, color: string) => void;
 }
 
 function SelectedScheduleCard ({
@@ -35,6 +37,8 @@ function SelectedScheduleCard ({
 	onSelectedShift,
 	deleteTimetable,
 	onChangeMultiShiftMode,
+	getCourseColor,
+	onChangeCourseColor,
 } : SelectedScheduleCardProps) : JSX.Element {
 	const selectedShifts = activeTimetable.getSelectedShifts()
 
@@ -46,7 +50,7 @@ function SelectedScheduleCard ({
 		const coursesWithTypes = activeTimetable.getCoursesWithShiftTypes()
 			.filter(({shiftTypes}) => Object.values(shiftTypes).some(Boolean)) // only include courses with selected shifts
 		return coursesWithTypes.sort(({course: courseA}, {course: courseB}) => Course.compare(courseA, courseB))
-	}, [selectedShifts])
+	}, [selectedShifts, getCourseColor])
 
 	return (
 		<Card className={styles.ScheduleCard as string}>
@@ -69,11 +73,12 @@ function SelectedScheduleCard ({
 			<CardContent className={styles.ScheduleCardContent as string}>
 				<Schedule
 					onSelectedEvent={(id: string) => onSelectedShift(id, selectedShifts)}
+					getCourseColor={getCourseColor}
 					events={selectedLessons}
 				/>
 			</CardContent>
 			<CardActions>
-				<SelectedCourses coursesBySelectedShifts={coursesBySelectedShifts} />
+				<SelectedCourses coursesBySelectedShifts={coursesBySelectedShifts} setCourseColor={onChangeCourseColor} />
 				<ScheduleActions activeTimetable={activeTimetable} onChangeMultiShiftMode={onChangeMultiShiftMode} />
 			</CardActions>
 		</Card>

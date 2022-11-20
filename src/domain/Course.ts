@@ -89,7 +89,13 @@ export default class Course implements Comparable {
 
 export type CourseWithShiftTypes = {
 	course: Course
+	color: CourseColor
 	shiftTypes: Record<ShiftType, boolean | undefined>
+}
+
+export interface CourseColor {
+	backgroundColor: string;
+	textColor: string;
 }
 
 export type CourseDto = {

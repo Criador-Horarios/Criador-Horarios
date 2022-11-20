@@ -1,9 +1,13 @@
+import { isOkWithWhite } from './../utils/colors'
 import Comparable, { Comparables } from './Comparable'
 import Shift, { ShiftType, shortenDescriptions } from './Shift'
 
 import SavedStateHandler, { ShiftState } from '../utils/saved-state-handler'
-import Course, { CourseWithShiftTypes } from './Course'
+import Course, { CourseColor, CourseWithShiftTypes } from './Course'
 import { staticData } from '../utils/api'
+import rgbHex from 'rgb-hex'
+import { getRandomDarkColor } from '../utils/CourseUpdate'
+import hexRgb from 'hex-rgb'
 
 /**
  * Represents a Timetable (that is, the state of the app basically), storing
@@ -35,6 +39,7 @@ export default class Timetable implements Comparable {
 		if (academicTerm === '' || academicTerm === undefined) {
 			this.academicTerm = staticData.currentTerm?.id || ''
 		}
+		this.ensureCoursesHaveColor()
 	}
 
 	/**
@@ -64,6 +69,7 @@ export default class Timetable implements Comparable {
 			newTimetable.courses = new Set(courses)
 			newTimetable.degreeAcronyms = degreesAcronyms
 			newTimetable.shiftState = shiftState
+			newTimetable.ensureCoursesHaveColor()
 			return newTimetable
 		} catch (err) {
 			// Baaaaah
@@ -108,17 +114,41 @@ export default class Timetable implements Comparable {
 
 		this.shiftState.availableShifts.forEach(shift => {
 			const courseId = shift.getCourseId()
-			const courseWithShiftTypes = res[courseId] || (res[courseId] = {course: shift.getCourse(), shiftTypes: {} as Record<ShiftType, boolean>})
+			const courseWithShiftTypes = res[courseId] || (res[courseId] = {
+				course: shift.getCourse(),
+				color: this.getCourseColor(shift.getCourse()),
+				shiftTypes: {} as Record<ShiftType, boolean>
+			})
 			courseWithShiftTypes.shiftTypes[shift.getType()] = false
 		})
 
 		this.shiftState.selectedShifts.forEach(shift => {
 			const courseId = shift.getCourseId()
-			const courseWithShiftTypes = res[courseId] || (res[courseId] = {course: shift.getCourse(), shiftTypes: {} as Record<ShiftType, boolean>})
+			const courseWithShiftTypes = res[courseId] || (res[courseId] = {
+				course: shift.getCourse(),
+				color: this.getCourseColor(shift.getCourse()),
+				shiftTypes: {} as Record<ShiftType, boolean>
+			})
 			courseWithShiftTypes.shiftTypes[shift.getType()] = true
 		})
 
 		return Object.values(res)
+	}
+	
+	/**
+	 * Ensure the coursesColors list has all the courses this timetable has.
+	 */
+	private ensureCoursesHaveColor(): void {
+		this.courses.forEach(course => {
+			if (this.coursesColors[course.getId()]) {
+				// Course already has color, ignore
+				return
+			}
+			
+			const randomColor = getRandomDarkColor()
+			const color = `#${rgbHex(randomColor.red, randomColor.green, randomColor.blue)}`
+			this.coursesColors = {...this.coursesColors, [course.getId()]: color}
+		})
 	}
 
 	// =================
@@ -302,6 +332,36 @@ export default class Timetable implements Comparable {
 	setCourses(courses: Course[]): Timetable {
 		const newTimetable = this.shallowCopy()
 		newTimetable.courses = new Set(courses)
+		newTimetable.ensureCoursesHaveColor()
+		return newTimetable
+	}
+
+	/**
+	 * Returns the saved background color and the calculated text color for a course.
+	 * @param course The course to get the color for
+	 * @returns The background and text color for the course
+	 */
+	getCourseColor(course: Course): CourseColor {
+		const color = this.coursesColors[course.getId()] || '#000'
+		return {
+			backgroundColor: color,
+			textColor: isOkWithWhite(hexRgb(color)) ? 'white' : 'black'
+		}
+	}
+
+	/**
+	 * Immutably sets the color for a course in this timetable,
+	 * returning a new instance of Timetable.
+	 * @param course The course to change the color of.
+	 * @param color The color to set.
+	 * @returns A new instance of Timetable with the changes.
+	 */
+	setCourseColor(course: Course, color: string): Timetable {
+		if (this.coursesColors[course.getId()] === color) {
+			return this
+		}
+		const newTimetable = this.shallowCopy()
+		newTimetable.coursesColors = {...newTimetable.coursesColors, [course.getId()]: color}
 		return newTimetable
 	}
 

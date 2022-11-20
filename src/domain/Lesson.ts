@@ -1,6 +1,6 @@
-import { CourseColor } from '../hooks/useCourseColors'
-import Course from './Course'
-import { ShiftOccupation } from './Shift'
+import { getColor1, getColor2 } from '../utils/colors'
+import Course, { CourseColor } from './Course'
+import { ShiftOccupation, ShiftType } from './Shift'
 
 export default interface Lesson {
 	// Attention, as this is used by FullCalendar as EventApi, if you use the URL property it will add it to the event
@@ -22,6 +22,7 @@ export default interface Lesson {
 
 export interface LessonWithColor extends Lesson {
 	color: string
+	textColor: string
 }
 
 // eslint-disable-next-line
@@ -53,9 +54,20 @@ export function keepUniqueLessons(lessons: Lesson[]): Lesson[] {
 }
 
 export function addColorToLesson(lesson: Lesson, color: CourseColor): LessonWithColor {
+	let newColor, textColor
+	if (lesson.type === ShiftType['Teo']) {
+		[newColor, textColor] = getColor1(color.backgroundColor)
+	} else if (lesson.type === ShiftType['PB']) {
+		[newColor, textColor] = getColor2(color.backgroundColor)
+	} else {
+		newColor = color.backgroundColor
+		textColor = color.textColor
+	}
+
 	return {
 		...lesson,
-		color: color.backgroundColor,
+		color: newColor,
+		textColor,
 	}
 }
 

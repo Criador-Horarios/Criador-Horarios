@@ -4,7 +4,7 @@ import styles from './TopBar.module.scss'
 import API, { staticData } from '../../utils/api'
 import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
-import Course from '../../domain/Course'
+import Course, { CourseColor } from '../../domain/Course'
 
 import Chip from '@material-ui/core/Chip'
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
@@ -20,7 +20,6 @@ import LanguageButton from './LanguageButton'
 import DarkModeButton from './DarkModeButton'
 import SettingsButton from './SettingsButton'
 import { useAlert } from '../../hooks/useAlert'
-import { useCourseColors } from '../../hooks/useCourseColors'
 
 interface TopBarProps {
 	selectedCourses: Course[];
@@ -29,6 +28,7 @@ interface TopBarProps {
 	setSelectedDegrees: (selectedDegrees: string[]) => Promise<void>;
 	selectedAcademicTerm: string | null,
 	onChangeAcademicTerm: (newAcademicTerm: AcademicTerm) => void;
+	getCourseColor: (course: Course) => CourseColor;
 }
 
 function TopBar ({
@@ -38,13 +38,12 @@ function TopBar ({
 	setSelectedDegrees,
 	selectedAcademicTerm,
 	onChangeAcademicTerm,
+	getCourseColor,
 } : TopBarProps) : JSX.Element {
 	const dispatchAlert = useAlert()
 
 	const [availableDegrees, setAvailableDegrees] = useState<Degree[]>([])
 	const [availableCourses, setAvailableCourses] = useState<Course[]>([])
-	
-	const {getColorForCourse} = useCourseColors()
 	
 	const currentDegrees = useMemo(() => {
 		return availableDegrees.filter((degree: Degree) => selectedDegrees.includes(degree.acronym))
@@ -167,7 +166,7 @@ function TopBar ({
 						renderInput={(params) => <TextField {...params} label={i18next.t('course-selector.title') as string} variant="outlined" />}
 						renderTags={(tagValue, getTagProps) => {
 							return tagValue.map((option, index) => {
-								const {backgroundColor, textColor} = getColorForCourse(option)
+								const {backgroundColor, textColor} = getCourseColor(option)
 								return (
 									<Tooltip title={option.displayName(selectedDegrees.length > 1)} key={option.hashString()}>
 										<Chip {...getTagProps({ index })} size="small" color='primary'

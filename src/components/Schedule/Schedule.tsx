@@ -13,21 +13,20 @@ import hexRgb from 'hex-rgb'
 // import './_materialFullCalendar.scss'
 
 import { useAppState } from '../../hooks/useAppState'
-import { useCourseColors } from '../../hooks/useCourseColors'
+import Course, { CourseColor } from '../../domain/Course'
 
 interface ScheduleProps {
 	onSelectedEvent: (id: string) => void;
+	getCourseColor: (course: Course) => CourseColor;
 	events: Lesson[];
 }
 
-function Schedule ({onSelectedEvent, events} : ScheduleProps) : JSX.Element {
+function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : JSX.Element {
 	const { lang } = useAppState()
 	
-	const {getColorForCourse} = useCourseColors()
-
 	const lessonsWithColors: LessonWithColor[] = useMemo(() => {
-		return events.map(lesson => addColorToLesson(lesson, getColorForCourse(lesson.course)))
-	}, [events, getColorForCourse])
+		return events.map(lesson => addColorToLesson(lesson, getCourseColor(lesson.course)))
+	}, [events, getCourseColor])
 
 	const onEventClick = (info: EventClickArg) => {
 		// TODO: The courses don't have url for now
@@ -88,16 +87,15 @@ function Schedule ({onSelectedEvent, events} : ScheduleProps) : JSX.Element {
 	)
 }
 
-function EventContent({event , backgroundColor} : EventContentArg): JSX.Element {
+function EventContent({event} : EventContentArg): JSX.Element {
 	const occupation = Object.values(event.extendedProps.occupation as ShiftOccupation)
 	const percentage = occupation[0]/occupation[1] * 100 || 0
-	const textColor = isOkWithWhite(hexRgb(backgroundColor)) ? 'white' : 'black'
 
 	return (
 		<Tooltip arrow title={
 			<React.Fragment>{i18next.t('schedule.shift.occupation')}: {occupation.join('/')} ({percentage.toFixed(0)}%)</React.Fragment>
 		} placement={'top'}>
-			<Box style={{maxWidth: '100%', height: '100%', color: textColor, wordBreak: 'break-word', overflowY: 'hidden'}}>
+			<Box style={{maxWidth: '100%', height: '100%', wordBreak: 'break-word', overflowY: 'hidden'}}>
 				<p style={{margin: '0'}}>{event.title}</p>
 				<p style={{margin: '0'}}>{event.extendedProps.campus}</p>
 			</Box>
