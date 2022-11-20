@@ -4,7 +4,7 @@ import Shift from '../domain/Shift'
 import i18next from 'i18next'
 
 export default function getCalendar(shifts: Shift[]): void {
-	const events = shifts.map(s => s.allLessons).flat().map(l => {
+	const events = shifts.map(s => s.getAllLessons()).flat().map(l => {
 		return {
 			title: `${l.course.getName()} : ${i18next.t(`classType.${l.type}`)}`,
 			location: l.room,

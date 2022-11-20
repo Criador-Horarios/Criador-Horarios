@@ -163,7 +163,7 @@ function App ({classes}:AppProps) : JSX.Element {
 	}
 
 	const onSelectedShift = (shiftName: string, arr: Shift[]): void => {
-		const chosenShift = arr.find((s: Shift) => s.name === shiftName)
+		const chosenShift = arr.find((s: Shift) => s.getName() === shiftName)
 
 		if (chosenShift) {
 			// Add to current timetable
@@ -207,7 +207,7 @@ function App ({classes}:AppProps) : JSX.Element {
 		// NOTICE: For now we update only the selected shifts
 		activeTimetable.getSelectedShifts().forEach((s) => {
 			shiftsById[s.getStoredId()] = s
-			coursesToBeFetched.add(s.course)
+			coursesToBeFetched.add(s.getCourse())
 		})
 
 		// TODO check if this is still needed
@@ -221,7 +221,7 @@ function App ({classes}:AppProps) : JSX.Element {
 					// FIXME: Remove this, just for testing
 					// s.occupation.current = Math.round(s.occupation.max * Math.random())
 					// --
-					toUpdateShift.updateOccupancy(s.occupation)
+					toUpdateShift.updateOccupancy(s.getOccupation())
 				}
 
 				return toUpdateShift !== undefined

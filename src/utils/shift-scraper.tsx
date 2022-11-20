@@ -7,8 +7,8 @@ const prefix = 'https://fenix.tecnico.ulisboa.pt'
 
 export default async function getClasses(shifts: Shift[], academicTermId: string): Promise<Record<string, string>> {
 	const shiftPage: Record<string, string> = {}
-	const courseUrls = Array.from(new Set(shifts.map(shift => shift.courseId)))
-	const degreeAcronyms = new Set(shifts.map(s => s.course.getAcronym()))
+	const courseUrls = Array.from(new Set(shifts.map(shift => shift.getCourseId())))
+	const degreeAcronyms = new Set(shifts.map(s => s.getAcronym()))
 	await Promise.all(courseUrls
 		.map(courseId => API.getCourse(courseId, Array.from(degreeAcronyms), academicTermId)
 			.then(async c => {
@@ -32,9 +32,9 @@ export default async function getClasses(shifts: Shift[], academicTermId: string
 	// TODO: change forEach to reduce
 	const res: Record<string, string> = {}
 	shifts.forEach((shift: Shift) => {
-		const page = shiftPage[shift.courseId]
+		const page = shiftPage[shift.getCourseId()]
 		if (page === undefined) {
-			res[shift.acronym] = i18next.t('shift-scraper.classes.error')
+			res[shift.getAcronym()] = i18next.t('shift-scraper.classes.error')
 			// Couldn't get course before
 			return
 		}
@@ -45,8 +45,8 @@ export default async function getClasses(shifts: Shift[], academicTermId: string
 			if (attrs.length === 5) {
 				const shiftName = $(attrs[0]).text()
 
-				if (shiftName.includes(shift.name) && !res[shift.name]) {
-					res[shift.acronym + ' - ' + shift.shiftId] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
+				if (shiftName.includes(shift.getName()) && !res[shift.getName()]) {
+					res[shift.getAcronym() + ' - ' + shift.getShiftId()] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
 				}
 			}
 		})

@@ -29,7 +29,7 @@ export default class Timetable implements Comparable {
 		this.isMultiShift = isMultishift
 		this.academicTerm = academicTerm
 		shifts.forEach(s => {
-			this.courses.add(s.course)
+			this.courses.add(s.getCourse())
 		})
 
 		if (academicTerm === '' || academicTerm === undefined) {
@@ -107,15 +107,15 @@ export default class Timetable implements Comparable {
 		const res: Record<string, CourseWithShiftTypes> = {}
 
 		this.shiftState.availableShifts.forEach(shift => {
-			const courseId = shift.course.getId()
-			const courseWithShiftTypes = res[courseId] || (res[courseId] = {course: shift.course, shiftTypes: {} as Record<ShiftType, boolean>})
-			courseWithShiftTypes.shiftTypes[shift.type] = false
+			const courseId = shift.getCourseId()
+			const courseWithShiftTypes = res[courseId] || (res[courseId] = {course: shift.getCourse(), shiftTypes: {} as Record<ShiftType, boolean>})
+			courseWithShiftTypes.shiftTypes[shift.getType()] = false
 		})
 
 		this.shiftState.selectedShifts.forEach(shift => {
-			const courseId = shift.course.getId()
-			const courseWithShiftTypes = res[courseId] || (res[courseId] = {course: shift.course, shiftTypes: {} as Record<ShiftType, boolean>})
-			courseWithShiftTypes.shiftTypes[shift.type] = true
+			const courseId = shift.getCourseId()
+			const courseWithShiftTypes = res[courseId] || (res[courseId] = {course: shift.getCourse(), shiftTypes: {} as Record<ShiftType, boolean>})
+			courseWithShiftTypes.shiftTypes[shift.getType()] = true
 		})
 
 		return Object.values(res)

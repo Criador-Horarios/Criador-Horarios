@@ -39,7 +39,7 @@ function SelectedScheduleCard ({
 	const selectedShifts = activeTimetable.getSelectedShifts()
 
 	const selectedLessons = useMemo(() => {
-		return selectedShifts.map((shift: Shift) => shift.lessons).flat()
+		return selectedShifts.map((shift: Shift) => shift.getLessons()).flat()
 	}, [selectedShifts])
 	
 	const coursesBySelectedShifts = useMemo(() => {

@@ -92,7 +92,7 @@ export default class StoredEntities {
 	public static storeShift(shift: Shift, courseId: string, academicTermId: string): void {
 		const currInstance = this.getInstance(academicTermId)
 		const courseShifts = currInstance.courseShifts[courseId] = currInstance.courseShifts[courseId] || {}
-		courseShifts[shift.name] = shift
+		courseShifts[shift.getName()] = shift
 	}
 
 	public static getShift(courseId: string, shiftId: string, academicTermId: string): Shift | undefined {

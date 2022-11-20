@@ -1,6 +1,10 @@
 import Comparable from './Comparable'
 import { ShiftType } from './Shift'
 
+/**
+ * Represents a course of a degree.
+ * This class is immutable and cannot be changed.
+ */
 export default class Course implements Comparable {
 	private id = ''
 	private acronym = '' // From Fénix

@@ -21,22 +21,21 @@ export enum ShiftTypeFenix {
 	'Sem' = 'SEMINARY',
 }
 
+/**
+ * Represents a shift of a course, which can have multiple lessons.
+ * This class is immutable and cannot be changed.
+ */
 export default class Shift implements Comparable {
-	courseId: string
-	course: Course
-	name: string
-	type: ShiftType
-	acronym: string
-	shiftId: string
-	courseName: string
-	lessons: Lesson[]
-	allLessons: Lesson[]
-	campus = ''
-	occupation: ShiftOccupation
-	url: string
+	private course: Course
+	private name: string
+	private type: ShiftType
+	private shiftId: string
+	private lessons: Lesson[]
+	private allLessons: Lesson[]
+	private campus = ''
+	private occupation: ShiftOccupation
 	
 	constructor(obj: ShiftDto, course: Course) {
-		this.courseId = course.getId()
 		this.course = course
 		this.name = obj.name
 
@@ -52,9 +51,6 @@ export default class Shift implements Comparable {
 		this.type = Object.entries(ShiftType).filter(x => x[0] === type[0])[0][1]
 		this.shiftId = this.type + match[2]
 
-		// Use course acronym
-		this.acronym = course.getAcronym()
-		this.courseName = course.getName()
 		if (obj.rooms !== null || (obj.rooms as string[]).length > 0) {
 			this.campus = obj.rooms[0]?.topLevelSpace.name
 		}
@@ -63,7 +59,6 @@ export default class Shift implements Comparable {
 			current: obj.occupation.current,
 			max: obj.occupation.max,
 		}
-		this.url = course.getUrl()
 
 		const lessons = obj.lessons.map((l: LessonDto) => {
 			return createLesson({
@@ -72,15 +67,16 @@ export default class Shift implements Comparable {
 				end: l.end.split(' ')[1],
 				date: l.start.split(' ')[0],
 				// Replacing space to T to allow parsing on SAFARI
+				// FIXME Fénix API v2 will return a proper ISO date
 				dayOfWeek: new Date(l.start.replace(' ', 'T')).getDay(),
 				room: l.room?.name,
 				campus: l.room?.topLevelSpace.name || this.campus,
-				acronym: this.acronym,
+				acronym: this.getAcronym(),
 				shiftId: this.shiftId,
 				id: this.name,
 				occupation: this.occupation,
 				type: this.type,
-				url: this.url,
+				url: this.getCourse().getUrl(),
 				course: course,
 			})
 		})
@@ -93,14 +89,14 @@ export default class Shift implements Comparable {
 		// FIXME: Verify if is a shift
 		const s1 = o1 as Shift
 		const s2 = o2 as Shift
-		return s1.courseName === s2.courseName && s1.type === s2.type && s1.name !== s2.name
+		return s1.getCourseName() === s2.getCourseName() && s1.type === s2.type && s1.name !== s2.name
 		// If we need to replace shifts from same courses from different degrees (like CDI from LEIC-A and MEEC)
 		// comment the next line
-			&& s1.courseId === s2.courseId
+			&& s1.getCourseId() === s2.getCourseId()
 	}
 
 	equals(other: Shift): boolean {
-		return this.name === other.name && this.courseId === other.courseId
+		return this.name === other.name && this.getCourseId() === other.getCourseId()
 	}
 
 	hashString(): string {
@@ -112,7 +108,51 @@ export default class Shift implements Comparable {
 	}
 
 	getFullId(): string[] {
-		return [this.courseId, this.getStoredId()]
+		return [this.getCourseId(), this.getStoredId()]
+	}
+
+	getCourse(): Course {
+		return this.course
+	}
+
+	getCourseId(): string {
+		return this.getCourse().getId()
+	}
+
+	getCourseName(): string {
+		return this.getCourse().getName()
+	}
+
+	getAcronym(): string {
+		return this.getCourse().getAcronym()
+	}
+
+	getName(): string {
+		return this.name
+	}
+
+	getType(): ShiftType {
+		return this.type
+	}
+
+	getShiftId(): string {
+		return this.shiftId
+	}
+
+	getLessons(): Lesson[] {
+		return this.lessons
+	}
+
+	getAllLessons(): Lesson[] {
+		return this.allLessons
+	}
+
+	getCampus(): string {
+		return this.campus
+	}
+
+	getOccupation(): ShiftOccupation {
+		return this.occupation
 	}
 
 	/**
@@ -133,6 +173,7 @@ export default class Shift implements Comparable {
 	}
 
 	updateOccupancy(newOccupancy: ShiftOccupation): void {
+		// TODO this should be removed, the class is immutable
 		this.occupation = {
 			current: newOccupancy.current,
 			max: newOccupancy.max,
@@ -159,8 +200,7 @@ export const shortenDescriptions = (shifts: Shift[]): string => {
 }
 
 export const getDegreesAcronyms = (shifts: Shift[]): string | undefined => {
-	let res = shifts
-		.map((s) => s.course.getDegreeAcronym())
+	let res = shifts.map((s) => s.getCourse().getDegreeAcronym())
 	res = Array.from(new Set(res)) // Remove duplicates
 	if (res.length == 0) return undefined
 	return res.reduce((a, b) => `${a};${b}`)

@@ -43,7 +43,7 @@ function saveToImage(shifts: Shift[], darkMode: boolean) {
 	const overlaps: Record<number, number> = {}
 
 	shifts.map(s => {
-		s.lessons.forEach(l => {
+		s.getLessons().forEach(l => {
 			const hour = l.startTime
 			const overlapHours = Array.from({length: l.minutes / intervalUnit}, (v,k) => addTime(l.startTime, k * intervalUnit))
 

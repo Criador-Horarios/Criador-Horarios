@@ -26,11 +26,11 @@ function AvaliableScheduleCard ({availableShifts, onSelectedShift} : AvaliableSc
 	// Filter lessons according to current campi and shift type filters
 	const shownLessons = useMemo(() => {
 		return availableShifts.filter((s) => {
-			const campi = selectedCampi.includes(s.campus) || s.campus === undefined
-			const type = selectedShiftTypes.includes(s.type)
+			const campi = selectedCampi.includes(s.getCampus()) || s.getCampus() === undefined
+			const type = selectedShiftTypes.includes(s.getType())
 			return campi && type
 		})
-			.map((shift) => shift.lessons)
+			.map((shift) => shift.getLessons())
 			.flat()
 	}, [availableShifts, selectedCampi, selectedShiftTypes])
 
