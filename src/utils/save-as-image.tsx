@@ -1,14 +1,15 @@
 import html2canvas from 'html2canvas'
-import Lesson from '../domain/Lesson'
+import { addColorToLesson, LessonWithColor } from '../domain/Lesson'
 import Shift from '../domain/Shift'
 import i18next from 'i18next'
+import Course, { CourseColor } from '../domain/Course'
 
-export default function downloadAsImage(shifts: Shift[], darkMode: boolean): void {
+export default function downloadAsImage(shifts: Shift[], darkMode: boolean, getCourseColor: (course: Course) => CourseColor): void {
 	const div = document.createElement('div')
 	div.className = 'imageSaver'
 	document.body.appendChild(div)
 	setTimeout(function(){
-		const table = saveToImage(shifts, darkMode)
+		const table = saveToImage(shifts, darkMode, getCourseColor)
 		div.innerHTML = table
 
 		html2canvas(div, {
@@ -37,13 +38,14 @@ const saveAs = (uri: string, filename: string) => {
 
 // FIXME: Needs refactor
 const intervalUnit = 30
-function saveToImage(shifts: Shift[], darkMode: boolean) {
-	const lessonsByHour: Record<string, Record<number, Lesson[]>> = {}
+function saveToImage(shifts: Shift[], darkMode: boolean, getCourseColor: (course: Course) => CourseColor) {
+	const lessonsByHour: Record<string, Record<number, LessonWithColor[]>> = {}
 	const overlapsLessons: Record<number, Record<string, number>> = {}
 	const overlaps: Record<number, number> = {}
 
 	shifts.map(s => {
-		s.getLessons().forEach(l => {
+		s.getLessons().forEach(lesson => {
+			const l = addColorToLesson(lesson, getCourseColor(s.getCourse()))
 			const hour = l.startTime
 			const overlapHours = Array.from({length: l.minutes / intervalUnit}, (v,k) => addTime(l.startTime, k * intervalUnit))
 
@@ -88,7 +90,7 @@ function saveToImage(shifts: Shift[], darkMode: boolean) {
 	return table
 }
 
-function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: Record<number, number>,
+function getTable(lessons: Record<string, Record<number, LessonWithColor[]>>, overlaps: Record<number, number>,
 	overlapHours: Record<number, Record<string, number>>, darkMode: boolean): string {
 	// Get class for light/dark mode
 	const colorClass = darkMode ? 'dark' : 'light'
@@ -135,7 +137,7 @@ function getTable(lessons: Record<string, Record<number, Lesson[]>>, overlaps: R
 				if (lessons[currHour] && lessons[currHour][dayOfWeek]) {
 					lessons[currHour][dayOfWeek].forEach(l => {
 						const colspan = getColSpan(dayOfWeek, currHour, l.minutes, overlaps, overlapHours)
-						body += `<td style="background-color: ${/* TODO l.color */ '000'}; color: white;" 
+						body += `<td style="background-color: ${l.color}; color: ${l.textColor};" 
 						rowspan="${l.minutes / intervalUnit}" 
 						colspan="${colspan}"> ${l.exportedTitle} </td>`
 						occupied = setOccupied(l.startTime, dayOfWeek, l.minutes, intervalUnit, colspan, occupied)

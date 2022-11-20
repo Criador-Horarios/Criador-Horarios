@@ -110,10 +110,10 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode} : ScheduleAc
 			return
 		}
 
-		downloadAsImage(selectedShifts, darkMode) // FIXME
+		downloadAsImage(selectedShifts, darkMode, course => activeTimetable.getCourseColor(course))
 		dispatchAlert({ message: i18next.t('alert.schedule-to-image'), severity: 'success' })
 		closeSaveMenu()
-	}, [selectedShifts, darkMode])
+	}, [selectedShifts, darkMode, activeTimetable.getAllCoursesColor()])
 
 	const copyShareLinkToClipboard = useCallback(async () => {
 		const params = activeTimetable.toURLParams()
