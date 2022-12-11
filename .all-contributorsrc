@@ -41,6 +41,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "diogotcorreia",
+      "name": "Diogo Correia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7467891?v=4",
+      "profile": "https://diogotc.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
