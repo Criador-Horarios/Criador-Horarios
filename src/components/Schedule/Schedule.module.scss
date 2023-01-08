@@ -1,2 +1,43 @@
-.Schedule {
+.ScheduleCard {
+	margin: 1% 1% 2% 1%;
+}
+
+.ScheduleCardTitle {
+	padding: 8px 16px 2px 16px;
+}
+
+.ScheduleCardContent {
+	padding-top: 4px;
+	padding-bottom: 0px;
+}
+
+.SchedulePaper {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.ScheduleCentered {
+	margin: auto;
+}
+
+.ScheduleToggleGroup {
+	flex-wrap: wrap;
+}
+
+.ShiftChecklistSelected {
+	// color: theme.palette.text.primary
+}
+
+.ShiftChecklistUnselected {
+	// color: theme.palette.text.hint
+	opacity: 0.8;
+}
+
+.ScheduleFormLabel {
+	margin: 0;
+	:global{
+		.MuiTypography-root {
+			line-height: 0.5;
+		}
+	}
 }

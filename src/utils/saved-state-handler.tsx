@@ -3,7 +3,6 @@ import Course from '../domain/Course'
 import Shift from '../domain/Shift'
 import Timetable from '../domain/Timetable'
 import API, { defineCurrentTerm, staticData } from './api'
-import CourseUpdates from './CourseUpdate'
 
 import i18next from 'i18next'
 
@@ -80,26 +79,20 @@ export default class SavedStateHandler {
 	// INSTANCE METHODS
 	async getShifts(
 		unparsedShifts: string | undefined = undefined,
-		degreesChosen: Set<string> = new Set,
 		academicTermId: string
-	): Promise<[CourseUpdates, ShiftState, string] | undefined> {
+	): Promise<[Course[], ShiftState, string] | undefined> {
 		const errors: string[] = []
 		const shiftsToParse = unparsedShifts
 		if (!shiftsToParse) {
-			const courseUpdate = new CourseUpdates()
-			courseUpdate.degreeAcronyms = degreesChosen
-			return [courseUpdate, { availableShifts: [], selectedShifts: [] }, '']
+			return [[], { availableShifts: [], selectedShifts: [] }, '']
 		}
 
 		const shifts = shiftsToParse.split(SavedStateHandler.PARAMS_SEP)
 			.map((shift: string) => shift.split(SavedStateHandler.ARGS_SEP))
 
-		const courseUpdate = new CourseUpdates()
-		courseUpdate.degreeAcronyms = degreesChosen
-
 		const parsedState = await Promise.all(shifts.map(async (description: string[]) => {
 			try {
-				return await this.buildCourse(description, courseUpdate, academicTermId)
+				return await this.buildCourse(description, academicTermId)
 			} catch (err) {
 				// Values not well parsed, but keeps parsing the rest
 				errors.push(err as string)
@@ -115,14 +108,18 @@ export default class SavedStateHandler {
 			}
 			return acc
 		}, { availableShifts: [], selectedShifts: [] } as ShiftState)
+		
+		const courses = parsedState.reduce((acc: Course[], result: BuiltCourse | undefined) => {
+			if (result) {
+				acc.push(result.course)
+			}
+			return acc
+		}, [])
 
-		return [courseUpdate, state, errors.join(', ')]
+		return [courses, state, errors.join(', ')]
 	}
 
 	setSavedTimetables(timetables: Timetable[]): void {
-		// Mark every timetable has saved
-		timetables.forEach(t => t.save())
-
 		const convertedTimetables: Record<string, string> = {}
 		timetables.map((t, index) => convertedTimetables[index] = t.toString())
 
@@ -131,8 +128,7 @@ export default class SavedStateHandler {
 	}
 
 	createCurrentTimetable(name = i18next.t('timetable-autocomplete.default-timetable')): Timetable {
-		const newTimetable = new Timetable(name, [], false, false, '')
-		newTimetable.save()
+		const newTimetable = new Timetable(name, [], false, '')
 		return newTimetable
 	}
 
@@ -142,7 +138,7 @@ export default class SavedStateHandler {
 	}
 
 	getAvailableTimetableName(timetables: Timetable[]): string {
-		const allNames = timetables.map(t => t.name)
+		const allNames = timetables.map(t => t.getName())
 		const prefix = i18next.t('timetable-autocomplete.default-timetable').split(' ')[0]
 		let n = 1
 
@@ -250,36 +246,19 @@ export default class SavedStateHandler {
 		this.setLocalStorage(SavedStateHandler.WARNING, warning.toString(), { maxAge: SavedStateHandler.AGE_WARNING })
 	}
 
-	setCoursesColor(courses: Course[]): void {
-		courses.forEach(c => {
-			this.colors[c.id] = c.color
-		})
+	setCoursesColor(colors: Record<string, string>): void {
+		this.colors = colors
 
 		this.setLocalStorage(SavedStateHandler.COLORS, this.colors, {})
 	}
 
 	// HELPERS
-	private async buildCourse(description: string[], updates: CourseUpdates, academicTermId: string): Promise<BuiltCourse> {
-		const course = await API.getCourse(description[0], Array.from(updates.degreeAcronyms), academicTermId)
+	private async buildCourse(description: string[], academicTermId: string): Promise<BuiltCourse> {
+		const course = await API.getCourse(description[0], academicTermId)
 
 		if (!course) {
 			throw 'Could not build course'
 		}
-
-		if (updates.has(course)) {
-			throw 'Repeated course on URL'
-		}
-
-		// Check if has a previous color and set it
-		const currColor = this.colors[course.id]
-		const hasColor = (currColor && currColor !== '') as boolean
-		if (hasColor) {
-			course.setColor(currColor)
-		}
-		// TODO: If not, store it
-
-		// Set course as selected
-		updates.toggleCourse(course, hasColor)
 
 		// Get the course schedules
 		const availableShifts = await API.getCourseSchedules(course, academicTermId)
@@ -292,7 +271,6 @@ export default class SavedStateHandler {
 		const selectedShifts = availableShifts.reduce((acc: Shift[], shift: Shift) => {
 			if (selectedShiftIds.includes(shift.getStoredId())) {
 				acc.push(shift)
-				course.addSelectedShift(shift)
 			}
 			return acc
 		}, [] as Shift[])
@@ -390,7 +368,7 @@ export default class SavedStateHandler {
 
 		// Check degrees
 		if (newTimetable &&
-			Array.from(newTimetable.degreeAcronyms).filter(d => d.length === 0 || d.includes('\\')).length > 0) {
+			newTimetable.getDegreeAcronyms().filter(d => d.length === 0 || d.includes('\\')).length > 0) {
 			return undefined
 		}
 

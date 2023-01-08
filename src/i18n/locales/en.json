@@ -3,7 +3,7 @@
 		"title": "Choose a degree",
 		"noOptions": "No options available"
 	},
-	"course-selector": {    
+	"course-selector": {
 		"title": "Choose the courses",
 		"noOptions": "No options, you might need to select another degree or academic term"
 	},
@@ -152,6 +152,7 @@
 		"cannot-obtain-courses": "It was not possible to obtain the courses of this degree",
 		"cannot-obtain-shifts": "It was not possible to obtain the shifts of this course",
 		"error-parsing": "There were errors in parsing. Please contact the administrators.",
+		"deleted-timetable": "Successfully deleted schedule",
 		"minimal-classes-no-degrees": "You haven't selected a degree. Select at least one degree first."
 	},
 	"warning": {
