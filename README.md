@@ -1,6 +1,6 @@
 <p align="center">
   <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href='#contributors' target='_blank'><img alt='All Contributors' src='https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square'></a>
+<a href='#contributors' target='_blank'><img alt='All Contributors' src='https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square'></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
   <a href="https://github.com/joaocmd/Criador-Horarios/commits/develop" target="_blank">
@@ -72,12 +72,15 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="https://github.com/joaocmd"><img src="https://avatars.githubusercontent.com/u/5345834?v=4?s=100" width="100px;" alt=""/><br /><sub><b>João David</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=joaocmd" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/masterzeus05"><img src="https://avatars.githubusercontent.com/u/35273853?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniel Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=masterzeus05" title="Code">💻</a></td>
-    <td align="center"><a href="https://www.linkedin.com/in/afonsocrg/"><img src="https://avatars.githubusercontent.com/u/37017397?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Afonso Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=afonsocrg" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/abread"><img src="https://avatars.githubusercontent.com/u/1618009?v=4?s=100" width="100px;" alt=""/><br /><sub><b>André Breda</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=abread" title="Code">💻</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://github.com/joaocmd"><img src="https://avatars.githubusercontent.com/u/5345834?v=4?s=100" width="100px;" alt="João David"/><br /><sub><b>João David</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=joaocmd" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/masterzeus05"><img src="https://avatars.githubusercontent.com/u/35273853?v=4?s=100" width="100px;" alt="Daniel Gonçalves"/><br /><sub><b>Daniel Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=masterzeus05" title="Code">💻</a></td>
+      <td align="center"><a href="https://www.linkedin.com/in/afonsocrg/"><img src="https://avatars.githubusercontent.com/u/37017397?v=4?s=100" width="100px;" alt="Afonso Gonçalves"/><br /><sub><b>Afonso Gonçalves</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=afonsocrg" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/abread"><img src="https://avatars.githubusercontent.com/u/1618009?v=4?s=100" width="100px;" alt="André Breda"/><br /><sub><b>André Breda</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=abread" title="Code">💻</a></td>
+      <td align="center"><a href="https://diogotc.com"><img src="https://avatars.githubusercontent.com/u/7467891?v=4?s=100" width="100px;" alt="Diogo Correia"/><br /><sub><b>Diogo Correia</b></sub></a><br /><a href="https://github.com/joaocmd/Criador-Horarios/commits?author=diogotcorreia" title="Code">💻</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->
