@@ -7,8 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Fixed
+### Removed
+
+## [1.17.1] - 09/09/2022
+
+### Added
+
+### Fixed
+- New timetable was not being created for the current semester
+- Not showing the classes for all the shifts (course was cached without URL)
+
+### Removed
+
+## [1.17.0] - 09/09/2022
+
+### Added
+- Sort shift's class on minimal classes
+- Always show a timetable for the current/new semester at first
+
+### Fixed
+- New timetable was always set to the current academic term
+### Removed
+
+## [1.16.0] - 21/07/2022
+
+### Added
+
+- Escape and enter buttons now work on new timetable dialogs
+
+### Fixed
+
+- Course semester filter not letting the courses being fetched
+- Improved course acronyms for new semesters
+
+### Removed
+
+## [1.15.1] - 23/06/2022
+
+### Added
+
+### Fixed
+- At first usage, the clean schedule was not obtaining a correct academic term
+### Removed
+
+## [1.15.0] - 13/05/2022
+
+### Added
 
 - Changed position of link share to next to download buttons
+- Allow selecting multiple timetables
+- Mutexes for API requests to avoid multiple equal requests
 
 ### Fixed
 

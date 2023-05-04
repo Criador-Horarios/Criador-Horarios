@@ -2,18 +2,17 @@ import Shift from '../domain/Shift'
 import API from './api'
 import cheerio from 'cheerio'
 import i18next from 'i18next'
-import Degree from '../domain/Degree'
 
 const prefix = 'https://fenix.tecnico.ulisboa.pt'
 
-export default async function getClasses(shifts: Shift[]): Promise<Record<string, string>> {
+export default async function getClasses(shifts: Shift[], academicTermId: string): Promise<Record<string, string>> {
 	const shiftPage: Record<string, string> = {}
-	const courseUrls = Array.from(new Set(shifts.map(shift => shift.courseId)))
+	const courseUrls = Array.from(new Set(shifts.map(shift => shift.getCourseId())))
 	await Promise.all(courseUrls
-		.map(courseId => API.getCourse(courseId)
+		.map(courseId => API.getCourse(courseId, academicTermId)
 			.then(async c => {
 				if (!shiftPage[courseId] && c !== null) {
-					const url = c.url.replace(prefix, '') + '/turnos'
+					const url = c.getUrl().replace(prefix, '') + '/turnos'
 					let page = null
 					try {
 						page = await API.getPage(url)
@@ -32,9 +31,9 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 	// TODO: change forEach to reduce
 	const res: Record<string, string> = {}
 	shifts.forEach((shift: Shift) => {
-		const page = shiftPage[shift.courseId]
+		const page = shiftPage[shift.getCourseId()]
 		if (page === undefined) {
-			res[shift.acronym] = i18next.t('shift-scraper.classes.error')
+			res[shift.getAcronym()] = i18next.t('shift-scraper.classes.error')
 			// Couldn't get course before
 			return
 		}
@@ -45,8 +44,8 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 			if (attrs.length === 5) {
 				const shiftName = $(attrs[0]).text()
 
-				if (shiftName.includes(shift.name) && !res[shift.name]) {
-					res[shift.acronym + ' - ' + shift.shiftId] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
+				if (shiftName.includes(shift.getName()) && !res[shift.getName()]) {
+					res[shift.getAcronym() + ' - ' + shift.getShiftId()] = $(attrs[4]).text().replaceAll('\t', '').trim().replaceAll('\n', ', ')
 				}
 			}
 		})
@@ -54,13 +53,14 @@ export default async function getClasses(shifts: Shift[]): Promise<Record<string
 	return res
 }
 
-async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Promise<[Record<string, string>, string[]]> {
-	const allClasses = await getClasses(shifts)
+async function getMinimalClasses(shifts: Shift[], selectedDegreesAcronyms: string[], academicTermId: string):
+	Promise<[Record<string, string>, string[]]> {
+	const allClasses = await getClasses(shifts, academicTermId)
 	const currClasses: Record<string, string[]> = {}
 	
 	// Filter all shifts that are from degrees not selected
-	if (selectedDegrees.length > 0) { // If no selected Degrees, ignore this step
-		const degreeAcronyms = selectedDegrees.map(d => d.acronym)
+	if (selectedDegreesAcronyms.length > 0) { // If no selected Degrees, ignore this step
+		const degreeAcronyms = selectedDegreesAcronyms
 
 		Object.keys(allClasses).forEach((shift) => {
 			const filteredClasses: string[] = []
@@ -71,7 +71,7 @@ async function getMinimalClasses(shifts: Shift[], selectedDegrees: Degree[]): Pr
 					filteredClasses.push(c)
 				}
 			})
-			currClasses[shift] = filteredClasses
+			currClasses[shift] = filteredClasses.sort()
 		})
 	}
 

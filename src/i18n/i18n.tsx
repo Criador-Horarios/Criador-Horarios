@@ -20,8 +20,8 @@ i18n
 	.init({
 		resources,
 		lng: 'pt',
-		fallbackLng: { 
-			'pt': ['pt'], 
+		fallbackLng: {
+			'pt': ['pt'],
 			'default': ['en']
 		},
 		supportedLngs: ['pt', 'en'],

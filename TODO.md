@@ -41,3 +41,35 @@
 - [ ] Requests cache and bypass?
 - [ ] Finalize occupancy shift updater and set it for all available shifts for the selected courses
 - [X] Store selected academic term and use it
+- [ ] Fix download dropdown to not use a dialog but a focus grab
+
+
+Multiple-Timetables (Important):
+- [X] Single line of colors for all timetables
+- [X] When choosing BD multiple times it starts to not replace the old ones
+- [X] Add a storage of the existing courses to avoid asking new ones
+- [X] Allow multishift (and store it)
+- [X] Set academic term in timetable, as we should be able to store timetables from different semesters
+- [X] Allow sharing the timetable with the URL
+- [X] Remove stored states not necessary anymore
+- [X] Test if there are errors and how they are displayed when parsing a timetable
+- [X] Delete button for timetables
+- [X] Fix adding timetables not showing the correct text
+- [X] Add on autocomplete button to add new timetable
+- [X] When merged, change domain back to horarios.dang.pt
+- [X] Fix duplicating schedule
+- [X] When duplicating the timetable name is ignored for duplication
+- [X] Store degrees, courses and shifts to avoid repeating requests and use references for all timetables
+- [ ] Remove all real shifts from Timetable and use references
+- [X] Allow usage of "enter" and "escape" buttons for control of the timetables creation
+- [ ] Order timetables by semesters and divide them with a divider
+- [X] New timetable should use the semester of the current selected timetable
+
+
+Good to do but not important
+- [ ] Store course color for consistent usage
+- [ ] Don't load all timetables at once, only load the first one and then the ones used (lazy load)
+- [X] Academic terms are being loaded way too much!
+- [X] Mechanism to wait for existing requests that are going to be duplicated (same course multiple times) (related to above)
+- [ ] Allow editing timetables' name
+- [ ] Implement forceUpdate on timetable fetching

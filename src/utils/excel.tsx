@@ -1,7 +1,8 @@
-import Lesson from '../domain/Lesson'
+import Lesson, { addColorToLesson, LessonWithColor } from '../domain/Lesson'
 import Shift from '../domain/Shift'
 import ExcelJS from 'exceljs'
 import i18next from 'i18next'
+import Course, { CourseColor } from '../domain/Course'
 
 const config = {
 	intervalUnit: 30,
@@ -37,11 +38,11 @@ const columnsLength = Array.from({length: hours.length * Math.floor(60/config.in
 const excelWidthOverHeight = 1400/266 // Coefficient between column width and row height ~5.26
 
 // TODO: Needs refactor
-export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>): Promise<void> {
+export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>, getCourseColor: (course: Course) => CourseColor): Promise<void> {
 	const workbook = new ExcelJS.Workbook()
 	let sheet = workbook.addWorksheet(i18next.t('excel.worksheet-title'))
 
-	const lessons = getLessonsByDay(shifts)
+	const lessons = getLessonsByDay(shifts, getCourseColor)
 	const newColumnNames = i18next.t('table.weekdays', { returnObjects: true })
 	if (newColumnNames.length > 0) {
 		columnNames = [''].concat(newColumnNames)
@@ -94,7 +95,7 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
  * @param overlaps 
  * @returns [sheet, nextColumn, columnWidth]
  */
-function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<string, Lesson[]>>, dayOfWeek: number,
+function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<string, LessonWithColor[]>>, dayOfWeek: number,
 	column: number, colspan: number, overlaps: Record<string, number>): [ExcelJS.Worksheet, number] {
 	const currColNumber = config.schedule.colStart + column
 	const col = sheet.getColumn(currColNumber)
@@ -191,16 +192,16 @@ function setColumn(sheet: ExcelJS.Worksheet, lessons: Record<number, Record<stri
 				}
 
 				const [mergeCol, mergeRow] = getCellToMerge(l, lessonRow, lessonCol, lessonColSpan)
-
+				
 				usedCell.value = l.exportedTitle
 				usedCell.font = {
-					color: { argb: 'FFFFFF'}
+					color: { argb: l.textColor.replace('#', '') }
 				}
 				usedCell.fill = {
 					type: 'pattern',
 					pattern: 'solid',
 					fgColor: { argb: l.color.replace('#', '') },
-					bgColor: { argb: l.color.replace('#', '')}
+					bgColor: { argb: l.color.replace('#', '') },
 				} as ExcelJS.FillPattern
 				usedCell.border = {
 					top: {style:'thin'},
@@ -290,10 +291,11 @@ function setOuterBorders(sheet: ExcelJS.Worksheet, lastColumn: number): ExcelJS.
 	return sheet
 }
 
-function getLessonsByDay(shifts: Shift[]): Record<number, Record<string, Lesson[]>> {
-	const res: Record<number, Record<string, Lesson[]>> = {}
+function getLessonsByDay(shifts: Shift[], getCourseColor: (course: Course) => CourseColor): Record<number, Record<string, LessonWithColor[]>> {
+	const res: Record<number, Record<string, LessonWithColor[]>> = {}
 	shifts.forEach(s => {
-		s.lessons.forEach(l => {
+		s.getLessons().forEach(lesson => {
+			const l = addColorToLesson(lesson, getCourseColor(s.getCourse()))
 			const hour = l.startTime
 
 			// For adding the lessons

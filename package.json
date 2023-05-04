@@ -1,6 +1,6 @@
 {
   "name": "horarios",
-  "version": "1.14.0",
+  "version": "1.17.1",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
@@ -15,6 +15,7 @@
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@types/randomcolor": "^0.5.5",
     "@types/react-dom": "^17.0.0",
+    "async-mutex": "^0.3.2",
     "cheerio": "^1.0.0-rc.5",
     "datebook": "^6.4.2",
     "exceljs": "^4.2.0",
@@ -41,7 +42,7 @@
   "scripts": {
     "lint": "eslint src/",
     "lintFix": "eslint src/ --fix",
-    "start": "react-scripts start",
+    "start": "CHOKIDAR_USEPOLLING=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

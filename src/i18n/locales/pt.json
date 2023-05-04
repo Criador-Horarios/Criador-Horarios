@@ -3,7 +3,7 @@
 		"title": "Escolha um curso",
 		"noOptions": "Sem opções"
 	},
-	"course-selector": {    
+	"course-selector": {
 		"title": "Escolha as UCs",
 		"noOptions": "Sem opções, pode ter de escolher outro curso ou semestre"
 	},
@@ -25,15 +25,38 @@
 		"title": "Escolha o semestre",
 		"select": {
 			"label": "Semestre",
-			"value": "º Semestre",
-			"warning": "Alterar o semestre fará com que todos os turnos e disciplinas sejam apagados."
+			"value": "º Semestre"
 		},
 		"occupancy-update": {
 			"label": "Intervalo de atualização da ocupação dos turnos",
 			"warning": "Escolha o intervalo de atualização da ocupação dos turnos."
 		},
 		"actions": {
-			"close-button": "Guardar"
+			"close-button": "Cancelar"
+		}
+	},
+	"timetable-dialog": {
+		"title": "Adicionar novo horário",
+		"chosen-term": "Semestre escolhido:",
+		"timetable-name": "Nome do horário",
+		"copy-of": "Cópia de:",
+		"preview-warning": "Para alterar o semestre irá ser criado um novo horário.",
+		"warning": "Alterar o semestre fará com que seja criado um novo horário, escolha o seu nome.",
+		"errors": {
+			"not-empty": "Não pode estar vazio.",
+			"already-exists": "Este nome já está em uso."
+		},
+		"actions": {
+			"cancel": "Cancelar",
+			"save": "Guardar"
+		}
+	},
+	"confirm-delete-timetable-dialog": {
+		"title": "Apagar horário",
+		"content": "Deseja apagar o horário com o nome: {{timetable}}",
+		"actions": {
+			"cancel": "Cancelar",
+			"confirm": "Confirmar"
 		}
 	},
 	"help-dialog": {
@@ -52,7 +75,8 @@
 	"changelog-dialog": {
 		"title": "Novidades",
 		"content": [
-			"- Pode alterar a cor duma cadeira (persistentemente), ao clicar na cadeira correspondente, em baixo dos turnos selecionados",
+			"- Agora pode ter vários calendários guardados na aplicação!",
+			"- Pode alterar a cor duma cadeira (temporariamente) ao clicar na cadeira correspondente, em baixo dos turnos selecionados",
 			"- Ao obter as turmas para as inscrições, encontra o menor conjunto de turmas possível",
 			"- Download de um ficheiro iCalendar com as aulas",
 			"- Dados da ocupação dos turnos (não atualizados automaticamente)"
@@ -88,7 +112,8 @@
 			"save-as-image": "Guardar como imagem",
 			"save-as-excel": "Guardar horário e turmas num ficheiro Excel",
 			"clear-schedule": "Limpar horário",
-			"get-calendar": "Obter ficheiro do calendário com as aulas"
+			"get-calendar": "Obter ficheiro do calendário com as aulas",
+			"duplicate-timetable": "Duplicar este horário"
 		}
 	},
 	"shift-scraper": {
@@ -126,6 +151,7 @@
 		"cannot-obtain-courses": "Não foi possível obter as UCs deste curso",
 		"cannot-obtain-shifts": "Não foi possível obter os turnos desta UC",
 		"error-parsing": "Houve problemas a restaurar o estado. Por favor contacte os administradores.",
+		"deleted-timetable": "Horário eliminado com sucesso",
 		"minimal-classes-no-degrees": "Não selecionou nenhum curso. Primeiro selecione pelo menos um curso."
 	},
 	"warning": {
@@ -177,5 +203,12 @@
 	"language": {
 		"english": "Inglês",
 		"portuguese": "Português"
-	}
+	},
+	"add": "Acrescentar",
+	"timetable-autocomplete": {
+		"default-timetable": "Horário 1",
+		"add-new": "Adicionar novo"
+	},
+	"unsaved": "Não guardado",
+	"timetables": "Horários"
 }

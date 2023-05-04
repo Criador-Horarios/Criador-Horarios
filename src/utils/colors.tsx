@@ -8,19 +8,19 @@ const _MULT_3 = 1.00
 // On this get colors, the first one is the background color, and the next one is the contrast text color
 export const getColor1 = (color: string): [string, string] => {
 	const backgroundColor = shadeColor(color, _MULT_1)
-	const textColor = isOkWithWhite(hexRgb(backgroundColor)) ? 'white' : 'black'
+	const textColor = isOkWithWhite(hexRgb(backgroundColor)) ? '#ffffff' : '#000000'
 	return [backgroundColor, textColor]
 }
 
 export const getColor2 = (color: string): [string, string] => {
 	const backgroundColor = shadeColor(color, _MULT_2)
-	const textColor = isOkWithWhite(hexRgb(backgroundColor)) ? 'white' : 'black'
+	const textColor = isOkWithWhite(hexRgb(backgroundColor)) ? '#ffffff' : '#000000'
 	return [backgroundColor, textColor]
 }
 
 export const getColor3 = (color: string): [string, string] => {
 	const backgroundColor = shadeColor(color, _MULT_3)
-	const textColor = isOkWithWhite(hexRgb(backgroundColor)) ? 'white' : 'black'
+	const textColor = isOkWithWhite(hexRgb(backgroundColor)) ? '#ffffff' : '#000000'
 	return [backgroundColor, textColor]
 }
 // --
