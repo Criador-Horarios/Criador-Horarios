@@ -15,11 +15,11 @@ export enum ShiftType {
 
 export const ShiftTypeFenix: Record<string, string> = {
 	'T': 'THEORICAL',
-	'TP': 'TEORICO_PRATICA',
+	'TP': 'THEORETICAL_PRACTICAL',
 	'PB': 'PROBLEMS',
-	'P': 'PRATICA',
+	'P': 'PRATICA', // MISSING TRANSLATION
 	'L': 'LABORATORY',
-	'S': 'SEMINARY',
+	'S': 'SEMINARY', // MISSING TRANSLATION
 }
 
 /**
@@ -121,6 +121,10 @@ export default class Shift implements Comparable {
 
 	getAcronym(): string {
 		return this.getCourse().getAcronym()
+	}
+
+	getAcronymWithId(): string {
+		return this.getAcronym() + ' - ' + this.getShiftId()
 	}
 
 	getName(): string {
