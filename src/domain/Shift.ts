@@ -2,6 +2,7 @@ import Comparable from './Comparable'
 import Lesson, { createLesson, keepUniqueLessons, LessonDto } from './Lesson'
 import Course from './Course'
 import { getColor1, getColor2 } from '../utils/colors'
+import Class, { ClassDto } from './Class'
 
 export enum ShiftType {
 	'Teo' = 'T',
@@ -12,13 +13,13 @@ export enum ShiftType {
 	'Sem' = 'S',
 }
 
-export enum ShiftTypeFenix {
-	'Teo' = 'TEORICA',
-	'TP' = 'TEORICO_PRATICA',
-	'PB' = 'PROBLEMS',
-	'Prat' = 'PRATICA',
-	'Lab' = 'LABORATORIAL',
-	'Sem' = 'SEMINARY',
+export const ShiftTypeFenix: Record<string, string> = {
+	'T': 'THEORICAL',
+	'TP': 'TEORICO_PRATICA',
+	'PB': 'PROBLEMS',
+	'P': 'PRATICA',
+	'L': 'LABORATORY',
+	'S': 'SEMINARY',
 }
 
 /**
@@ -34,43 +35,37 @@ export default class Shift implements Comparable {
 	private allLessons: Lesson[]
 	private campus = ''
 	private occupation: ShiftOccupation
+	private classes: Class[]
 	
 	constructor(obj: ShiftDto, course: Course) {
 		this.course = course
 		this.name = obj.name
 
-		const fenixType = obj.types[0] as ShiftTypeFenix
-		// TODO: Improve, we should be able to get immediately
-		const type = Object.entries(ShiftTypeFenix).find(x => x[1] === fenixType)
-		const re = /^(.+)([\d]{2})$/
-		const match = this.name.match(re)
-		if (match === null || type === undefined) {
-			throw `Unexpected shift name - ${this.name}`
-		}
-		
-		this.type = Object.entries(ShiftType).filter(x => x[0] === type[0])[0][1]
-		this.shiftId = this.type + match[2]
+		const fenixType = obj.types[0]
 
-		if (obj.rooms !== null || (obj.rooms as string[]).length > 0) {
-			this.campus = obj.rooms[0]?.topLevelSpace.name
-		}
+		const type = Object.keys(ShiftTypeFenix).find(key => ShiftTypeFenix[key] === fenixType)
+		this.type = (type as string) as ShiftType
+		this.shiftId = this.name
+
+		this.campus = obj.classes[0].degree.campi[0].name
 
 		this.occupation = {
-			current: obj.occupation.current,
-			max: obj.occupation.max,
+			current: obj.enrolments.current,
+			max: obj.enrolments.maximum,
 		}
 
 		const lessons = obj.lessons.map((l: LessonDto) => {
+			const startDate = new Date(l.start)
+			const startTime = startDate.toLocaleTimeString()
+			const endTime = new Date(l.end).toLocaleTimeString()
 			return createLesson({
 				shiftName: this.name,
-				start: l.start.split(' ')[1],
-				end: l.end.split(' ')[1],
-				date: l.start.split(' ')[0],
-				// Replacing space to T to allow parsing on SAFARI
-				// FIXME Fénix API v2 will return a proper ISO date
-				dayOfWeek: new Date(l.start.replace(' ', 'T')).getDay(),
+				start: startTime,
+				end: endTime,
+				date: startDate,
+				dayOfWeek: startDate.getDay(),
 				room: l.room?.name,
-				campus: l.room?.topLevelSpace.name || this.campus,
+				campus: this.campus,
 				acronym: this.getAcronym(),
 				shiftId: this.shiftId,
 				id: this.name,
@@ -83,6 +78,7 @@ export default class Shift implements Comparable {
 
 		this.allLessons = lessons
 		this.lessons = keepUniqueLessons(lessons)
+		this.classes = obj.classes.map((c) => new Class(c))
 	}
 
 	static isSameCourseAndType(o1: Comparable, o2: Comparable): boolean {
@@ -155,6 +151,10 @@ export default class Shift implements Comparable {
 		return this.occupation
 	}
 
+	getClasses(): Class[] {
+		return this.classes
+	}
+
 	/**
 	 * Get the color of the shift based on this shift's course
 	 * @param courseColor The color of this shift's course
@@ -201,23 +201,13 @@ export const getDegreesAcronyms = (shifts: Shift[]): string | undefined => {
 export type ShiftDto = {
 	lessons: LessonDto[]
 	name: string
-	occupation: ShiftOccupation
-	rooms: {
-		capacity: {
-			exam: number
-			normal: number
-		}
-		description: string
-		id: string
-		name: string
-		topLevelSpace: {
-			id: string
-			name: string
-			type: string
-		}
-		type: string
-	}[]
+	enrolments: {
+		current: number
+		maximum: number
+	}
 	types: string[]
+	classes: ClassDto[]
+	rooms: any[]
 }
 
 export type ShiftOccupation = {

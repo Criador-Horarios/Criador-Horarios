@@ -77,11 +77,11 @@ export type LessonDto = {
 	room: {
 		id: string
 		name: string
-		topLevelSpace: {
-			id: string
-			name: string
-			type: string
-		}
 		type: string
+		fullName: string
+		classification: {
+			'pt-PT': string
+			'en-GB': string
+		}
 	}
 }

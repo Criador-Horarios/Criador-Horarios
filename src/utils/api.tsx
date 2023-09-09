@@ -22,7 +22,8 @@ export default class API {
 		const mutexKeys = [
 			'mutex-creation',
 			'academic-terms',
-			'degrees'
+			'degrees',
+			'schedules',
 		]
 		// mutexKeys.forEach(k => this.MUTEXES[k] = new Mutex())
 		mutexKeys.forEach(k => this.MUTEXES[k] = withTimeout(new Mutex(), this.MUTEX_TIMEOUT))
@@ -264,7 +265,7 @@ export default class API {
 			return prevSchedules
 		}
 
-		const res = await this.getRequest(`/api/courses/${course.getId()}/schedule`, academicTermId) as ScheduleDto | null
+		const res = await this.getRequest(`/v2api/courses/${course.getId()}/schedule`, academicTermId) as ScheduleDto | null
 		if (res === null) {
 			console.error('Can\'t get course schedule')
 			releaser()
