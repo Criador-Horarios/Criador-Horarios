@@ -14,12 +14,12 @@ export enum ShiftType {
 }
 
 export const ShiftTypeFenix: Record<string, string> = {
-	'T': 'THEORICAL',
+	'T': 'THEORETICAL',
 	'TP': 'THEORETICAL_PRACTICAL',
 	'PB': 'PROBLEMS',
-	'P': 'PRATICA', // MISSING TRANSLATION
+	'P': 'PRACTICAL',
 	'L': 'LABORATORY',
-	'S': 'SEMINARY', // MISSING TRANSLATION
+	'S': 'SEMINARY',
 }
 
 /**
