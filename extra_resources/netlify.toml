@@ -1,14 +1,13 @@
-## This rule redirects to an external API, signing requests with a secret
 [[redirects]]
-  from = "/api"
-  to = "https://fenix.tecnico.ulisboa.pt/api/fenix/v1"
+  from = "/v2api"
+  to = "https://fenix.tecnico.ulisboa.pt/tecnico-api/v2"
   status = 200
   force = true # COMMENT: ensure that we always redirect
   headers = {X-From = "Netlify"}
 
 [[redirects]]
-  from = "/v2api"
-  to = "https://fenix.tecnico.ulisboa.pt/tecnico-api/v2"
+  from = "/api"
+  to = "https://fenix.tecnico.ulisboa.pt/api/fenix/v1"
   status = 200
   force = true # COMMENT: ensure that we always redirect
   headers = {X-From = "Netlify"}
