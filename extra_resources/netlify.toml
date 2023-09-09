@@ -1,13 +1,13 @@
 [[redirects]]
-  from = "/v2api"
-  to = "https://fenix.tecnico.ulisboa.pt/tecnico-api/v2"
+  from = "/v2api/*"
+  to = "https://fenix.tecnico.ulisboa.pt/tecnico-api/v2/:splat"
   status = 200
   force = true # COMMENT: ensure that we always redirect
   headers = {X-From = "Netlify"}
 
 [[redirects]]
-  from = "/api"
-  to = "https://fenix.tecnico.ulisboa.pt/api/fenix/v1"
+  from = "/api/*"
+  to = "https://fenix.tecnico.ulisboa.pt/api/fenix/v1/:splat"
   status = 200
   force = true # COMMENT: ensure that we always redirect
   headers = {X-From = "Netlify"}
