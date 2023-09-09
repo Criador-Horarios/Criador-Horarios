@@ -74,11 +74,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode, openDuplicat
 
 		setLoading(true)
 		
-		const [classesByShift, minimalClasses] = await getMinimalClasses(
-			selectedShifts,
-			Array.from(degreeAcronyms),
-			academicTerm
-		)
+		const [classesByShift, minimalClasses] = await getMinimalClasses(selectedShifts, Array.from(degreeAcronyms))
 
 		setLoading(false)
 		setClassesDialog(true)

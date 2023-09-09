@@ -211,7 +211,7 @@ export type ShiftDto = {
 	}
 	types: string[]
 	classes: ClassDto[]
-	rooms: any[]
+	rooms: unknown[]
 }
 
 export type ShiftOccupation = {

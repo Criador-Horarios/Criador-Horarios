@@ -1,5 +1,5 @@
 import Comparable from './Comparable'
-import Degree, { DegreeDto, MiniDegreeDtoV2 } from './Degree'
+import Degree, { MiniDegreeDtoV2 } from './Degree'
 
 export default class Class implements Comparable {
 	name: string

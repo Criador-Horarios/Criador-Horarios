@@ -54,7 +54,7 @@ export default async function getClasses(shifts: Shift[], academicTermId: string
 	return res
 }
 
-async function getMinimalClasses(shifts: Shift[], selectedDegreesAcronyms: string[], academicTermId: string):
+async function getMinimalClasses(shifts: Shift[], selectedDegreesAcronyms: string[]):
 	Promise<[Record<string, string>, string[]]> {
 	// const allClasses = await getClasses(shifts, academicTermId)
 	const allClasses: Record<string, string[]> = shifts.reduce((obj, shift) => (
