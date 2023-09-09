@@ -14,7 +14,7 @@ if [ ! -f "$HOME/.setup_complete" ]; then
   echo "=== SETTING UP PROJECT ==="
 
   echo "=== INSTALLING OHMYZSH ==="
-  if [ ! -d "$HOME/.oh-my-zsh" ]; then sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"; fi
+	if [ ! -d "$HOME/.oh-my-zsh" ]; then sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -) --unattended"; fi
 
   touch "$HOME/.setup_complete"
 fi
