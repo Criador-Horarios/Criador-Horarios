@@ -25,7 +25,7 @@ import getCalendar from '../../../utils/calendar-generator'
 import saveToExcel from '../../../utils/excel'
 import { combinations2, it_contains } from '../../../utils/itertools'
 import downloadAsImage from '../../../utils/save-as-image'
-import getClasses, { getMinimalClasses } from '../../../utils/shift-scraper'
+import { getMinimalClasses } from '../../../utils/shift-scraper'
 import { useAlert } from '../../../hooks/useAlert'
 import { useAppState } from '../../../hooks/useAppState'
 import ClassesDialog from '../../ClassesDialog/ClassesDialog'
@@ -85,9 +85,7 @@ function ScheduleActions ({activeTimetable, onChangeMultiShiftMode, openDuplicat
 
 	const exportToExcel = useCallback(async () => {
 		setLoading(true)
-		const classes = await getClasses(selectedShifts, academicTerm)
-
-		await saveToExcel(selectedShifts, classes, course => activeTimetable.getCourseColor(course))
+		await saveToExcel(selectedShifts, course => activeTimetable.getCourseColor(course))
 
 		setLoading(false)
 		dispatchAlert({ message: i18next.t('alert.schedule-to-excel'), severity: 'success' })

@@ -266,7 +266,7 @@ export default class API {
 			return prevSchedules
 		}
 
-		const res = await this.getRequest(`${API.V2_BASE}/courses/${course.getId()}/schedule`, academicTermId) as ScheduleDto | null
+		const res = await this.getRequest(`/v2api/courses/${course.getId()}/schedule`, academicTermId) as ScheduleDto | null
 		if (res === null) {
 			console.error('Can\'t get course schedule')
 			releaser()
