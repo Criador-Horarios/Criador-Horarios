@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [1.18.0] - 09/09/2023
+
+### Added
+
+- New redirect for v2 endpoints
+- New classes and objects (Class)
+
+### Changed
+
+- Shift to be fetched from V2 endpoints
+- Classes functionality to use new info coming on Shifts
+- Updated Excel to use the new data
+
 ## [1.17.1] - 09/09/2022
 
 ### Added
