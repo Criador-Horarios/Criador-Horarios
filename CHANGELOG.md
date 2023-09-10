@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Removed
 
+## [1.18.1] - 10/09/2023
+
+### Fixed
+
+- Fix empty excel schedules
+
 ## [1.18.0] - 09/09/2023
 
 ### Added
