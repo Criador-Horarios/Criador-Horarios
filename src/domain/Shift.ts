@@ -56,8 +56,6 @@ export default class Shift implements Comparable {
 
 		const lessons = obj.lessons.map((l: LessonDto) => {
 			const startDate = new Date(l.start)
-			const startTime = startDate.toLocaleTimeString()
-			const endTime = new Date(l.end).toLocaleTimeString()
 			return createLesson({
 				shiftName: this.name,
 				start: l.start.split('T')[1],
