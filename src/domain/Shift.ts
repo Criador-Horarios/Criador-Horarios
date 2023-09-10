@@ -60,8 +60,8 @@ export default class Shift implements Comparable {
 			const endTime = new Date(l.end).toLocaleTimeString()
 			return createLesson({
 				shiftName: this.name,
-				start: startTime,
-				end: endTime,
+				start: l.start.split('T')[1],
+				end: l.end.split('T')[1],
 				date: startDate,
 				dayOfWeek: startDate.getDay(),
 				room: l.room?.name,
