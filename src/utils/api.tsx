@@ -13,6 +13,7 @@ export default class API {
 	static LANG = 'pt-PT'
 	static PREFIX = ''
 	static PATH_PREFIX = ''
+	static V2_BASE = 'https://fenix.tecnico.ulisboa.pt/tecnico-api/v2'
 	static REQUEST_CACHE = StoredEntities
 	static MUTEXES: Record<string, MutexInterface> = {}
 
@@ -265,7 +266,7 @@ export default class API {
 			return prevSchedules
 		}
 
-		const res = await this.getRequest(`/v2api/courses/${course.getId()}/schedule`, academicTermId) as ScheduleDto | null
+		const res = await this.getRequest(`${API.V2_BASE}/courses/${course.getId()}/schedule`, academicTermId) as ScheduleDto | null
 		if (res === null) {
 			console.error('Can\'t get course schedule')
 			releaser()
