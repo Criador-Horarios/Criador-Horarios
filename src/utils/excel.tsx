@@ -38,7 +38,7 @@ const columnsLength = Array.from({length: hours.length * Math.floor(60/config.in
 const excelWidthOverHeight = 1400/266 // Coefficient between column width and row height ~5.26
 
 // TODO: Needs refactor
-export default async function saveToExcel(shifts: Shift[], classes: Record<string, string>, getCourseColor: (course: Course) => CourseColor): Promise<void> {
+export default async function saveToExcel(shifts: Shift[], getCourseColor: (course: Course) => CourseColor): Promise<void> {
 	const workbook = new ExcelJS.Workbook()
 	let sheet = workbook.addWorksheet(i18next.t('excel.worksheet-title'))
 
@@ -62,6 +62,12 @@ export default async function saveToExcel(shifts: Shift[], classes: Record<strin
 	// Set classes
 	// Classes on the right -> // sheet = setClasses(sheet, classes, lastColumn + 2, (sheet.lastRow?.number ?? 0) + 2)
 	// Classes on the bottom
+	const classes: Record<string, string[]> = shifts.reduce((obj, shift) => (
+		{
+			...obj,
+			[shift.getAcronymWithId()]: shift.getClasses().map((c) => c.displayName())
+		}
+	), {})
 	sheet = setClasses(sheet, classes, 1, (sheet.lastRow?.number ?? 0) + 2)
 
 	// Set link
@@ -341,7 +347,7 @@ function getOverlapsByHour(dayOfWeek: number, lessons: Record<number, Record<str
 	return [res, maxOverlaps]
 }
 
-function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, startColumn: number, startRow: number): ExcelJS.Worksheet {
+function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string[]>, startColumn: number, startRow: number): ExcelJS.Worksheet {
 	const colNumber = startColumn + config.classes.colStart
 	const lessonsKeys = Object.keys(classes).sort()
 	const numberLessons = lessonsKeys.length
@@ -364,7 +370,7 @@ function setClasses(sheet: ExcelJS.Worksheet, classes: Record<string, string>, s
 		}
 
 		// Set classes
-		const currClasses = classes[shiftId].split(',')
+		const currClasses = classes[shiftId]
 		let currCol = colNumber + 1
 		currClasses.forEach(c => {
 			// Set class

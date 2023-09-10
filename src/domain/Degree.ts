@@ -12,6 +12,10 @@ export default class Degree {
 		this.academicTerms = obj.academicTerms
 	}
 
+	static fromMiniDto(obj: MiniDegreeDtoV2): Degree {
+		return new Degree(obj as unknown as DegreeDto)
+	}
+
 	displayName(): string {
 		return this.acronym + ' - ' + this.name
 	}
@@ -48,4 +52,27 @@ export type DegreeDto = {
 	type: string
 	typeName: string
 	url: string
+}
+
+export type MiniDegreeDtoV2 = {
+	acronym: string
+	campi: {
+		id: string,
+		name: string,
+		fullName: string,
+		type: string,
+		classification: {
+			'en-GB': string
+			'pt-PT': string
+		}
+	}[]
+	degreeType: {
+		'en-GB': string
+		'pt-PT': string
+	}
+	id: string
+	name: {
+		'en-GB': string
+		'pt-PT': string
+	}
 }
