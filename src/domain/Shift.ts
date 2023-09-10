@@ -45,7 +45,15 @@ export default class Shift implements Comparable {
 
 		const type = Object.keys(ShiftTypeFenix).find(key => ShiftTypeFenix[key] === fenixType)
 		this.type = (type as string) as ShiftType
-		this.shiftId = this.name
+
+		const re = /^(.+)([\d]{2})$/
+		const match = this.name.match(re)
+		if (match === null) {
+			this.shiftId = this.name
+			console.error(`Unexpected shift name - ${this.name}`)
+		} else {
+			this.shiftId = this.type + match[2]
+		}
 
 		this.campus = obj.classes[0].degree.campi[0].name
 
