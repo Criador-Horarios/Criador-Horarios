@@ -65,6 +65,12 @@ export default class Shift implements Comparable {
 		const lessons = obj.lessons.map((l: LessonDto) => {
 			const startDate = new Date(l.start)
 			const endDate = new Date(l.end)
+			const dateFromDate = (date: Date) => {
+				const year = date.getFullYear()
+				const month = ('0' + (date.getMonth() + 1)).slice(-2)
+				const day = ('0' + date.getDate()).slice(-2)
+				return `${year}-${month}-${day}`
+			}
 			const timeFromDate = (date: Date) => {
 				const hours = ('0' + date.getHours()).slice(-2)
 				const minutes = ('0' + date.getMinutes()).slice(-2)
@@ -78,7 +84,7 @@ export default class Shift implements Comparable {
 				shiftName: this.name,
 				start: startTime,
 				end: endTime,
-				date: startDate,
+				date: dateFromDate(startDate),
 				dayOfWeek: startDate.getDay(),
 				room: l.room?.name,
 				campus: this.campus,
