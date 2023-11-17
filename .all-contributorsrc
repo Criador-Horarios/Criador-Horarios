@@ -50,13 +50,23 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "dmbdpt",
+      "name": "Diogo Dinis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22137169?v=4",
+      "profile": "https://github.com/dmbdpt",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "projectName": "Criador-Horarios",
-  "projectOwner": "joaocmd",
+  "projectOwner": "Criador-Horarios",
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true,
-  "commitConvention": "none"
+  "commitConvention": "none",
+  "commitType": "docs"
 }
