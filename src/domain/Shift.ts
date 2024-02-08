@@ -11,6 +11,7 @@ export enum ShiftType {
 	'Prat' = 'P',
 	'Lab' = 'L',
 	'Sem' = 'S',
+	'OT' = 'OT',
 }
 
 export const ShiftTypeFenix: Record<string, string> = {
@@ -20,6 +21,7 @@ export const ShiftTypeFenix: Record<string, string> = {
 	'P': 'PRACTICAL',
 	'L': 'LABORATORY',
 	'S': 'SEMINARY',
+	'OT': 'TUTORIAL_ORIENTATION'
 }
 
 /**
