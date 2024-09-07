@@ -74,6 +74,7 @@ function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : 
 				expandRows={false}
 				height={'auto'}
 				contentHeight={'auto'}
+				timeZone='Europe/Lisbon'
 				events={lessonsWithColors}
 				eventClick={onEventClick}
 				eventContent={EventContent}
