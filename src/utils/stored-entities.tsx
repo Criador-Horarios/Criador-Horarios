@@ -1,10 +1,12 @@
 import Course from '../domain/Course'
 import Degree from '../domain/Degree'
 import Shift from '../domain/Shift'
+import { Space } from '../domain/Space'
 
 export default class StoredEntities {
 	// SINGLETON
 	private static instance: Record<string, StoredEntities> = {}
+	private static spaces: Record<string, Space> = {}
 
 	// ATTRIBUTES
 	private degrees: Record<string, Degree> = {}
@@ -109,6 +111,17 @@ export default class StoredEntities {
 		})
 		return returnedShifts
 	}
+
+	// Spaces
+	public static storeSpace(space: Space): void {
+		const currSpaces = StoredEntities.spaces
+		currSpaces[space.id.toString()] = space
+	}
+
+	public static getSpace(spaceId: string): Space | undefined {
+		return StoredEntities.spaces[spaceId]
+	}
+
 
 	public static getCourseShifts(course: Course, academicTermId: string): Shift[] {
 		return Object.values(this.getInstance(academicTermId).courseShifts[course.getId()] || {}).filter(s => s !== undefined)
