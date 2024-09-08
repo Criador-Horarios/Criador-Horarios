@@ -9,19 +9,12 @@ import i18next from 'i18next'
 
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import Button from '@material-ui/core/Button'
-import SavedStateHandler from './utils/saved-state-handler'
 
 import Footer from './components/Footer/Footer'
 import AvaliableScheduleCard from './components/Schedule/AvailableScheduleCard/AvaliableScheduleCard'
 import SelectedScheduleCard from './components/Schedule/SelectedScheduleCard/SelectedScheduleCard'
 import TopBar from './components/TopBar/TopBar'
 
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import Box from '@material-ui/core/Box'
 import { APP_STYLES } from './styles/styles'
 
 import OccupancyUpdater, { occupancyRates } from './utils/occupancy-updater'
@@ -40,9 +33,6 @@ function App () : JSX.Element {
 	const classes = useStyles()
 	const [activeTimetableIndex, setActiveTimetableIndex] = useState(0)
 	const [availableTimetables, setAvailableTimetables] = useState<Timetable[]>(() => ([]))
-
-	const [newDomainDialog, setNewDomainDialog] = useState(false)
-	const [newDomainURL, setNewDomainURL] = useState(SavedStateHandler.DOMAIN)
 	
 	const {savedStateHandler, loading, setLoading} = useAppState()
 	const dispatchAlert = useAlert()
@@ -64,13 +54,6 @@ function App () : JSX.Element {
 			updateActiveTimetable(builtTimetable.setAcademicTerm(staticData.currentTerm?.id ?? ''))
 
 			setLoading(false)
-
-		
-			// New domain expired 2 years ago, no warning needed!
-			// Warn about new domain
-			// const isWarnedDomain = savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
-			// setNewDomainURL(await getSharingURL())
-			// setNewDomainDialog(!isWarnedDomain)
 		})()
 	}, [])
 	
@@ -160,11 +143,6 @@ function App () : JSX.Element {
 
 	const onChangeMultiShiftMode = (event: React.ChangeEvent<HTMLInputElement>, value: boolean): void => {
 		updateActiveTimetable(activeTimetable.setMultiShiftMode(value))
-	}
-
-	const getSharingURL = async (): Promise<string> => {
-		const params = activeTimetable.toURLParams()
-		return await SavedStateHandler.getAppURL(params)
 	}
 
 	const buildState = async (): Promise<Timetable> => {
@@ -279,24 +257,6 @@ function App () : JSX.Element {
 			<Footer />
 			<div className="dialogs">
 				<WarningDialog />
-				<Dialog maxWidth='sm' fullWidth open={newDomainDialog}>
-					<DialogTitle style={{alignSelf: 'center'}}>
-						{i18next.t('new-domain.title', {domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')})}
-					</DialogTitle>
-					<DialogContent style={{display: 'flex', flexDirection: 'column'}}>
-						<Box style={{whiteSpace: 'pre-line', alignSelf: 'center'}}>
-							{(i18next.t('new-domain.content', {returnObjects: true, domain: SavedStateHandler.DOMAIN?.replaceAll('https://', '')}) as string[]).join('\n\n')}
-						</Box>
-						<br/>
-						<Button variant='contained' style={{alignSelf: 'center'}} href={newDomainURL} color="primary">
-							{i18next.t('new-domain.actions.access') as string}
-						</Button>
-					</DialogContent>
-					<DialogActions>
-						<div />
-						<Button onClick={() => {setNewDomainDialog(false)}} color="primary">{i18next.t('new-domain.actions.ignore') as string}</Button>
-					</DialogActions>
-				</Dialog>
 				<NewTimetable
 					open={newTimetableProps.open}
 					onClose={newTimetableProps.onClose}
