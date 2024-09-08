@@ -66,10 +66,11 @@ function App () : JSX.Element {
 			setLoading(false)
 
 		
+			// New domain expired 2 years ago, no warning needed!
 			// Warn about new domain
-			const isWarnedDomain = savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
-			setNewDomainURL(await getSharingURL())
-			setNewDomainDialog(!isWarnedDomain)
+			// const isWarnedDomain = savedStateHandler.getNewDomain() || (process.env.NODE_ENV && process.env.NODE_ENV === 'development')
+			// setNewDomainURL(await getSharingURL())
+			// setNewDomainDialog(!isWarnedDomain)
 		})()
 	}, [])
 	
