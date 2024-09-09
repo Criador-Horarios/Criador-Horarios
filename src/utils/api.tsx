@@ -283,7 +283,7 @@ export default class API {
 			if (!shift.isCampusDefined() && roomData) {
 				const spaceData = await this.getSpace(roomData.id)
 				const campusName = spaceData?.campus?.name
-				campusName && shift.setCampus(campusName)
+				if (campusName) shift.setCampus(campusName)
 			}
 		}))
 
