@@ -3,6 +3,7 @@ import Lesson, { createLesson, keepUniqueLessons, LessonDto } from './Lesson'
 import Course from './Course'
 import { getColor1, getColor2 } from '../utils/colors'
 import Class, { ClassDto } from './Class'
+import { RoomInfo } from './Space'
 
 export enum ShiftType {
 	'Teo' = 'T',
@@ -36,8 +37,10 @@ export default class Shift implements Comparable {
 	private lessons: Lesson[]
 	private allLessons: Lesson[]
 	private campus = ''
+	private campusDefined = false
 	private occupation: ShiftOccupation
 	private classes: Class[]
+	private room: RoomInfo | undefined = undefined
 	
 	constructor(obj: ShiftDto, course: Course) {
 		this.course = course
@@ -58,6 +61,15 @@ export default class Shift implements Comparable {
 		}
 
 		this.campus = obj.classes[0].degree.campi[0].name
+		const allCampi = obj.classes.flatMap((classe) => classe.degree.campi.map((campi) => campi.name))
+			.filter((campiName, index, array) => array.indexOf(campiName) == index)
+		this.campus = obj.classes[0].degree.campi[0].name
+		this.campusDefined = allCampi.length === 1
+		const room = obj.lessons[0].room
+		this.room = {
+			id: room.id,
+			name: room.fullName,
+		}
 
 		this.occupation = {
 			current: obj.enrolments.current,
@@ -171,8 +183,21 @@ export default class Shift implements Comparable {
 		return this.allLessons
 	}
 
+	isCampusDefined(): boolean {
+		return this.campusDefined
+	}
+	
+	setCampus(campus: string): void {
+		this.campus = campus
+		this.lessons.forEach((lesson) => lesson.campus = campus)
+	}
+	
 	getCampus(): string {
 		return this.campus
+	}
+
+	getRoom(): RoomInfo | undefined {
+		return this.room
 	}
 
 	getOccupation(): ShiftOccupation {

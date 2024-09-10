@@ -6,6 +6,7 @@ import Shift, { ShiftDto } from '../domain/Shift'
 import StoredEntities from './stored-entities'
 import { Mutex, MutexInterface, withTimeout } from 'async-mutex'
 import SavedStateHandler from './saved-state-handler'
+import { Space } from '../domain/Space'
 
 export default class API {
 	static ACADEMIC_TERM = '2020/2021'
@@ -14,6 +15,7 @@ export default class API {
 	static PREFIX = ''
 	static PATH_PREFIX = ''
 	static V2_BASE = 'https://fenix.tecnico.ulisboa.pt/tecnico-api/v2'
+	// API Docs: https://api.dsi.tecnico.ulisboa.pt/openapi/v2/#auth
 	static REQUEST_CACHE = StoredEntities
 	static MUTEXES: Record<string, MutexInterface> = {}
 
@@ -25,6 +27,7 @@ export default class API {
 			'academic-terms',
 			'degrees',
 			'schedules',
+			'spaces',
 		]
 		// mutexKeys.forEach(k => this.MUTEXES[k] = new Mutex())
 		mutexKeys.forEach(k => this.MUTEXES[k] = withTimeout(new Mutex(), this.MUTEX_TIMEOUT))
@@ -274,6 +277,16 @@ export default class API {
 		}
 		const shifts = res.shifts.map((d: ShiftDto) => new Shift(d, course))
 
+		// Fetch the campus if not defined!
+		await Promise.all(shifts.map(async (shift) => {
+			const roomData = shift.getRoom()
+			if (!shift.isCampusDefined() && roomData) {
+				const spaceData = await this.getSpace(roomData.id)
+				const campusName = spaceData?.campus?.name
+				if (campusName) shift.setCampus(campusName)
+			}
+		}))
+
 		// Store in cache for future use
 		shifts.forEach(shift => shift !== null && this.REQUEST_CACHE.storeShift(shift, course.getId(), academicTermId || ''))
 
@@ -281,6 +294,46 @@ export default class API {
 		releaser()
 
 		return shifts as Shift[]
+	}
+
+	public static async getSpace(id: string, forceUpdate = false): Promise<Space | null> {
+		// Check if spaces already been stored
+		let space = this.REQUEST_CACHE.getSpace(id)
+		if (!forceUpdate && space) return space
+
+		// LOCK HERE to avoid repeating the same request N times
+		const mutexKey = `space-${id}`
+		// Create/find mutex for this degree
+		const mutex = await this.createMutex(mutexKey)
+		let releaser: undefined | MutexInterface.Releaser = undefined
+		try {
+			releaser = await mutex.acquire()
+		} catch (err) {
+			console.error(err)
+			console.error('Fenix API taking too long...')
+			return null
+		}
+
+		space = this.REQUEST_CACHE.getSpace(id)
+		if (!forceUpdate && space) {
+			releaser()
+			return space
+		}
+
+		const res = await this.getRequest(`/v2api/spaces/${id}`, undefined) as Space | null
+		if (res === null) {
+			console.error('Can\'t get course schedule')
+			releaser()
+			return null
+		}
+
+		// Store in cache for future use
+		this.REQUEST_CACHE.storeSpace(res)
+
+		// RELEASE LOCK HERE
+		releaser()
+
+		return res
 	}
 
 	public static async getAcademicTerms(): Promise<AcademicTerm[]> {

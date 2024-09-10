@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:14-alpine3.15
 
 # GENERAL ENVS #
 ENV APP_PATH /project
