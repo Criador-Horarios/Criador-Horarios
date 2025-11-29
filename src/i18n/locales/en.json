@@ -22,7 +22,7 @@
 		"tooltip": "Help"
 	},
 	"settings-dialog": {
-		"title": "Choose the semester",
+		"title": "Update your settings",
 		"select": {
 			"label": "Semester",
 			"value": "st Semester",
@@ -33,7 +33,7 @@
 			"warning": "Choose the interval to update the shift occupancies."
 		},
 		"actions": {
-			"close-button": "Cancel"
+			"close-button": "Quit"
 		}
 	},
 	"timetable-dialog": {

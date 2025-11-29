@@ -22,7 +22,7 @@
 		"tooltip": "Ajuda"
 	},
 	"settings-dialog": {
-		"title": "Escolha o semestre",
+		"title": "Atualiza as tuas definições",
 		"select": {
 			"label": "Semestre",
 			"value": "º Semestre"
@@ -32,7 +32,7 @@
 			"warning": "Escolha o intervalo de atualização da ocupação dos turnos."
 		},
 		"actions": {
-			"close-button": "Cancelar"
+			"close-button": "Sair"
 		}
 	},
 	"timetable-dialog": {
