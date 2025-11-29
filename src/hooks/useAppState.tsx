@@ -16,6 +16,8 @@ export interface AppStateContextInterface {
 	changeLanguage: (language: string, afterChange: () => Promise<void>) => Promise<void>;
 	timezone: string;
 	changeTimezone: (timezone: string) => void;
+	showAllHours: boolean;
+	changeShowAllHours: (value: boolean) => void;
 }
 
 const emptyState : AppStateContextInterface = {
@@ -31,6 +33,8 @@ const emptyState : AppStateContextInterface = {
 	changeLanguage: async (language, afterChange) => {return},
 	timezone: 'Europe/Lisbon',
 	changeTimezone: (_timezone) => {return},
+	showAllHours: false,
+	changeShowAllHours: (_value) => {return},
 }
 
 export const AppStateContext = createContext<AppStateContextInterface>(emptyState)
@@ -63,6 +67,7 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 	const [darkMode, setDarkMode] = useState(() => savedStateHandler.getDarkMode())
 	const [theme, setTheme] = useState(() => getTheme(darkMode))
 	const [timezone, setTimezone] = useState(() => savedStateHandler.getTimezone())
+	const [showAllHours, setShowAllHours] = useState(savedStateHandler.getCustomPropertyFromLocalStorage('showAllHours') === 'true')
 	const [lang, setLang] = useState(() => savedStateHandler.getLanguage() || i18next.options.lng as string)
 
 	const changeDarkMode = useCallback((dark: boolean) => {
@@ -74,6 +79,11 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 	const changeTimezone = useCallback((newTimezone: string) => {
 		setTimezone(newTimezone)
 		savedStateHandler.setTimezone(newTimezone)
+	}, [savedStateHandler])
+
+	const changeShowAllHours = useCallback((value: boolean) => {
+		setShowAllHours(value)
+		savedStateHandler.setCustomPropertyInLocalStorage('showAllHours', value.toString())
 	}, [savedStateHandler])
 
 	const changeLanguage = useCallback(async (language: string, afterChange: () => Promise<void>) => {
@@ -106,6 +116,8 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 				changeLanguage,
 				timezone,
 				changeTimezone,
+				showAllHours,
+				changeShowAllHours,
 			}}
 		>
 			<ThemeProvider theme={theme}>

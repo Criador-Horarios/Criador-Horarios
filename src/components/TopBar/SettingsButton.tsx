@@ -18,6 +18,8 @@ import i18next from 'i18next'
 import Typography from '@material-ui/core/Typography'
 import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
 import { useAppState } from '../../hooks/useAppState'
+import Checkbox from '@material-ui/core/Checkbox'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 
 interface SettingsButtonProps {
 	selectedAcademicTerm: string | null;
@@ -37,7 +39,7 @@ const timezones = [
 function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm} : SettingsButtonProps) : JSX.Element {
 	const [dialogOpen, setDialogOpen] = useState(false)
 
-	const { timezone, changeTimezone } = useAppState()
+	const { timezone, changeTimezone, showAllHours, changeShowAllHours } = useAppState()
 	
 	const currentOccupancyRate = OccupancyUpdater.getRate()
 	const onOccupancyRateUpdate = (newRate: number) => {
@@ -97,6 +99,9 @@ function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm} : Setti
 								</MenuItem>
 							))}
 						</Select>
+					</FormControl>
+					<FormControl variant='outlined' fullWidth={true} style={{marginTop: '16px'}}>
+						<FormControlLabel control={<Checkbox color="primary" disabled={timezone !== 'Europe/Lisbon'} checked={timezone !== 'Europe/Lisbon' || showAllHours} onChange={(e) => changeShowAllHours(e.target.checked)} />} label="Show all hours" />
 					</FormControl>
 					<div style={{display: 'none'}}>
 						<Typography style={{margin: '10px 0'}}>This is not working, so do not try it :)</Typography>

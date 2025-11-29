@@ -12,6 +12,7 @@ export default class SavedStateHandler {
 	static TERM = 'term'
 	static DARK = 'dark'
 	static LANGUAGE = 'language'
+	static TIMEZONE = 'timezone'
 	static WARNING = 'warning'
 	static COLORS = 'colors'
 	static SAVED_TIMETABLES = 'saved-timetables'
@@ -239,13 +240,12 @@ export default class SavedStateHandler {
 	}
 
 	getTimezone(): string {
-		return (this.getLocalStorage('timezone') as string | null) || Intl.DateTimeFormat().resolvedOptions().timeZone
+		return (this.getLocalStorage(SavedStateHandler.TIMEZONE) as string | null) || Intl.DateTimeFormat().resolvedOptions().timeZone
 	}
 
 	setTimezone(timezone: string): void {
-		this.setLocalStorage('timezone', timezone)
+		this.setLocalStorage(SavedStateHandler.TIMEZONE, timezone)
 	}
-
 
 	getWarning(): boolean {
 		return this.getLocalStorage(SavedStateHandler.WARNING) == 'true'
@@ -259,6 +259,14 @@ export default class SavedStateHandler {
 		this.colors = colors
 
 		this.setLocalStorage(SavedStateHandler.COLORS, this.colors, {})
+	}
+
+	setCustomPropertyInLocalStorage(propertyName: string, value: string | Record<string, string>): void {
+		this.setLocalStorage(propertyName, value)
+	}
+
+	getCustomPropertyFromLocalStorage(propertyName: string): string {
+		return this.getLocalStorage(propertyName) as string
 	}
 
 	// HELPERS
