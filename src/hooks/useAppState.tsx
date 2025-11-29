@@ -32,9 +32,11 @@ const emptyState : AppStateContextInterface = {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	changeLanguage: async (language, afterChange) => {return},
 	timezone: 'Europe/Lisbon',
-	changeTimezone: (_timezone) => {return},
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	changeTimezone: (timezone) => {return},
 	showAllHours: false,
-	changeShowAllHours: (_value) => {return},
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	changeShowAllHours: (value) => {return},
 }
 
 export const AppStateContext = createContext<AppStateContextInterface>(emptyState)

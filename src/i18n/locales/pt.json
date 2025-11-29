@@ -27,6 +27,12 @@
 			"label": "Semestre",
 			"value": "º Semestre"
 		},
+		"timezone": {
+			"label": "Fuso horário"
+		},
+		"show-all-hours": {
+			"label": "Mostrar todas as horas"
+		},
 		"occupancy-update": {
 			"label": "Intervalo de atualização da ocupação dos turnos",
 			"warning": "Escolha o intervalo de atualização da ocupação dos turnos."
@@ -40,7 +46,7 @@
 		"chosen-term": "Semestre escolhido:",
 		"timetable-name": "Nome do horário",
 		"copy-of": "Cópia de:",
-		"preview-warning": "Para alterar o semestre irá ser criado um novo horário.",
+		"preview-warning": "Ao alterares o semestre, irá ser criado um novo horário.",
 		"warning": "Alterar o semestre fará com que seja criado um novo horário, escolha o seu nome.",
 		"errors": {
 			"not-empty": "Não pode estar vazio.",

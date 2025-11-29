@@ -39,26 +39,10 @@ function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : 
 		onSelectedEvent(info.event.id)
 	}
 
-	const convertTimeToTimezone = (time: string, timezone: string, type: 'max' | 'min'): string => {
-		// Setup initial date
-		const currDate = new Date()
-		currDate.setDate(currDate.getDate() + 1) // to avoid issues with daylight saving time changes
-		currDate.setHours(parseInt(time.split(':')[0]))
-		currDate.setMinutes(parseInt(time.split(':')[1]))
-		
-		// Setup date in target timezone
-		const zoneDate = new Date(currDate.toLocaleString('en-US', { timeZone: timezone }))
-		const startHours = zoneDate.getHours().toString().padStart(2, '0')
-		const startMinutes = zoneDate.getMinutes().toString().padStart(2, '0')
-		return `${startHours}:${startMinutes}:00`
-	}
-
 	let minTime = '08:00:00'
 	let maxTime = '20:00:00'
 	let showWeekend = false
 	if (timezone !== 'Europe/Lisbon' && !!timezone) {
-		// minTime = convertTimeToTimezone(minTime, timezone, 'min')
-		// maxTime = convertTimeToTimezone(maxTime, timezone, 'max')
 		minTime = '00:00:00'
 		maxTime = '24:00:00'
 		showWeekend = true
