@@ -71,6 +71,28 @@ export function addColorToLesson(lesson: Lesson, color: CourseColor): LessonWith
 	}
 }
 
+export function changeTimezone(lesson: Lesson, timezone = 'Europe/Lisbon'): Lesson {
+	if (!timezone || timezone === 'Europe/Lisbon') {
+		return lesson
+	}
+
+	const dateInTZ = new Date(new Date(`${lesson.date}T${lesson.startTime}`).toLocaleString('en-US', { timeZone: timezone }))
+	const startHours = dateInTZ.getHours().toString().padStart(2, '0')
+	const startMinutes = dateInTZ.getMinutes().toString().padStart(2, '0')
+	const startTime = `${startHours}:${startMinutes}:00`
+
+	const endDateInTZ = new Date(new Date(`${lesson.date}T${lesson.endTime}`).toLocaleString('en-US', { timeZone: timezone }))
+	const endHours = endDateInTZ.getHours().toString().padStart(2, '0')
+	const endMinutes = endDateInTZ.getMinutes().toString().padStart(2, '0')
+	const endTime = `${endHours}:${endMinutes}:00`
+
+	return {
+		...lesson,
+		startTime,
+		endTime,
+	}
+}
+
 export type LessonDto = {
 	end: string
 	start: string

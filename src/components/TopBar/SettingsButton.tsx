@@ -17,14 +17,27 @@ import Button from '@material-ui/core/Button'
 import i18next from 'i18next'
 import Typography from '@material-ui/core/Typography'
 import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
+import { useAppState } from '../../hooks/useAppState'
 
 interface SettingsButtonProps {
 	selectedAcademicTerm: string | null;
 	onSelectedAcademicTerm: (academicTermId: string) => void;
 }
 
-function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm } : SettingsButtonProps) : JSX.Element {
+const timezones = [
+	'Europe/Lisbon',
+	'Europe/London',
+	'Europe/Paris',
+	'America/New_York',
+	'America/Los_Angeles',
+	'Asia/Tokyo',
+	'Australia/Sydney',
+]
+
+function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm} : SettingsButtonProps) : JSX.Element {
 	const [dialogOpen, setDialogOpen] = useState(false)
+
+	const { timezone, changeTimezone } = useAppState()
 	
 	const currentOccupancyRate = OccupancyUpdater.getRate()
 	const onOccupancyRateUpdate = (newRate: number) => {
@@ -70,6 +83,20 @@ function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm } : Sett
 						<Typography variant="caption" gutterBottom style={{marginTop: '8px', fontWeight: 600}}>
 							{i18next.t('timetable-dialog.preview-warning') as string}
 						</Typography>
+					</FormControl>
+					<FormControl variant='outlined' fullWidth={true} style={{marginTop: '16px'}}>
+						<InputLabel>Timezone</InputLabel>
+						<Select
+							value={timezone}
+							onChange={(e) => changeTimezone(e.target.value as string)}
+							label="Timezone"
+						>
+							{timezones.map((tz) => (
+								<MenuItem key={tz} value={tz}>
+									{tz}
+								</MenuItem>
+							))}
+						</Select>
 					</FormControl>
 					<div style={{display: 'none'}}>
 						<Typography style={{margin: '10px 0'}}>This is not working, so do not try it :)</Typography>

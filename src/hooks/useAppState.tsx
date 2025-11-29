@@ -14,6 +14,8 @@ export interface AppStateContextInterface {
 	changeDarkMode: (dark: boolean) => void;
 	lang: string;
 	changeLanguage: (language: string, afterChange: () => Promise<void>) => Promise<void>;
+	timezone: string;
+	changeTimezone: (timezone: string) => void;
 }
 
 const emptyState : AppStateContextInterface = {
@@ -26,7 +28,9 @@ const emptyState : AppStateContextInterface = {
 	changeDarkMode: (dark) => {return},
 	lang: '',
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	changeLanguage: async (language, afterChange) => {return}
+	changeLanguage: async (language, afterChange) => {return},
+	timezone: 'Europe/Lisbon',
+	changeTimezone: (_timezone) => {return},
 }
 
 export const AppStateContext = createContext<AppStateContextInterface>(emptyState)
@@ -58,12 +62,18 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 	const [loading, setLoading] = useState(true)
 	const [darkMode, setDarkMode] = useState(() => savedStateHandler.getDarkMode())
 	const [theme, setTheme] = useState(() => getTheme(darkMode))
+	const [timezone, setTimezone] = useState(() => savedStateHandler.getTimezone())
 	const [lang, setLang] = useState(() => savedStateHandler.getLanguage() || i18next.options.lng as string)
 
 	const changeDarkMode = useCallback((dark: boolean) => {
 		setDarkMode(dark)
 		setTheme(getTheme(dark))
 		savedStateHandler.setDarkMode(dark)
+	}, [savedStateHandler])
+
+	const changeTimezone = useCallback((newTimezone: string) => {
+		setTimezone(newTimezone)
+		savedStateHandler.setTimezone(newTimezone)
 	}, [savedStateHandler])
 
 	const changeLanguage = useCallback(async (language: string, afterChange: () => Promise<void>) => {
@@ -93,7 +103,9 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 				darkMode,
 				changeDarkMode,
 				lang,
-				changeLanguage
+				changeLanguage,
+				timezone,
+				changeTimezone,
 			}}
 		>
 			<ThemeProvider theme={theme}>

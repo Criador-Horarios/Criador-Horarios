@@ -238,6 +238,15 @@ export default class SavedStateHandler {
 		this.setLocalStorage(SavedStateHandler.LANGUAGE, language)
 	}
 
+	getTimezone(): string {
+		return (this.getLocalStorage('timezone') as string | null) || Intl.DateTimeFormat().resolvedOptions().timeZone
+	}
+
+	setTimezone(timezone: string): void {
+		this.setLocalStorage('timezone', timezone)
+	}
+
+
 	getWarning(): boolean {
 		return this.getLocalStorage(SavedStateHandler.WARNING) == 'true'
 	}
