@@ -1,4 +1,4 @@
-type SpaceType = "CAMPUS" | "BUILDING" | "FLOOR" | "ROOM" | "ROOM_SUBDIVISION"
+type SpaceType = 'CAMPUS' | 'BUILDING' | 'FLOOR' | 'ROOM' | 'ROOM_SUBDIVISION'
 export type RoomInfo = { id: string, name: string}
 
 export type Space = {

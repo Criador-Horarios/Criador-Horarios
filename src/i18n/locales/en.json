@@ -22,18 +22,24 @@
 		"tooltip": "Help"
 	},
 	"settings-dialog": {
-		"title": "Choose the semester",
+		"title": "Update your settings",
 		"select": {
 			"label": "Semester",
 			"value": "st Semester",
 			"value_plural": "nd Semester"
+		},
+		"timezone": {
+			"label": "Timezone"
+		},
+		"show-all-hours": {
+			"label": "Show all hours"
 		},
 		"occupancy-update": {
 			"label": "Shift occupancy update interval",
 			"warning": "Choose the interval to update the shift occupancies."
 		},
 		"actions": {
-			"close-button": "Cancel"
+			"close-button": "Quit"
 		}
 	},
 	"timetable-dialog": {
@@ -41,7 +47,7 @@
 		"chosen-term": "Chosen term:",
 		"timetable-name": "Timetable name",
 		"copy-of": "Copy of:",
-		"preview-warning": "To change the semester, a new timetable will be created.",
+		"preview-warning": "Changing the semester will create a new timetable.",
 		"warning": "Changing semester will create a new timetable, please choose its name.",
 		"errors": {
 			"not-empty": "This field can't be empty.",

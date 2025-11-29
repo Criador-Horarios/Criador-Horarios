@@ -14,6 +14,10 @@ export interface AppStateContextInterface {
 	changeDarkMode: (dark: boolean) => void;
 	lang: string;
 	changeLanguage: (language: string, afterChange: () => Promise<void>) => Promise<void>;
+	timezone: string;
+	changeTimezone: (timezone: string) => void;
+	showAllHours: boolean;
+	changeShowAllHours: (value: boolean) => void;
 }
 
 const emptyState : AppStateContextInterface = {
@@ -26,7 +30,13 @@ const emptyState : AppStateContextInterface = {
 	changeDarkMode: (dark) => {return},
 	lang: '',
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	changeLanguage: async (language, afterChange) => {return}
+	changeLanguage: async (language, afterChange) => {return},
+	timezone: 'Europe/Lisbon',
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	changeTimezone: (timezone) => {return},
+	showAllHours: false,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	changeShowAllHours: (value) => {return},
 }
 
 export const AppStateContext = createContext<AppStateContextInterface>(emptyState)
@@ -58,12 +68,24 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 	const [loading, setLoading] = useState(true)
 	const [darkMode, setDarkMode] = useState(() => savedStateHandler.getDarkMode())
 	const [theme, setTheme] = useState(() => getTheme(darkMode))
+	const [timezone, setTimezone] = useState(() => savedStateHandler.getTimezone())
+	const [showAllHours, setShowAllHours] = useState(savedStateHandler.getCustomPropertyFromLocalStorage('showAllHours') === 'true')
 	const [lang, setLang] = useState(() => savedStateHandler.getLanguage() || i18next.options.lng as string)
 
 	const changeDarkMode = useCallback((dark: boolean) => {
 		setDarkMode(dark)
 		setTheme(getTheme(dark))
 		savedStateHandler.setDarkMode(dark)
+	}, [savedStateHandler])
+
+	const changeTimezone = useCallback((newTimezone: string) => {
+		setTimezone(newTimezone)
+		savedStateHandler.setTimezone(newTimezone)
+	}, [savedStateHandler])
+
+	const changeShowAllHours = useCallback((value: boolean) => {
+		setShowAllHours(value)
+		savedStateHandler.setCustomPropertyInLocalStorage('showAllHours', value.toString())
 	}, [savedStateHandler])
 
 	const changeLanguage = useCallback(async (language: string, afterChange: () => Promise<void>) => {
@@ -93,7 +115,11 @@ export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.El
 				darkMode,
 				changeDarkMode,
 				lang,
-				changeLanguage
+				changeLanguage,
+				timezone,
+				changeTimezone,
+				showAllHours,
+				changeShowAllHours,
 			}}
 		>
 			<ThemeProvider theme={theme}>

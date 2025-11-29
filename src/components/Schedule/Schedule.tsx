@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import Lesson, { addColorToLesson, LessonWithColor } from '../../domain/Lesson'
+import Lesson, { addColorToLesson, changeTimezone, LessonWithColor } from '../../domain/Lesson'
 import styles from './Schedule.module.scss'
 import FullCalendar, { EventClickArg, EventContentArg } from '@fullcalendar/react'
 import bootstrapPlugin from '@fullcalendar/bootstrap'
@@ -20,11 +20,11 @@ interface ScheduleProps {
 }
 
 function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : JSX.Element {
-	const { lang } = useAppState()
+	const { lang, timezone, showAllHours } = useAppState()
 	
 	const lessonsWithColors: LessonWithColor[] = useMemo(() => {
-		return events.map(lesson => addColorToLesson(lesson, getCourseColor(lesson.course)))
-	}, [events, getCourseColor])
+		return events.map(lesson => addColorToLesson(changeTimezone(lesson, timezone), getCourseColor(lesson.course)))
+	}, [events, getCourseColor, timezone])
 
 	const onEventClick = (info: EventClickArg) => {
 		// TODO: The courses don't have url for now
@@ -39,13 +39,27 @@ function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : 
 		onSelectedEvent(info.event.id)
 	}
 
+	let minTime = '08:00:00'
+	let maxTime = '20:00:00'
+	let showWeekend = false
+	if (timezone !== 'Europe/Lisbon' && !!timezone) {
+		minTime = '00:00:00'
+		maxTime = '24:00:00'
+		showWeekend = true
+	}
+
+	if (showAllHours) {
+		minTime = '00:00:00'
+		maxTime = '24:00:00'
+	}
+
 	return (
 		<div className={styles.Schedule}>
 			<FullCalendar
 				plugins={[ timeGridPlugin, bootstrapPlugin ]}
 				initialView="timeGridWeek"
 				allDaySlot={false}
-				weekends={false}
+				weekends={showWeekend}
 				headerToolbar={false}
 				nowIndicator={false}
 				dayHeaderFormat={{
@@ -54,8 +68,8 @@ function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : 
 					day: undefined,
 					weekday: 'long'
 				}}
-				slotMinTime={'08:00:00'}
-				slotMaxTime={'20:00:00'}
+				slotMinTime={minTime}
+				slotMaxTime={maxTime}
 				slotLabelFormat={{
 					hour: '2-digit',
 					minute: '2-digit',
@@ -74,7 +88,7 @@ function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : 
 				expandRows={false}
 				height={'auto'}
 				contentHeight={'auto'}
-				timeZone='Europe/Lisbon'
+				timeZone={timezone}
 				events={lessonsWithColors}
 				eventClick={onEventClick}
 				eventContent={EventContent}
