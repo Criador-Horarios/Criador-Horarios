@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react'
+import React, { ReactElement, useMemo } from 'react'
 
 import i18next from 'i18next'
 import styles from '../Schedule.module.scss'
 
-import Box from '@material-ui/core/Box'
-import Card from '@material-ui/core/Card'
-import CardActions from '@material-ui/core/CardActions'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import Typography from '@material-ui/core/Typography'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Typography from '@mui/material/Typography'
 
 import Schedule from '../Schedule'
 import ScheduleActions from './ScheduleActions'
@@ -41,7 +41,7 @@ function SelectedScheduleCard ({
 	getCourseColor,
 	onChangeCourseColor,
 	openDuplicateTimetable,
-} : SelectedScheduleCardProps) : JSX.Element {
+} : SelectedScheduleCardProps) : React.ReactElement {
 	const selectedShifts = activeTimetable.getSelectedShifts()
 
 	const selectedLessons = useMemo(() => {

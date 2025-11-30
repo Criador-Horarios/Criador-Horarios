@@ -3,20 +3,20 @@ import React, { useState } from 'react'
 import i18next from 'i18next'
 import styles from './Footer.module.scss'
 
-import AppBar from '@material-ui/core/AppBar'
-import Avatar from '@material-ui/core/Avatar'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import Icon from '@material-ui/core/Icon'
-import IconButton from '@material-ui/core/IconButton'
-import Link from '@material-ui/core/Link'
-import Toolbar from '@material-ui/core/Toolbar'
-import Tooltip from '@material-ui/core/Tooltip'
+import AppBar from '@mui/material/AppBar'
+import Avatar from '@mui/material/Avatar'
+import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import GitHubIcon from '@mui/icons-material/GitHub';
+import Icon from '@mui/material/Icon'
+import IconButton from '@mui/material/IconButton'
+import Link from '@mui/material/Link'
+import Toolbar from '@mui/material/Toolbar'
+import Tooltip from '@mui/material/Tooltip'
 
-import GitHubIcon from '@material-ui/icons/GitHub'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaypal } from '@fortawesome/free-brands-svg-icons'
 
@@ -33,7 +33,7 @@ const CREATORS = [
 	}
 ]
 
-function Footer () : JSX.Element {
+function Footer () : React.ReactElement {
 	const [openChangelogDialog, setOpenChangelogDialog] = useState(false)
 	
 	return (
@@ -43,7 +43,7 @@ function Footer () : JSX.Element {
 					<Tooltip title={i18next.t('footer.support-button.tooltip') as string}>
 						<Link href="https://paypal.me/DanielG5?locale.x=pt_PT" target="_blank" color="inherit">
 							<Button
-								color='default'
+								color='inherit'
 								variant='outlined'
 								startIcon={<FontAwesomeIcon icon={faPaypal}/>}
 								size='small'
@@ -54,7 +54,7 @@ function Footer () : JSX.Element {
 					</Tooltip>
 					<Tooltip title={i18next.t('footer.changelog-button.tooltip') as string} style={{marginLeft: '8px'}}>
 						<Button
-							color='default'
+							color='inherit'
 							variant='outlined'
 							startIcon={<Icon>new_releases</Icon>}
 							size='small'

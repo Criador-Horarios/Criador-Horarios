@@ -3,13 +3,13 @@ import React, { useState } from 'react'
 import i18next from 'i18next'
 import styles from '../Schedule.module.scss'
 
-import Chip from '@material-ui/core/Chip'
-import Paper from '@material-ui/core/Paper'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
+import Chip from '@mui/material/Chip'
+import Paper from '@mui/material/Paper'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 
 import Course, { CourseWithShiftTypes } from '../../../domain/Course'
-import { useTheme } from '@material-ui/core/styles'
+import { useTheme } from '@mui/material/styles'
 import ColorPicker from '../../ColorPicker/ColorPicker'
 
 interface SelectedCoursesProps {
@@ -17,7 +17,7 @@ interface SelectedCoursesProps {
 	setCourseColor: (course: Course, color: string) => void
 }
 
-function SelectedCourses ({ coursesBySelectedShifts, setCourseColor } : SelectedCoursesProps) : JSX.Element {
+function SelectedCourses ({ coursesBySelectedShifts, setCourseColor } : SelectedCoursesProps) : React.ReactElement {
 	const theme = useTheme()
 
 	const [coursePickingColor, setCoursePickingColor] = useState<CourseWithShiftTypes | null>(null)
@@ -46,7 +46,7 @@ function SelectedCourses ({ coursesBySelectedShifts, setCourseColor } : Selected
 										className={ (shown ? styles.ShiftChecklistSelected : styles.ShiftChecklistUnselected) as string }
 										style={{
 											marginLeft: '4px', marginRight: '4px',
-											color: `${shown ? theme.palette.text.primary : theme.palette.text.hint}` // TODO use MUI useStyle
+											color: `${shown ? theme.palette.text.primary : theme.palette.text.secondary}` // TODO use MUI useStyle
 										}}
 									>
 										<Typography variant='body1' style={{ fontWeight: 500 }}>{type}</Typography>

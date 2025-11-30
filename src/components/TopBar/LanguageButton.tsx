@@ -2,20 +2,20 @@ import React, { useCallback, useState } from 'react'
 
 import i18next from 'i18next'
 
-import Tooltip from '@material-ui/core/Tooltip'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import MenuItem from '@material-ui/core/MenuItem'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
+import Icon from '@mui/material/Icon'
+import MenuItem from '@mui/material/MenuItem'
 
-import Menu from '@material-ui/core/Menu'
-import Avatar from '@material-ui/core/Avatar'
+import Menu from '@mui/material/Menu'
+import Avatar from '@mui/material/Avatar'
 import { useAppState } from '../../hooks/useAppState'
 
 interface LanguageButtonProps {
 	refreshAvailableDegrees: () => Promise<void>;
 }
 
-function LanguageButton ({ refreshAvailableDegrees } : LanguageButtonProps) : JSX.Element {
+function LanguageButton ({ refreshAvailableDegrees } : LanguageButtonProps) : React.ReactElement {
 	const { changeLanguage } = useAppState()
 
 	const [menuAnchor, setMenuAnchor] = useState<EventTarget & HTMLSpanElement | null>(null)

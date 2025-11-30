@@ -1,4 +1,4 @@
-import hexRgb from 'hex-rgb'
+import hexRgb, { RgbaObject } from 'hex-rgb'
 import rgbHex from 'rgb-hex'
 
 const _MULT_1 = 1.30
@@ -31,13 +31,13 @@ const shadeColor = (color: string, amount: number): string => {
 	}
 	const newColor = hexRgb(color)
 	Object.keys(newColor).forEach((key: string) => {
-		newColor[key as keyof hexRgb.RgbaObject] *= amount
-		newColor[key as keyof hexRgb.RgbaObject] = Math.min(Math.max(0, newColor[key as keyof hexRgb.RgbaObject]), 255)
+		newColor[key as keyof RgbaObject] *= amount
+		newColor[key as keyof RgbaObject] = Math.min(Math.max(0, newColor[key as keyof RgbaObject]), 255)
 	})
 	return '#' + rgbHex(newColor.red, newColor.green, newColor.blue)
 }
 
-export const isOkWithWhite = function(hexColor: hexRgb.RgbaObject): boolean {
+export const isOkWithWhite = function(hexColor: RgbaObject): boolean {
 	const C = [ hexColor.red/255, hexColor.green/255, hexColor.blue/255 ]
 	for ( let i = 0; i < C.length; ++i ) {
 		if ( C[i] <= 0.03928 ) {

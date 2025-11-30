@@ -1,11 +1,11 @@
 import React, { createContext, useCallback, useContext, useState } from 'react'
 
-import Alert, { Color } from '@material-ui/lab/Alert'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import Snackbar from '@material-ui/core/Snackbar'
+import IconButton from '@mui/material/IconButton'
+import Icon from '@mui/material/Icon'
+import Snackbar from '@mui/material/Snackbar'
+import Alert, { AlertColor } from '@mui/material/Alert';
 
-export type AlertSeverity = Color;
+export type AlertSeverity = AlertColor;
 
 export interface AlertDispatchArgs {
   severity: AlertSeverity,
@@ -14,7 +14,6 @@ export interface AlertDispatchArgs {
 
 export type AlertContextInterface = (args: AlertDispatchArgs) => void;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emptyState : AlertContextInterface = (args) => {return}
 
 export const AlertContext = createContext<AlertContextInterface>(emptyState)
@@ -26,7 +25,7 @@ interface AlertProviderProps {
 }
 
 
-export function AlertProvider ({ children } : AlertProviderProps) : JSX.Element {
+export function AlertProvider ({ children } : AlertProviderProps) : React.ReactElement {
 	const [hasAlert, setHasAlert] = useState(false)
 	const [severity, setSeverity] = useState<AlertSeverity | undefined>()
 	const [message, setMessage] = useState('')

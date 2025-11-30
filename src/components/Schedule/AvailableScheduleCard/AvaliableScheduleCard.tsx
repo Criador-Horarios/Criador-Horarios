@@ -3,10 +3,10 @@ import React, { useMemo, useState } from 'react'
 import i18next from 'i18next'
 import styles from '../Schedule.module.scss'
 
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardActions from '@material-ui/core/CardActions'
-import CardHeader from '@material-ui/core/CardHeader'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardActions from '@mui/material/CardActions'
+import CardHeader from '@mui/material/CardHeader'
 
 import Schedule from '../Schedule'
 import ScheduleFilters from './ScheduleFilters'
@@ -21,7 +21,7 @@ interface AvaliableScheduleCardProps {
 	onSelectedShift: (shiftName: string, arr: Shift[]) => void;
 }
 
-function AvaliableScheduleCard ({availableShifts, getCourseColor, onSelectedShift} : AvaliableScheduleCardProps) : JSX.Element {
+function AvaliableScheduleCard ({availableShifts, getCourseColor, onSelectedShift} : AvaliableScheduleCardProps) : React.ReactElement {
 	const [selectedCampi, setSelectedCampi] = useState([...campiList])
 	const [selectedShiftTypes, setSelectedShiftTypes] = useState(Object.values(ShiftType) as string[])
 	

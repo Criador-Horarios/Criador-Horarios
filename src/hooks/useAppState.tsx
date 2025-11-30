@@ -4,7 +4,7 @@ import i18next from 'i18next'
 
 import SavedStateHandler from '../utils/saved-state-handler'
 import API from '../utils/api'
-import { createTheme, Theme, ThemeProvider } from '@material-ui/core/styles'
+import { createTheme, Theme, ThemeProvider } from '@mui/material/styles'
 
 export interface AppStateContextInterface {
 	savedStateHandler: SavedStateHandler;
@@ -23,19 +23,14 @@ export interface AppStateContextInterface {
 const emptyState : AppStateContextInterface = {
 	savedStateHandler: null as unknown as SavedStateHandler, // If we create an instance here, caos will ensue: i18n will not be initialized on time, causing crashes
 	loading: true,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	setLoading: (loading) => {return},
 	darkMode: false,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	changeDarkMode: (dark) => {return},
 	lang: '',
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	changeLanguage: async (language, afterChange) => {return},
 	timezone: 'Europe/Lisbon',
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	changeTimezone: (timezone) => {return},
 	showAllHours: false,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	changeShowAllHours: (value) => {return},
 }
 
@@ -50,18 +45,44 @@ interface AppStateProviderProps {
 function getTheme(dark: boolean): Theme {
 	return createTheme({
 		palette: {
-			type: (dark) ? 'dark' : 'light',
+			mode: (dark) ? 'dark' : 'light',
 			primary: {
 				main: (dark) ? '#fff' : '#3f51b5'
 			},
 			text: {
 				primary: (dark) ? 'rgba(255, 255, 255, 0.87)' : 'rgba(0, 0, 0, 0.87)'
-			}
+			},
+		},
+		components: {
+			MuiToolbar: {
+				styleOverrides: {
+					root: {
+						backgroundColor: (dark) ? '#212121' : '#f5f5f5',
+					}
+				}
+			},
+			MuiPaper: {
+				styleOverrides: {
+					root: {
+						backgroundColor: (dark) ? '#424242' : '#fff',
+					}
+				}
+			},
+			MuiToggleButton: {
+				styleOverrides: {
+					root: {
+						color: (dark) ? '#e0e0e0' : 'rgba(0, 0, 0, 0.38)',
+						'&.Mui-selected': {
+							color: (dark) ? '#fff' : 'rgba(0, 0, 0, 0.54)',
+						}
+					}
+				}
+			},
 		}
 	})
 }
 
-export function AppStateProvider ({ children } : AppStateProviderProps) : JSX.Element {
+export function AppStateProvider ({ children } : AppStateProviderProps) : React.ReactElement {
 	const savedStateHandler = useMemo(() => {
 		return SavedStateHandler.getInstance(API.getUrlParams())
 	}, [])

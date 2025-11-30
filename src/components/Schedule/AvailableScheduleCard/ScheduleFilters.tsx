@@ -2,15 +2,15 @@ import React from 'react'
 
 import styles from '../Schedule.module.scss'
 
-import Paper from '@material-ui/core/Paper'
-import ToggleButton from '@material-ui/lab/ToggleButton'
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
-import Divider from '@material-ui/core/Divider'
+import Paper from '@mui/material/Paper'
+import Divider from '@mui/material/Divider'
 
-import { useTheme, withStyles } from '@material-ui/core/styles'
+import { useTheme } from '@mui/material/styles'
 
 import campiList from '../../../domain/CampiList'
 import { ShiftType } from '../../../domain/Shift'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
 interface ScheduleFiltersProps {
 	selectedCampi: string[];
@@ -19,19 +19,6 @@ interface ScheduleFiltersProps {
 	setSelectedShiftTypes: (campi: string[]) => void;
 }
 
-const StyledToggleButtonGroup = withStyles((theme) => ({
-	grouped: {
-		margin: theme.spacing(0.5),
-		border: 'none',
-		'&:not(:first-child)': {
-			borderRadius: theme.shape.borderRadius,
-		},
-		'&:first-child': {
-			borderRadius: theme.shape.borderRadius,
-		},
-	}
-}))(ToggleButtonGroup)
-
 
 
 function ScheduleFilters ({
@@ -39,14 +26,20 @@ function ScheduleFilters ({
 	setSelectedCampi,
 	selectedShiftTypes,
 	setSelectedShiftTypes
-} : ScheduleFiltersProps) : JSX.Element {
+} : ScheduleFiltersProps) : React.ReactElement {
 	const theme = useTheme()
+
+	const buttonFilterStyle = {
+		margin: theme.spacing(0.5),
+		border: 'none',
+	}
 	
 	return (
 		<Paper elevation={0} className={`${styles.SchedulePaper} ${styles.ScheduleCentered}`}
 			style={{ border: `1px solid ${theme.palette.divider}` }}
 		>
-			<StyledToggleButtonGroup
+			{/* TODO: Recover original styles! */}
+			<ToggleButtonGroup
 				className={styles.ScheduleToggleGroup}
 				size="small"
 				value={selectedCampi}
@@ -54,20 +47,22 @@ function ScheduleFilters ({
 				aria-label="text alignment"
 			>
 				{campiList.map((name: string) => (
-					<ToggleButton key={name} value={name}>{name}</ToggleButton>
+					<ToggleButton key={name} value={name} sx={buttonFilterStyle}>{name}</ToggleButton>
 				))}
-			</StyledToggleButtonGroup>
-			<Divider flexItem orientation="vertical" style={{margin: theme.spacing(1, 0.5)}}/>
-			<StyledToggleButtonGroup
+			</ToggleButtonGroup>
+			<Divider flexItem orientation="vertical" sx={{margin: theme.spacing(1, 0.5)}}/>
+			<ToggleButtonGroup
 				className={styles.ScheduleToggleGroup}
 				size="small"
 				value={selectedShiftTypes}
 				onChange={(_, value) => setSelectedShiftTypes(value as string[])}
 			>
 				{Object.entries(ShiftType).map((name) => (
-					<ToggleButton key={name[1]} value={name[1]}>{name[0]}</ToggleButton>
+					<ToggleButton key={name[1]} value={name[1]} sx={buttonFilterStyle}>
+						{name[0]}
+					</ToggleButton>
 				))}
-			</StyledToggleButtonGroup>
+			</ToggleButtonGroup>
 		</Paper>
 	)
 }

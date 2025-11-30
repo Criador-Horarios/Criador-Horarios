@@ -7,8 +7,8 @@ module.exports = function(app) {
 		createProxyMiddleware({
 			target: 'https://fenix.tecnico.ulisboa.pt/',
 			changeOrigin: true,
-			pathRewrite: {
-				'^/api': '/api/fenix/v1'
+			pathRewrite: async function (path, req) {
+				return path.replace('/', '/api/fenix/v1/')
 			}
 		})
 	)
@@ -17,16 +17,9 @@ module.exports = function(app) {
 		createProxyMiddleware({
 			target: 'https://fenix.tecnico.ulisboa.pt/',
 			changeOrigin: true,
-			pathRewrite: {
-				'^/v2api': '/tecnico-api/v2'
+			pathRewrite: async function (path, req) {
+				return path.replace('/', '/tecnico-api/v2/')
 			}
-		})
-	)
-	app.use(
-		'/disciplinas',
-		createProxyMiddleware({
-			target: 'https://fenix.tecnico.ulisboa.pt/',
-			changeOrigin: true,
 		})
 	)
 }
