@@ -7,8 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Changed
 ### Fixed
 ### Removed
+
+## [1.19.0] - 30/11/2025
+
+### Changed
+
+- Node version to 22
+- Upgraded all packages
+
+### Removed
+
+- Unused web vitals
 
 ## [1.18.1] - 10/09/2023
 
