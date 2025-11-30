@@ -14,7 +14,6 @@ export interface AlertDispatchArgs {
 
 export type AlertContextInterface = (args: AlertDispatchArgs) => void;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emptyState : AlertContextInterface = (args) => {return}
 
 export const AlertContext = createContext<AlertContextInterface>(emptyState)
