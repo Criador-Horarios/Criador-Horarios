@@ -3,13 +3,13 @@ import React from 'react'
 import i18next from 'i18next'
 import styles from './ClassesDialog.module.scss'
 
-import Box from '@material-ui/core/Box'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import Typography from '@material-ui/core/Typography'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import Typography from '@mui/material/Typography'
 
 interface ClassesDialogProps {
 	open: boolean
@@ -18,7 +18,7 @@ interface ClassesDialogProps {
 	onClose: () => void
 }
 
-function ClassesDialog ({open, classesByShift, minimalClasses, onClose} : ClassesDialogProps) : JSX.Element {
+function ClassesDialog ({open, classesByShift, minimalClasses, onClose} : ClassesDialogProps) : React.ReactElement {
 	return (
 		<Dialog open={open}>
 			<DialogTitle>{i18next.t('classes-dialog.title') as string}</DialogTitle>

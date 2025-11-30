@@ -6,12 +6,11 @@ import { Comparables } from '../../domain/Comparable'
 import Degree from '../../domain/Degree'
 import Course, { CourseColor } from '../../domain/Course'
 
-import Chip from '@material-ui/core/Chip'
-import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete'
-import TextField from '@material-ui/core/TextField'
-import Toolbar from '@material-ui/core/Toolbar'
-import Tooltip from '@material-ui/core/Tooltip'
-import AppBar from '@material-ui/core/AppBar'
+import Chip from '@mui/material/Chip'
+import TextField from '@mui/material/TextField'
+import Toolbar from '@mui/material/Toolbar'
+import Tooltip from '@mui/material/Tooltip'
+import AppBar from '@mui/material/AppBar'
 
 import i18next from 'i18next'
 import AcademicTerm from '../../domain/AcademicTerm'
@@ -20,6 +19,7 @@ import LanguageButton from './LanguageButton'
 import DarkModeButton from './DarkModeButton'
 import SettingsButton from './SettingsButton'
 import { useAlert } from '../../hooks/useAlert'
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
 
 interface TopBarProps {
 	selectedCourses: Course[];
@@ -39,7 +39,7 @@ function TopBar ({
 	selectedAcademicTerm,
 	onChangeAcademicTerm,
 	getCourseColor,
-} : TopBarProps) : JSX.Element {
+} : TopBarProps) : React.ReactElement {
 	const dispatchAlert = useAlert()
 
 	const [availableDegrees, setAvailableDegrees] = useState<Degree[]>([])
@@ -131,7 +131,7 @@ function TopBar ({
 						options={availableDegrees}
 						getOptionLabel={(option) => option.displayName()}
 						renderInput={(params) => <TextField {...params} label={i18next.t('degree-selector.title') as string} variant="outlined" />}
-						renderTags={(tagValue, getTagProps) => {
+						renderValue={(tagValue, getTagProps) => {
 							// TODO: Fix chip color
 							return tagValue.map((option, index) => (
 								<Tooltip title={option.displayName()} key={option.hashString()}>

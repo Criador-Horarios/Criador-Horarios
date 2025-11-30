@@ -3,18 +3,18 @@ import React, { useCallback, useMemo, useState } from 'react'
 import i18next from 'i18next'
 import styles from '../Schedule.module.scss'
 
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import IconButton from '@mui/material/IconButton'
+import Icon from '@mui/material/Icon'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
 import SavedStateHandler from '../../../utils/saved-state-handler'
-import Switch from '@material-ui/core/Switch'
-import Tooltip from '@material-ui/core/Tooltip'
+import Switch from '@mui/material/Switch'
+import Tooltip from '@mui/material/Tooltip'
 
-import AllInclusiveIcon from '@material-ui/icons/AllInclusive'
+import AllInclusiveIcon from '@mui/icons-material/AllInclusive'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClone, faFileExcel } from '@fortawesome/free-solid-svg-icons'
 
@@ -36,7 +36,7 @@ interface ScheduleActionsProps {
 	openDuplicateTimetable: (timetable: Timetable) => void
 }
 
-function ScheduleActions ({activeTimetable, onChangeMultiShiftMode, openDuplicateTimetable} : ScheduleActionsProps) : JSX.Element {
+function ScheduleActions ({activeTimetable, onChangeMultiShiftMode, openDuplicateTimetable} : ScheduleActionsProps) : React.ReactElement {
 	const dispatchAlert = useAlert()
 	const { setLoading, darkMode } = useAppState()
 	

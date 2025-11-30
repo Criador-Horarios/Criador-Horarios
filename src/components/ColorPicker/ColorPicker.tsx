@@ -2,17 +2,17 @@ import React, { useEffect, useState } from 'react'
 import i18next from 'i18next'
 import styles from './ColorPicker.module.scss'
 import Course, { CourseWithShiftTypes } from '../../domain/Course'
-import Chip from '@material-ui/core/Chip'
+import Chip from '@mui/material/Chip'
 
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
 import { HexColorPicker, HexColorInput } from 'react-colorful'
-import Button from '@material-ui/core/Button'
-import { Box } from '@material-ui/core'
+import Button from '@mui/material/Button'
+import { Box } from '@mui/material'
 import { getColor1, getColor2, getColor3 } from '../../utils/colors'
-import Typography from '@material-ui/core/Typography'
+import Typography from '@mui/material/Typography'
 
 interface ColorPickerProps {
 	course: CourseWithShiftTypes | null;
@@ -20,7 +20,7 @@ interface ColorPickerProps {
 	onClose: () => void;
 }
 
-function ColorPicker ({course, setCourseColor, onClose} : ColorPickerProps) : JSX.Element {
+function ColorPicker ({course, setCourseColor, onClose} : ColorPickerProps) : React.ReactElement {
 	const [currColor, setCurrColor] = useState(() => course ? course.color.backgroundColor : 'ffffff')
 		
 	useEffect(() => {
@@ -78,7 +78,7 @@ function ColorPicker ({course, setCourseColor, onClose} : ColorPickerProps) : JS
 					</Box>
 				</DialogContent>
 				<DialogActions>
-					<Button color="default" onClick={onClose}>
+					<Button color="inherit" onClick={onClose}>
 						{i18next.t('color-picker-dialog.actions.cancel')}
 					</Button>
 

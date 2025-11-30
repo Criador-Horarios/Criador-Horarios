@@ -2,21 +2,20 @@ import React, { useState } from 'react'
 
 import i18next from 'i18next'
 
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import TextField from '@material-ui/core/TextField'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
-
-import { Autocomplete, createFilterOptions } from '@material-ui/lab'
+import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import IconButton from '@mui/material/IconButton'
+import Icon from '@mui/material/Icon'
+import TextField from '@mui/material/TextField'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 
 import Timetable from '../../../domain/Timetable'
 import { useAlert } from '../../../hooks/useAlert'
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
 
 interface TimetableSelectorProps {
 	activeTimetable: Timetable;
@@ -30,7 +29,7 @@ function TimetableSelector ({
 	availableTimetables,
 	onSelectedTimetable,
 	deleteTimetable
-} : TimetableSelectorProps) : JSX.Element {
+} : TimetableSelectorProps) : React.ReactElement {
 	const dispatchAlert = useAlert()
 	const [timetableToDelete, setTimetableToDelete] = useState<Timetable | null>(null)
 	
@@ -68,7 +67,7 @@ function TimetableSelector ({
 				onChange={(_, value) => onSelectedTimetable(value)}
 				getOptionLabel={(option) => typeof option === 'string' ? i18next.t('timetable-autocomplete.add-new') : option.getDisplayName()}
 				renderInput={(params) => <TextField {...params} variant="standard" />}
-				renderOption={(option) =>
+				renderValue={(option) =>
 					<Tooltip title={typeof option === 'string' ? '' : option.getAcademicTerm()} placement="bottom">
 						<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
 							{typeof option === 'string' &&

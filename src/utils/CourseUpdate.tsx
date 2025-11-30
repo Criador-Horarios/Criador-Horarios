@@ -1,4 +1,4 @@
-import hexRgb from 'hex-rgb'
+import hexRgb, { RgbaObject } from 'hex-rgb'
 import randomColor from 'randomcolor'
 import rgbHex from 'rgb-hex'
 import { isOkWithWhite } from './colors'
@@ -29,8 +29,8 @@ export function returnColor(color: string): void {
 	}
 }
 
-export function getRandomDarkColor(): hexRgb.RgbaObject {
-	let chosenColor: hexRgb.RgbaObject
+export function getRandomDarkColor(): RgbaObject {
+	let chosenColor: RgbaObject
 	do {
 		chosenColor = hexRgb(randomColor({
 			luminosity: 'dark',

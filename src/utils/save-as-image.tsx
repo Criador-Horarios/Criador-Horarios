@@ -100,7 +100,7 @@ function getTable(lessons: Record<string, Record<number, LessonWithColor[]>>, ov
 	let header = ''
 	cols.forEach(col => {
 		let res = ['', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira']
-		const newColumnNames = i18next.t('table.weekdays', { returnObjects: true })
+		const newColumnNames = (i18next.t('table.weekdays', { returnObjects: true }) as string[])
 		if (newColumnNames.length > 0) {
 			res = [''].concat(newColumnNames)
 		}

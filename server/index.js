@@ -11,7 +11,7 @@ const app = express()
 
 app.use(morgan('common', {
   skip: function (req, res) {
-    return req.url !== '/' && !req.url.includes('api') && !req.url.includes('disciplinas')
+    return req.url !== '/' && !req.url.includes('api')
   }
 }));
 app.use(express.static(path.join(__dirname, '../build'), { fallthrough: true }))
@@ -24,13 +24,6 @@ app.use(
       pathRewrite: {
           '^/api': '/api/fenix/v1'
       }
-  })
-)
-app.use(
-  '/disciplinas',
-  createProxyMiddleware({
-    target: 'https://fenix.tecnico.ulisboa.pt/',
-    changeOrigin: true,
   })
 )
 

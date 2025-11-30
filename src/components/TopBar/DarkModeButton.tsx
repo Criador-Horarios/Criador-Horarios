@@ -1,15 +1,14 @@
 import React from 'react'
 
-import IconButton from '@material-ui/core/IconButton'
-import Tooltip from '@material-ui/core/Tooltip'
-
-import Brightness2Icon from '@material-ui/icons/Brightness2'
-import Brightness5Icon from '@material-ui/icons/Brightness5'
+import IconButton from '@mui/material/IconButton'
+import Brightness5Icon from '@mui/icons-material/Brightness5';
+import Brightness2Icon from '@mui/icons-material/Brightness2';
+import Tooltip from '@mui/material/Tooltip'
 
 import i18next from 'i18next'
 import { useAppState } from '../../hooks/useAppState'
 
-function DarkModeButton () : JSX.Element {
+function DarkModeButton () : React.ReactElement {
 	const {darkMode, changeDarkMode} = useAppState()
 
 	const onChangeDarkMode = () => changeDarkMode(!darkMode)

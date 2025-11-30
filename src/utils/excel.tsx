@@ -43,7 +43,7 @@ export default async function saveToExcel(shifts: Shift[], getCourseColor: (cour
 	let sheet = workbook.addWorksheet(i18next.t('excel.worksheet-title'))
 
 	const lessons = getLessonsByDay(shifts, getCourseColor)
-	const newColumnNames = i18next.t('table.weekdays', { returnObjects: true })
+	const newColumnNames = (i18next.t('table.weekdays', { returnObjects: true }) as string[])
 	if (newColumnNames.length > 0) {
 		columnNames = [''].concat(newColumnNames)
 	}

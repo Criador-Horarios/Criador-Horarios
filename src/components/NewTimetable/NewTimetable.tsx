@@ -4,14 +4,14 @@ import Timetable from '../../domain/Timetable'
 
 import i18next from 'i18next'
 
-import Box from '@material-ui/core/Box'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import Box from '@mui/material/Box'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import Button from '@mui/material/Button'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 
 interface NewTimetableProps {
 	open: boolean
@@ -31,7 +31,7 @@ function NewTimetable ({
 	existingTimetableNames,
 	onClose,
 	onCreateTimetable,
-} : NewTimetableProps) : JSX.Element {
+} : NewTimetableProps) : React.ReactElement {
 	const [name, setName] = useState('')
 
 	useEffect(() => {
@@ -98,7 +98,7 @@ function NewTimetable ({
 					</Box>
 				</DialogContent>
 				<DialogActions>
-					<Button color="default" onClick={onClose}>
+					<Button color="inherit" onClick={onClose}>
 						{i18next.t('timetable-dialog.actions.cancel')}
 					</Button>
 

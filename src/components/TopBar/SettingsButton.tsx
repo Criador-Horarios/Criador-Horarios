@@ -2,24 +2,24 @@ import React, { useState } from 'react'
 
 import { staticData } from '../../utils/api'
 
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import DialogContent from '@material-ui/core/DialogContent'
-import FormControl from '@material-ui/core/FormControl'
-import InputLabel from '@material-ui/core/InputLabel'
-import Select from '@material-ui/core/Select'
-import MenuItem from '@material-ui/core/MenuItem'
-import DialogActions from '@material-ui/core/DialogActions'
-import Button from '@material-ui/core/Button'
+import IconButton from '@mui/material/IconButton'
+import Icon from '@mui/material/Icon'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import DialogActions from '@mui/material/DialogActions'
+import Button from '@mui/material/Button'
 
 import i18next from 'i18next'
-import Typography from '@material-ui/core/Typography'
+import Typography from '@mui/material/Typography'
 import OccupancyUpdater, { occupancyRates } from '../../utils/occupancy-updater'
 import { useAppState } from '../../hooks/useAppState'
-import Checkbox from '@material-ui/core/Checkbox'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
 import { allTimezones } from '../../utils/timezone'
 
 interface SettingsButtonProps {
@@ -29,7 +29,7 @@ interface SettingsButtonProps {
 
 const timezones = allTimezones.map((tz) => { return { value: tz.utc[0], label: tz.text, key: tz.offset}}).sort((a, b) => a.key - b.key)
 
-function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm} : SettingsButtonProps) : JSX.Element {
+function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm} : SettingsButtonProps) : React.ReactElement {
 	const [dialogOpen, setDialogOpen] = useState(false)
 
 	const { timezone, changeTimezone, showAllHours, changeShowAllHours } = useAppState()

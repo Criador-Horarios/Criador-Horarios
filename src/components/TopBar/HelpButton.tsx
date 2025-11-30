@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
 
-import Tooltip from '@material-ui/core/Tooltip'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogActions from '@material-ui/core/DialogActions'
-import Button from '@material-ui/core/Button'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
+import Icon from '@mui/material/Icon'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Button from '@mui/material/Button'
 
 import i18next from 'i18next'
 
-function HelpButton () : JSX.Element {
+function HelpButton () : React.ReactElement {
 	const [dialogOpen, setDialogOpen] = useState(false)
 
 	return (

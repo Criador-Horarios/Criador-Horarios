@@ -1,7 +1,7 @@
-import ICalendar from 'datebook/dist/ICalendar'
-import CalendarOptions from 'datebook/dist/types/CalendarOptions'
+import { CalendarOptions, ICalendar } from 'datebook'
 import Shift from '../domain/Shift'
 import i18next from 'i18next'
+import * as FileSaver from 'file-saver'
 
 export default function getCalendar(shifts: Shift[]): void {
 	const events = shifts.map(s => s.getAllLessons()).flat().map(l => {
@@ -30,6 +30,12 @@ export default function getCalendar(shifts: Shift[]): void {
 			// newCalendar.addProperty('CATEGORIES', 'EDUCATION')
 			calendar.addEvent(newCalendar)
 		})
-		calendar.download(`${i18next.t('calendar.filename')}.ics`)
+
+		const ics = calendar.render()
+		const blob = new Blob([ics], {
+			type: 'text/calendar'
+		})
+
+		FileSaver.saveAs(blob, `${i18next.t('calendar.filename')}.ics`)
 	}
 }

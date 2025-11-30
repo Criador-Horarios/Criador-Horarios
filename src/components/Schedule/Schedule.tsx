@@ -1,17 +1,18 @@
 import React, { useMemo } from 'react'
 import Lesson, { addColorToLesson, changeTimezone, LessonWithColor } from '../../domain/Lesson'
 import styles from './Schedule.module.scss'
-import FullCalendar, { EventClickArg, EventContentArg } from '@fullcalendar/react'
+import FullCalendar from '@fullcalendar/react'
 import bootstrapPlugin from '@fullcalendar/bootstrap'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import Tooltip from '@material-ui/core/Tooltip'
-import Box from '@material-ui/core/Box/Box'
+import Tooltip from '@mui/material/Tooltip'
 import { ShiftOccupation } from '../../domain/Shift'
 import i18next from 'i18next'
 // import './_materialFullCalendar.scss'
 
 import { useAppState } from '../../hooks/useAppState'
 import Course, { CourseColor } from '../../domain/Course'
+import Box from '@mui/material/Box'
+import { EventClickArg, EventContentArg } from '@fullcalendar/core'
 
 interface ScheduleProps {
 	onSelectedEvent: (id: string) => void;
@@ -19,7 +20,7 @@ interface ScheduleProps {
 	events: Lesson[];
 }
 
-function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : JSX.Element {
+function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : React.ReactElement {
 	const { lang, timezone, showAllHours } = useAppState()
 	
 	const lessonsWithColors: LessonWithColor[] = useMemo(() => {
@@ -100,7 +101,7 @@ function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : 
 	)
 }
 
-function EventContent({event} : EventContentArg): JSX.Element {
+function EventContent({event} : EventContentArg): React.ReactElement {
 	const occupation = Object.values(event.extendedProps.occupation as ShiftOccupation)
 	const percentage = occupation[0]/occupation[1] * 100 || 0
 
