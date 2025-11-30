@@ -7,8 +7,8 @@ import Shift from './domain/Shift'
 
 import i18next from 'i18next'
 
-import Backdrop from '@material-ui/core/Backdrop'
-import CircularProgress from '@material-ui/core/CircularProgress'
+import Backdrop from '@mui/material/Backdrop'
+import CircularProgress from '@mui/material/CircularProgress'
 
 import Footer from './components/Footer/Footer'
 import AvaliableScheduleCard from './components/Schedule/AvailableScheduleCard/AvaliableScheduleCard'
@@ -25,12 +25,12 @@ import { useAlert } from './hooks/useAlert'
 import AcademicTerm from './domain/AcademicTerm'
 import WarningDialog from './components/WarningDialog/WarningDialog'
 import useNewTimetable from './hooks/useNewTimetable'
-import { makeStyles } from '@material-ui/core/styles'
+import { useTheme } from '@mui/material/styles'
+import { Box } from '@mui/material'
 
-const useStyles = makeStyles(APP_STYLES)
-
-function App () : JSX.Element {
-	const classes = useStyles()
+function App () : React.ReactElement {
+	const theme = useTheme()
+	const classes = APP_STYLES(theme)
 	const [activeTimetableIndex, setActiveTimetableIndex] = useState(0)
 	const [availableTimetables, setAvailableTimetables] = useState<Timetable[]>(() => ([]))
 	
@@ -220,7 +220,7 @@ function App () : JSX.Element {
 
 	return (
 		<div className="App">
-			<Backdrop className={classes.backdrop as string} open={loading}>
+			<Backdrop sx={classes.backdrop} open={loading}>
 				<CircularProgress color="inherit" />
 			</Backdrop>
 			<TopBar
@@ -233,7 +233,7 @@ function App () : JSX.Element {
 				onChangeAcademicTerm={onChangeAcademicTerm}
 			/>
 			<div className="main">
-				<div className={classes.body as string}>
+				<Box sx={classes.body}>
 					<div className="schedules">
 						<AvaliableScheduleCard
 							availableShifts={activeTimetable.getAvailableShifts()}
@@ -252,7 +252,7 @@ function App () : JSX.Element {
 							openDuplicateTimetable={openDuplicateTimetable}
 						/>
 					</div>
-				</div>
+				</Box>
 			</div>
 			<Footer />
 			<div className="dialogs">

@@ -58,7 +58,7 @@ function SettingsButton ({ selectedAcademicTerm, onSelectedAcademicTerm} : Setti
 				<DialogTitle>
 					{i18next.t('settings-dialog.title')}
 				</DialogTitle>
-				<DialogContent>
+				<DialogContent sx={{ paddingTop: '8px !important' }}>
 					<FormControl variant='outlined' fullWidth={true}>
 						<InputLabel>{i18next.t('settings-dialog.select.label') as string}</InputLabel>
 						<Select

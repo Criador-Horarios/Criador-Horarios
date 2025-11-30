@@ -20,7 +20,6 @@
     "async-mutex": "^0.5.0",
     "cheerio": "^1.1.2",
     "datebook": "^8.0.1",
-    "eslint-config-react-app": "^7.0.1",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "hex-rgb": "^5.0.0",
@@ -42,20 +41,12 @@
     "web-vitals": "^5.1.0"
   },
   "scripts": {
-    "lint": "eslint src/",
-    "lintFix": "eslint src/ --fix",
     "start": "CHOKIDAR_USEPOLLING=true react-scripts start",
     "build": "react-scripts build",
     "postbuild": "cp extra_resources/* build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "run-prod": "node server/index.js"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -70,14 +61,12 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
     "@types/file-saver": "^2.0.7",
     "@types/material-ui": "^0.21.18",
-    "@types/node": "^24.10.1",
+    "@types/node": "^22.0.0",
     "@types/react": "^19.2.7",
     "@types/react-router-dom": "^5.3.3",
-    "eslint": "^9.39.1",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.48.0"
-  }
+    "typescript": "5.1.6"
+  },
+	"engine": "node 22"
 }
