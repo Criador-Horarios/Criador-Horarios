@@ -5,7 +5,7 @@ set -e
 apk add --update bash zsh sudo git openssh nano make g++ git-crypt
 
 # App dependencies #
-apk add --update python2 g++
+apk add --update python3
 
 # User setup #
 echo "$USER:x:1000:1000::$HOME:/bin/zsh" >> /etc/passwd

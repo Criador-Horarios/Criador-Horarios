@@ -12,6 +12,7 @@ export default interface Lesson {
 	date: string
 	daysOfWeek: number[]
 	id: string
+	shiftName: string
 	minutes: number
 	occupation: ShiftOccupation
 	courseUrl: string
@@ -36,7 +37,8 @@ export function createLesson(obj: Record<string, any>): Lesson {
 		date: obj.date,
 		minutes: (dateEnd.getTime() - dateStart.getTime()) / ( 1000 * 60 ),
 		type: obj.type,
-		id: obj.shiftName,
+		id: `${obj.shiftName}-${obj.dayOfWeek}-${obj.start}`,
+		shiftName: obj.shiftName,
 		occupation: obj.occupation,
 		courseUrl: obj.url,
 		course: obj.course,

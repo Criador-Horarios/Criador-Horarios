@@ -37,7 +37,7 @@ function Schedule ({onSelectedEvent, getCourseColor, events} : ScheduleProps) : 
 		// } else {
 		// 	this.props.onSelectedEvent(info.event.id)
 		// }
-		onSelectedEvent(info.event.id)
+		onSelectedEvent(info.event.extendedProps.shiftName ?? info.event.id)
 	}
 
 	let minTime = '08:00:00'
